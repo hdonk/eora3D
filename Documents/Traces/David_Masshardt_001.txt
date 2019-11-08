@@ -1,0 +1,7 @@
+I was just wondering if I could use the turntable of the Eora3d for something different if I can find out how it is controlled. I found out that the device is a bluetooth low energy device also called bluetooth GATT. I found this app in the play store to browse GATT devices and send data to them: https://play.google.com/store/apps/details?id=com.renesas.ble.gattbrowser
+
+After a few minutes of trying out values I already got the turntable to move. I found out that the service 4d4f544f-5220-4143-4345-4c2020202020 seems to be the motor speed from 00 to FF, the service 4d4f544f-5220-5350-4545-4c2020202020 is the acceleration from 00 to FF and the service 4d4f544f-5220-4950-4f53-4c2020202020 is to start the motor. For the last service 4 bytes are needed. I found out that the first byte seems to start an endless rotation and the second byte starts a controlled move. If I e.g. send 00 01 00 00 the turntable moves a small amount and with 00 10 00 00 it move a bigger amount.
+
+Edit: I guess the four bytes are simply a hex integer in reverse order. So 010000 moves the turntable 1 mm and 00010000 moves the bed 256mm
+
+Maybe I will write a Python script to control the turntable if I find some time. And there are also more service that could be controlled if I find out how.
