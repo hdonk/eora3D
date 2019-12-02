@@ -10,12 +10,14 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JButton;
+import eora3D.eora3D_bluetooth;
+import tinyb.BluetoothDevice;
 
 public class Eora3D_MainWindow extends JDialog implements ActionListener {
-	static Eora3DDiscoveryListener m_e3D_listener;
-	private JComboBox laser_selector;
-	private JComboBox turntable_selector;
-	private JComboBox camera_selector;
+	static eora3D_bluetooth m_e3D_bluetooth;
+	private JComboBox<String> laser_selector;
+	private JComboBox<String> turntable_selector;
+	private JComboBox<String> camera_selector;
 	
 	public Eora3D_MainWindow()
 	{
@@ -65,7 +67,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 		getContentPane().add(btndScanning);
 		btndScanning.addActionListener(this);
 		
-		setSize(449, 320);
+		setSize(449+16, 320+64);
 		
 		setVisible(true);
 		
@@ -74,14 +76,27 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 	
 	void Bluetooth_Rescan()
 	{
-		if(m_e3D_listener == null) m_e3D_listener = new Eora3DDiscoveryListener();
+		if(m_e3D_bluetooth == null) m_e3D_bluetooth = new eora3D_bluetooth();
 		
 		laser_selector.removeAllItems();
 		turntable_selector.removeAllItems();
 		
 		getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		m_e3D_listener.discover();
+		m_e3D_bluetooth.discover();
 		getContentPane().setCursor(Cursor.getDefaultCursor());
+		if(m_e3D_bluetooth.devices!=null)
+		{
+			boolean found = false;
+			for (BluetoothDevice device : m_e3D_bluetooth.devices) {
+				System.out.println(device.getName().substring(0, 4));
+				if(device.getName().substring(0, 4).equals("E3DS"))
+				{
+					laser_selector.addItem(device.getName());
+					found = true;
+				}
+			}
+			if(found) laser_selector.setSelectedIndex(0);
+		}
 	}
 
 	@Override
