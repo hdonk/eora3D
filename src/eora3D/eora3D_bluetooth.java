@@ -1,15 +1,75 @@
 package eora3D;
 
 import tinyb.*;
+
+import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.TimeUnit;
+/*
+ * EORA3D - TURRET
+ * * SLASER SERVICE
+ * LASER STATUS - READ,WRITE_NO_RESPONSE,8 bits (00 laser off, 01 laser on)
+ * * SMOTOR SERVICE
+
+ * MOTOR CPOS - READ, 32 bits, default 0
+ * MOTOR IPOS - WRITE_NOT_RESPONSE (Move to position. 00 scan right, then back to left endstop. Invert bytes! End is at 0x2300 ish)
+ * MOTOR MMODE - READ, NOTIFY, 8bits - default 1
+ * MOTOR SMODE - READ, WRITE_NO_RESPONSE, 8bits - default 1
+ * MOTOR SPEED - READ, WRITE, 8 bits - default 0 (bigger is slower)
+
+ * * SLED SERVICE
+ * LED TYPE - READ, NOTIFY, WRITE_NO_RESPONSE, 8 bits, default 0xf6484700 (RGBI)
+ * 
+ * EORA3D - TTABLE
+ * * TIO SERVICE
+ * IO INPUT - WRITE_NO_RESPONSE
+ * IO OUTPUT - READ, NOTIFY
+
+ * * TMOTOR SERVICE
+ * MOTOR CPOS - READ, NOTIFY
+ * MOTOR IPOS - READ, WRITE_NO_RESPONSE
+ * MOTOR MMODE - READ, NOTIFY
+ * MOTOR SMODE - READ, WRITE_NO_RESPONSE
+ * MOTOR SPEED - READ, WRITE_NO_RESPONSE
+ * MOTOR ACCEL - READ, WRITE_NO_RESPONSE
+
+ */
 
 public class eora3D_bluetooth {
 
     private BluetoothManager manager;
     public List<BluetoothDevice> devices = null;
-
+    
+    BluetoothDevice laser = null;
+    BluetoothDevice turntable = null;
+    
+    String UUID_laser_service = "534c4153-4552-2053-4552-564943452020";
+    String UUID_laser_status = "4c415345-5220-5354-4154-555320202020";
+    String UUID_laser_motor_service = "534d4f54-4f52-2053-4552-564943452020";
+    String UUID_laser_motor_cpos = "4d4f544f-5220-4350-4f53-202020202020";
+    String UUID_laser_motor_ipos = "4d4f544f-5220-4950-4f53-202020202020";
+    String UUID_laser_motor_mmode = "4d4f544f-5220-4d4d-4f44-452020202020";
+    String UUID_laser_motor_smode = "4d4f544f-5220-534d-4f44-452020202020";
+    String UUID_laser_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
+    String UUID_laser_sled_service = "534c4544-2053-4552-5649-434520202020";
+    String UUID_laser_led_type = "4c454420-5459-5045-2020-202020202020";
+    
+    String UUID_turntable_tio_service = "54494f20-5345-5256-4943-452020202020";
+    String UUID_turntable_io_input = "494f2049-4e50-5554-2020-202020202020";
+    String UUID_turntable_io_output = "494f204f-5554-5055-5420-202020202020";
+    String UUID_turntable_tmotor_service = "544d4f54-4f52-2053-4552-564943452020";
+    String UUID_turntable_motor_cpos = "4d4f544f-5220-4350-4f53-202020202020";
+    String UUID_turntable_motor_ipos = "4d4f544f-5220-4950-4f53-202020202020";
+    String UUID_turntable_motor_mmode = "4d4f544f-5220-4d4d-4f44-452020202020";
+    String UUID_turntable_motor_smode = "4d4f544f-5220-534d-4f44-452020202020";
+    String UUID_turntable_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
+    String UUID_turntable_motor_accel = "4d4f544f-5220-4143-4345-4c2020202020";
+    
+    public eora3D_bluetooth()
+    {
+    }
+    
 	static void printDevice(BluetoothDevice device) {
         System.out.print("Address = " + device.getAddress());
         System.out.print(" Name = " + device.getName());
@@ -27,12 +87,6 @@ public class eora3D_bluetooth {
         }
     }
 
-    /*
-     * Our device should expose a temperature service, which has a UUID we can find out from the data sheet. The service
-     * description of the SensorTag can be found here:
-     * http://processors.wiki.ti.com/images/a/a8/BLE_SensorTag_GATT_Server.pdf. The service we are looking for has the
-     * short UUID AA00 which we insert into the TI Base UUID: f000XXXX-0451-4000-b000-000000000000
-     */
     static BluetoothGattService getService(BluetoothDevice device, String UUID) throws InterruptedException {
         System.out.println("Services exposed by device:");
         BluetoothGattService tempService = null;
@@ -64,15 +118,6 @@ public class eora3D_bluetooth {
         return null;
     }
 
-    /*
-     * This program connects to a TI SensorTag 2.0 and reads the temperature characteristic exposed by the device over
-     * Bluetooth Low Energy. The parameter provided to the program should be the MAC address of the device.
-     *
-     * A wiki describing the sensor is found here: http://processors.wiki.ti.com/index.php/CC2650_SensorTag_User's_Guide
-     *
-     * The API used in this example is based on TinyB v0.3, which only supports polling, but v0.4 will introduce a
-     * simplied API for discovering devices and services.
-     */
     public void discover() {
     	if(manager==null)
     		manager = BluetoothManager.getBluetoothManager();
@@ -91,9 +136,6 @@ public class eora3D_bluetooth {
 			e1.printStackTrace();
 		}
        
-        
-        BluetoothDevice sensor = devices.get(0);
-
         /*
          * After we find the device we can stop looking for other devices.
          */
@@ -102,107 +144,67 @@ public class eora3D_bluetooth {
         } catch (BluetoothException e) {
             System.err.println("Discovery could not be stopped.");
         }
-
-        if(true) return;
+    }
+    
+    void setLaser(BluetoothDevice a_laser)
+    {
+    	if(laser != null)
+    		laser.disconnect();
+    	laser = a_laser;
+    	if(laser != null)
+    		laser.connect();
+    }
+    
+    void setTurntable(BluetoothDevice a_turntable)
+    {
+    	if(turntable != null)
+    		turntable.disconnect();
+    	turntable = a_turntable;
+    	if(turntable != null)
+    		turntable.connect();
+    }
+    
+    void setLaserStatus(boolean on)
+    {
+    	if(laser == null) return;
         
-        System.out.print("Found device: ");
-        printDevice(sensor);
-
-        if (sensor.connect())
-            System.out.println("Sensor with the provided address connected");
-        else {
-            System.out.println("Could not connect device.");
-            System.exit(-1);
-        }
-
-        Lock lock = new ReentrantLock();
-        Condition cv = lock.newCondition();
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                lock.lock();
-                try {
-                    cv.signalAll();
-                } finally {
-                    lock.unlock();
-                }
-
-            }
-        });
-
-
-        BluetoothGattService tempService = null;
+        BluetoothGattService laserService = null;
 		try {
-			tempService = getService(sensor, "f000aa00-0451-4000-b000-000000000000");
+			laserService = getService(laser, UUID_laser_service);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-        if (tempService == null) {
-            System.err.println("This device does not have the temperature service we are looking for.");
-            sensor.disconnect();
-            System.exit(-1);
+        if (laserService == null) {
+            System.err.println("This device does not have the laser service we are looking for.");
+            return;
         }
-        System.out.println("Found service " + tempService.getUUID());
+        System.out.println("Found laser service " + laserService.getUUID());
 
-        BluetoothGattCharacteristic tempValue = getCharacteristic(tempService, "f000aa01-0451-4000-b000-000000000000");
-        BluetoothGattCharacteristic tempConfig = getCharacteristic(tempService, "f000aa02-0451-4000-b000-000000000000");
-        BluetoothGattCharacteristic tempPeriod = getCharacteristic(tempService, "f000aa03-0451-4000-b000-000000000000");
+        BluetoothGattCharacteristic laserStatus = getCharacteristic(laserService, UUID_laser_status);
 
-        if (tempValue == null || tempConfig == null || tempPeriod == null) {
-            System.err.println("Could not find the correct characteristics.");
-            sensor.disconnect();
-            System.exit(-1);
+        if (laserStatus==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
         }
 
-        System.out.println("Found the temperature characteristics");
+        System.out.println("Found the laser status characteristic");
 
         /*
          * Turn on the Temperature Service by writing 1 in the configuration characteristic, as mentioned in the PDF
          * mentioned above. We could also modify the update interval, by writing in the period characteristic, but the
          * default 1s is good enough for our purposes.
          */
-        byte[] config = { 0x01 };
-        tempConfig.writeValue(config);
-
-        /*
-         * Each second read the value characteristic and display it in a human readable format.
-         */
-        while (true) {
-            byte[] tempRaw = tempValue.readValue();
-            System.out.print("Temp raw = {");
-            for (byte b : tempRaw) {
-                System.out.print(String.format("%02x,", b));
-            }
-            System.out.print("}");
-
-            /*
-             * The temperature service returns the data in an encoded format which can be found in the wiki. Convert the
-             * raw temperature format to celsius and print it. Conversion for object temperature depends on ambient
-             * according to wiki, but assume result is good enough for our purposes without conversion.
-             */
-            int objectTempRaw = (tempRaw[0] & 0xff) | (tempRaw[1] << 8);
-            int ambientTempRaw = (tempRaw[2] & 0xff) | (tempRaw[3] << 8);
-
-/*            float objectTempCelsius = convertCelsius(objectTempRaw);
-            float ambientTempCelsius = convertCelsius(ambientTempRaw);
-
-            System.out.println(
-                    String.format(" Temp: Object = %fC, Ambient = %fC", objectTempCelsius, ambientTempCelsius));
-*/
-            lock.lock();
-            try {
-                try {
-					cv.await(1, TimeUnit.SECONDS);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            } finally {
-                lock.unlock();
-            }
+        if(on) {
+        	byte[] config = { 0x01 };
+        	laserStatus.writeValue(config);
         }
- //       sensor.disconnect();
+        else
+        {
+        	byte[] config = { 0x00 };
+        	laserStatus.writeValue(config);
+        }
     }
 }
