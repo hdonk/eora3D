@@ -42,7 +42,9 @@ public class eora3D_bluetooth {
     public List<BluetoothDevice> devices = null;
     
     BluetoothDevice laser = null;
+    List<BluetoothGattService> laserServices = null;
     BluetoothDevice turntable = null;
+    List<BluetoothGattService> turntableServices = null;
     
     String UUID_laser_service = "534c4153-4552-2053-4552-564943452020";
     String UUID_laser_status = "4c415345-5220-5354-4154-555320202020";
@@ -146,6 +148,26 @@ public class eora3D_bluetooth {
         }
     }
     
+    BluetoothGattCharacteristic getLaserCharacteristic(String serviceUUID, String characteristicUUID)
+    {
+    	if(laserServices == null)
+    	{
+    		System.out.println("No laser services found");
+    		return null;
+    	}
+        for (BluetoothGattService service : laserServices) {
+            System.out.println("serviceUUID: " + service.getUUID());
+            if (service.getUUID().equals(serviceUUID)) {
+                for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                    System.out.println("characteristicUUID: " + characteristic.getUUID());
+                    if (characteristic.getUUID().equals(characteristicUUID))
+                        return characteristic;
+                }
+            }
+        } 
+        return null;
+    }
+    
     void setLaser(BluetoothDevice a_laser)
     {
     	if(laser != null)
@@ -153,6 +175,8 @@ public class eora3D_bluetooth {
     	laser = a_laser;
     	if(laser != null)
     		laser.connect();
+    	laserServices = laser.getServices();
+    	if(laserServices==null) System.out.println("No services?");
     }
     
     void setTurntable(BluetoothDevice a_turntable)
@@ -162,20 +186,22 @@ public class eora3D_bluetooth {
     	turntable = a_turntable;
     	if(turntable != null)
     		turntable.connect();
+    	turntableServices = laser.getServices();
     }
     
     void setLaserStatus(boolean on)
     {
     	if(laser == null) return;
         
-        BluetoothGattService laserService = null;
+/*        BluetoothGattService laserService = null;
+        
 		try {
 			laserService = getService(laser, UUID_laser_service);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
+		
         if (laserService == null) {
             System.err.println("This device does not have the laser service we are looking for.");
             return;
@@ -183,6 +209,8 @@ public class eora3D_bluetooth {
         System.out.println("Found laser service " + laserService.getUUID());
 
         BluetoothGattCharacteristic laserStatus = getCharacteristic(laserService, UUID_laser_status);
+*/
+        BluetoothGattCharacteristic laserStatus = getLaserCharacteristic(UUID_laser_service, UUID_laser_status);
 
         if (laserStatus==null)
         {
@@ -207,4 +235,51 @@ public class eora3D_bluetooth {
         	laserStatus.writeValue(config);
         }
     }
+
+	public void setLEDColour(int red, int green, int blue) {
+    	byte[] colour = { (byte) red, (byte) green, (byte) blue, 0 };
+    	if(laser == null) return;
+        BluetoothGattCharacteristic ledStatus = getLaserCharacteristic(UUID_laser_sled_service, UUID_laser_led_type);
+
+        if (ledStatus==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
+        }
+
+        System.out.println("Found the led status characteristic");
+        ledStatus.writeValue(colour);
+	}
+
+	public void setMotorPos(int a_pos) {
+    	byte[] l_pos = { (byte) (a_pos&0xff), (byte) ((a_pos&0xff00)>>8)};
+//    	byte[] l_pos = { (byte) ((a_pos&0xff00)>>8), (byte) (a_pos&0xff) };
+
+    	if(laser == null) return;
+        BluetoothGattCharacteristic motorIPOS = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_ipos);
+
+        if (motorIPOS==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
+        }
+
+        System.out.println("Found the motor ipos characteristic");
+        motorIPOS.writeValue(l_pos);
+	}
+
+	public void setMotorSpeed(int a_speed) {
+    	byte[] l_speed = { (byte) a_speed};
+    	if(laser == null) return;
+        BluetoothGattCharacteristic motorSpeed = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_speed);
+
+        if (motorSpeed==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
+        }
+
+        System.out.println("Found the motor speed characteristic");
+        motorSpeed.writeValue(l_speed);
+	}
 }

@@ -4,6 +4,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,29 +58,24 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 		getContentPane().add(camera_selector);
 		
 		JButton btnBluetoothRescan = new JButton("Bluetooth Rescan");
-		btnBluetoothRescan.setBounds(10, 257, 127, 23);
+		btnBluetoothRescan.setBounds(20, 258, 160, 23);
 		getContentPane().add(btnBluetoothRescan);
 		btnBluetoothRescan.addActionListener(this);
 		
 		JButton btnCameraRescan = new JButton("Camera Rescan");
-		btnCameraRescan.setBounds(147, 257, 116, 23);
+		btnCameraRescan.setBounds(189, 258, 160, 23);
 		getContentPane().add(btnCameraRescan);
 		btnCameraRescan.addActionListener(this);
 		
 		JButton btndScanning = new JButton("3D Scanning");
-		btndScanning.setBounds(273, 257, 116, 23);
+		btndScanning.setBounds(361, 258, 116, 23);
 		getContentPane().add(btndScanning);
 		btndScanning.addActionListener(this);
 		
-		JButton btnLaseron = new JButton("LASERON");
-		btnLaseron.setBounds(20, 292, 117, 25);
-		getContentPane().add(btnLaseron);
-		btnLaseron.addActionListener(this);
-		
-		JButton btnLaseroff = new JButton("LASEROFF");
-		btnLaseroff.setBounds(142, 292, 117, 25);
-		getContentPane().add(btnLaseroff);
-		btnLaseroff.addActionListener(this);
+		JButton btnLasertest = new JButton("Laser test");
+		btnLasertest.setBounds(20, 292, 117, 25);
+		getContentPane().add(btnLasertest);
+		btnLasertest.addActionListener(this);
 		
 		setSize(449+16, 320+64);
 		
@@ -134,18 +130,11 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 			Bluetooth_Rescan();
 			return;
 		}
-		if(e.getActionCommand()=="LASEROFF")
+		if(e.getActionCommand()=="Laser test")
 		{
 			if(m_e3D_bluetooth==null || laser==null) return;
-			m_e3D_bluetooth.setLaserStatus(false);
+			new eora3D_laser_controller(m_e3D_bluetooth).setVisible(true);
 			return;
 		}
-		if(e.getActionCommand()=="LASERON")
-		{
-			if(m_e3D_bluetooth==null || laser==null) return;
-			m_e3D_bluetooth.setLaserStatus(true);
-			return;
-		}
-		
 	}
 }
