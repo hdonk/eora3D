@@ -80,9 +80,7 @@ public class eora3D_bluetooth {
     }
 
     void getDevices() throws InterruptedException {
-        BluetoothManager manager = BluetoothManager.getBluetoothManager();
-        
-        devices = manager.getDevices();
+    	devices = manager.getDevices();
 
         for (BluetoothDevice device : devices) {
             printDevice(device);
@@ -139,10 +137,11 @@ public class eora3D_bluetooth {
 		}
        
         /*
-         * After we find the device we can stop looking for other devices.
+         * After we find the devices we can stop looking for other devices.
          */
         try {
             manager.stopDiscovery();
+            System.out.println("The discovery stopped");
         } catch (BluetoothException e) {
             System.err.println("Discovery could not be stopped.");
         }
@@ -168,6 +167,27 @@ public class eora3D_bluetooth {
         return null;
     }
     
+    BluetoothGattCharacteristic getTurntableCharacteristic(String serviceUUID, String characteristicUUID)
+    {
+    	if(turntableServices == null)
+    	{
+    		System.out.println("No turntable services found");
+    		return null;
+    	}
+        for (BluetoothGattService service : turntableServices) {
+            System.out.println("serviceUUID: " + service.getUUID());
+            if (service.getUUID().equals(serviceUUID)) {
+                for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
+                    System.out.println("characteristicUUID: " + characteristic.getUUID());
+                    if (characteristic.getUUID().equals(characteristicUUID))
+                        return characteristic;
+                }
+            }
+        }
+        System.out.println("No tt services");
+        return null;
+    }
+    
     void setLaser(BluetoothDevice a_laser)
     {
     	if(laser != null)
@@ -176,7 +196,7 @@ public class eora3D_bluetooth {
     	if(laser != null)
     		laser.connect();
     	laserServices = laser.getServices();
-    	if(laserServices==null) System.out.println("No services?");
+    	if(laserServices==null) System.out.println("No laser services?");
     }
     
     void setTurntable(BluetoothDevice a_turntable)
@@ -186,7 +206,8 @@ public class eora3D_bluetooth {
     	turntable = a_turntable;
     	if(turntable != null)
     		turntable.connect();
-    	turntableServices = laser.getServices();
+    	turntableServices = turntable.getServices();
+    	if(turntableServices==null) System.out.println("No turntable services?");
     }
     
     void setLaserStatus(boolean on)
@@ -281,5 +302,69 @@ public class eora3D_bluetooth {
 
         System.out.println("Found the motor speed characteristic");
         motorSpeed.writeValue(l_speed);
+	}
+
+	public void setTurntableMotorSpeed(int a_speed) {
+    	byte[] l_speed = { (byte) a_speed};
+    	if(turntable == null) return;
+        BluetoothGattCharacteristic motorSpeed = getTurntableCharacteristic(UUID_turntable_tmotor_service,
+        			UUID_turntable_motor_speed);
+
+        if (motorSpeed==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
+        }
+
+        System.out.println("Found the motor speed characteristic");
+        motorSpeed.writeValue(l_speed);
+	}
+
+	public void setTurntableMotorPos(int a_pos) {
+    	byte[] l_pos = { (byte) (a_pos&0xff), (byte) ((a_pos&0xff00)>>8)};
+
+    	if(turntable == null) return;
+        BluetoothGattCharacteristic motorIPOS = getTurntableCharacteristic(UUID_turntable_tmotor_service,
+        			UUID_turntable_motor_ipos);
+
+        if (motorIPOS==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
+        }
+
+        System.out.println("Found the motor ipos characteristic");
+        motorIPOS.writeValue(l_pos);
+	}
+
+	public void setTurntableMotorAccel(int a_accel) {
+    	byte[] l_accel = { (byte) a_accel};
+    	if(turntable == null) return;
+        BluetoothGattCharacteristic motorAccel = getTurntableCharacteristic(UUID_turntable_tmotor_service,
+        			UUID_turntable_motor_accel);
+
+        if (motorAccel==null)
+        {
+            System.err.println("Could not find the correct characteristic.");
+            return;
+        }
+
+        System.out.println("Found the motor accel characteristic");
+        motorAccel.writeValue(l_accel);
+	}
+
+	public void cleanup() {
+        if(laser!=null) laser.disconnect();
+        if(turntable!=null) turntable.disconnect();
+
+    	devices = manager.getDevices();
+
+    	System.out.println("Cleanup");
+        for (BluetoothDevice device : devices) {
+            printDevice(device);
+        	device.remove();
+        }
+        
+        manager = null;
 	}
 }

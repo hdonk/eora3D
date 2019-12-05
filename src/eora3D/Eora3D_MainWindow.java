@@ -8,13 +8,15 @@ import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import eora3D.eora3D_bluetooth;
 import tinyb.BluetoothDevice;
 
-public class Eora3D_MainWindow extends JDialog implements ActionListener {
+public class Eora3D_MainWindow extends JDialog implements ActionListener, WindowListener {
 	static eora3D_bluetooth m_e3D_bluetooth;
 	private JLabel laser_selector;
 	private BluetoothDevice laser = null;
@@ -77,7 +79,14 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 		getContentPane().add(btnLasertest);
 		btnLasertest.addActionListener(this);
 		
+		JButton btnTurntableTest = new JButton("Turntable test");
+		btnTurntableTest.setBounds(149, 292, 153, 25);
+		getContentPane().add(btnTurntableTest);
+		btnTurntableTest.addActionListener(this);
+		
 		setSize(449+16, 320+64);
+		
+		addWindowListener(this);
 		
 		setVisible(true);
 		
@@ -106,10 +115,8 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 					break;
 				}
 			}
-		}
-		if(m_e3D_bluetooth.devices!=null)
-		{
 			for (BluetoothDevice device : m_e3D_bluetooth.devices) {
+				System.out.println("Looking for turntable at "+device.getName());
 				if(device.getName().substring(0, 4).equals("E3DT"))
 				{
 					turntable_selector.setText(device.getName());
@@ -136,5 +143,52 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener {
 			new eora3D_laser_controller(m_e3D_bluetooth).setVisible(true);
 			return;
 		}
+		if(e.getActionCommand()=="Turntable test")
+		{
+			if(m_e3D_bluetooth==null || turntable==null) return;
+			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
+			return;
+		}
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		m_e3D_bluetooth.cleanup();
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
