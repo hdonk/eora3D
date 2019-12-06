@@ -177,7 +177,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="Turntable test")
 		{
 			if(m_e3D_bluetooth==null || turntable==null) return;
-			//new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
+			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
 			return;
 		} else
 		if(e.equals(this.camera_selector))
