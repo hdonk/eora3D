@@ -1,6 +1,7 @@
 package eora3D;
 
 import javax.swing.JDialog;
+
 import javax.swing.JLabel;
 
 import java.awt.Cursor;
@@ -10,11 +11,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JButton;
 import eora3D.eora3D_bluetooth;
 import tinyb.BluetoothDevice;
+
+import com.github.sarxos.webcam.Webcam;
 
 public class Eora3D_MainWindow extends JDialog implements ActionListener, WindowListener {
 	static eora3D_bluetooth m_e3D_bluetooth;
@@ -23,6 +27,9 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	private JLabel turntable_selector;
 	private BluetoothDevice turntable = null;
 	private JComboBox<String> camera_selector;
+	
+	List<Webcam> m_webcams = null;
+	private Webcam camera = null;
 	
 	public Eora3D_MainWindow()
 	{
@@ -84,6 +91,11 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		getContentPane().add(btnTurntableTest);
 		btnTurntableTest.addActionListener(this);
 		
+		JButton btnCalibration = new JButton("Calibration");
+		btnCalibration.setBounds(316, 292, 117, 25);
+		getContentPane().add(btnCalibration);
+		btnCalibration.addActionListener(this);
+		
 		setSize(449+16, 320+64);
 		
 		addWindowListener(this);
@@ -91,6 +103,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		setVisible(true);
 		
 		Bluetooth_Rescan();
+		Camera_Rescan();
 	}
 	
 	void Bluetooth_Rescan()
@@ -129,25 +142,54 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			}
 		}
 	}
+	
+	void Camera_Rescan()
+	{
+		camera_selector.removeAllItems();
+		m_webcams = Webcam.getWebcams();
+		for(Webcam webcam : m_webcams)
+		{
+			camera_selector.addItem(webcam.getName());
+		}
+		camera_selector.setSelectedItem(0);
+		camera = m_webcams.get(0);
+	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		
 		if(e.getActionCommand()=="Bluetooth Rescan")
 		{
 			Bluetooth_Rescan();
 			return;
-		}
+		} else
+		if(e.getActionCommand()=="Camera Rescan")
+		{
+			Camera_Rescan();
+			return;
+		} else
 		if(e.getActionCommand()=="Laser test")
 		{
 			if(m_e3D_bluetooth==null || laser==null) return;
 			new eora3D_laser_controller(m_e3D_bluetooth).setVisible(true);
 			return;
-		}
+		} else
 		if(e.getActionCommand()=="Turntable test")
 		{
 			if(m_e3D_bluetooth==null || turntable==null) return;
-			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
+			//new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
 			return;
+		} else
+		if(e.equals(this.camera_selector))
+		{
+			System.out.println("Selecting webcam");
+			camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
+		} else
+		if(e.getActionCommand()=="Calibration")
+		{
+			System.out.println("Camera is "+camera);
+			if(camera==null) return;
+			new eora3D_calibration(camera).setVisible(true);
 		}
 	}
 
