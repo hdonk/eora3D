@@ -8,9 +8,15 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 
 class PaintImage extends JPanel
 {
@@ -48,18 +54,29 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		getContentPane().add(image);
 		m_camera = a_camera;
 		
+		setSize(1300,900);
 		setModal(true);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// TODO Auto-generated method stub
 		if(e.getActionCommand()=="Capture")
 		{
 			BufferedImage l_image = m_camera.getImage();
 			l_image.flush();
+			
+			Mat input = new Mat(l_image.getHeight(), l_image.getWidth(), CvType.CV_8UC3);
+			byte data[] = ((DataBufferByte)l_image.getRaster().getDataBuffer()).getData();
+			input.put(0,  0,  data);
+			Mat grey = new Mat();
+			Imgproc.cvtColor(input,  grey,  Imgproc.COLOR_BGRA2GRAY);
+			Mat circles = new Mat();
+			Imgproc.HoughCircles(grey, circles, Imgproc.CV_HOUGH_GRADIENT, 2, 100, 100, 90, 0, 1000);
+			
+			System.out.println(String.valueOf("size: " + circles.cols()) + ", " + String.valueOf(circles.rows()) );
+			
 			image.m_image = l_image;
-			image.invalidate();
+			image.repaint();
 		}
 	}
 }

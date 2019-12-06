@@ -6,6 +6,7 @@ import javax.swing.JLabel;
 
 import java.awt.Cursor;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,6 +34,8 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	public Eora3D_MainWindow()
 	{
+		System.loadLibrary("opencv_java320");
+		
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
@@ -145,6 +148,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	void Camera_Rescan()
 	{
+		if(camera!=null)
+		{
+			camera.close();
+			camera=null;
+			System.gc();
+		}
 		camera_selector.removeAllItems();
 		m_webcams = Webcam.getWebcams();
 		for(Webcam webcam : m_webcams)
@@ -152,7 +161,16 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			camera_selector.addItem(webcam.getName());
 		}
 		camera_selector.setSelectedItem(0);
-		camera = m_webcams.get(0);
+		if(m_webcams.size()>0)
+		{
+			Dimension l_res[] = new Dimension[] {new Dimension(1280, 720)};
+			camera = m_webcams.get(0);
+			camera.setCustomViewSizes(l_res);
+			camera.setViewSize(new Dimension(1280,720));
+			camera.open();
+		}
+		else
+			camera = null;
 	}
 
 	@Override
@@ -182,8 +200,11 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		} else
 		if(e.equals(this.camera_selector))
 		{
+			if(camera!=null)
+				camera.close();
 			System.out.println("Selecting webcam");
 			camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
+			camera.isOpen();
 		} else
 		if(e.getActionCommand()=="Calibration")
 		{
@@ -201,13 +222,15 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 
 	@Override
 	public void windowClosing(WindowEvent e) {
+		System.out.println("Window closing");
 		m_e3D_bluetooth.cleanup();
+		System.out.println("Window closing done");
 	}
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
-		
+		System.out.println("Window closed");
+		System.exit(0);
 	}
 
 	@Override
