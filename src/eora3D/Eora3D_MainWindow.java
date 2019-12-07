@@ -34,8 +34,6 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	public Eora3D_MainWindow()
 	{
-		System.loadLibrary("opencv_java320");
-		
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
