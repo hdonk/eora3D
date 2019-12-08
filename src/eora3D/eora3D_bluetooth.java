@@ -6,6 +6,20 @@ import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.locks.*;
 import java.util.concurrent.TimeUnit;
+
+class ValueNotification implements BluetoothNotification<byte[]> {
+
+    public void run(byte[] tempRaw) {
+            System.out.print("ValueNotification raw = {");
+            for (byte b : tempRaw) {
+                System.out.print(String.format("%02x,", b));
+            }
+            System.out.print("}");
+    }
+
+}
+
+
 /*
  * EORA3D - TURRET
  * * SLASER SERVICE
@@ -45,6 +59,7 @@ public class eora3D_bluetooth {
     List<BluetoothGattService> laserServices = null;
     BluetoothDevice turntable = null;
     List<BluetoothGattService> turntableServices = null;
+    private BluetoothGattCharacteristic m_motorMMODE = null;
     
     String UUID_laser_service = "534c4153-4552-2053-4552-564943452020";
     String UUID_laser_status = "4c415345-5220-5354-4154-555320202020";
@@ -68,6 +83,7 @@ public class eora3D_bluetooth {
     String UUID_turntable_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
     String UUID_turntable_motor_accel = "4d4f544f-5220-4143-4345-4c2020202020";
     
+	
     public eora3D_bluetooth()
     {
     }
@@ -195,8 +211,23 @@ public class eora3D_bluetooth {
     	laser = a_laser;
     	if(laser != null)
     		laser.connect();
+    	// Wait for connect
     	laserServices = laser.getServices();
-    	if(laserServices==null) System.out.println("No laser services?");
+    	if(laserServices==null)
+		{
+    		System.out.println("No laser services?");
+    		return;
+		}
+        m_motorMMODE = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_mmode);
+
+        if (m_motorMMODE==null)
+        {
+            System.err.println("Could not find the correct characteristic for MMODE.");
+            return;
+        }
+
+        m_motorMMODE.enableValueNotifications(new ValueNotification());
+    	
     }
     
     void setTurntable(BluetoothDevice a_turntable)
@@ -277,7 +308,8 @@ public class eora3D_bluetooth {
 //    	byte[] l_pos = { (byte) ((a_pos&0xff00)>>8), (byte) (a_pos&0xff) };
 
     	if(laser == null) return;
-        BluetoothGattCharacteristic motorIPOS = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_ipos);
+    	
+    	BluetoothGattCharacteristic motorIPOS = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_ipos);
 
         if (motorIPOS==null)
         {
