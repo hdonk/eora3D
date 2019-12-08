@@ -27,6 +27,76 @@ import javax.swing.JTextField;
 import javax.imageio.ImageIO;
 import java.awt.*;
 
+class CalibrationData
+{
+	// mm
+	public double board_w = 160.0f;
+	public double board_h = 220.0f;
+	public double spot_r = 2.0f;
+	public double spot_sep_w = 130.0f;
+	public double spot_sep_h = 191.0f;
+	
+	// Calculation inputs
+	// pixels
+	public int capture_w = 1280;
+	public int capture_h = 720;
+	
+	private double cal_pos_1_per = 0.90f;
+	private double cal_pos_2_per = 0.70f;
+	
+	// Calculation outputs
+	public Rectangle pos_1_tl;
+	public Rectangle pos_1_tr;
+	public Rectangle pos_1_bl;
+	public Rectangle pos_1_br;
+
+	public Rectangle pos_2_tl;
+	public Rectangle pos_2_tr;
+	public Rectangle pos_2_bl;
+	public Rectangle pos_2_br;
+	
+	public Rectangle pos_1_board;
+	public Rectangle pos_2_board;
+	
+	void calculate()
+	{
+		if(capture_w > capture_h) // landscape
+		{
+			double target_h = ((double)capture_h * cal_pos_1_per);
+			double target_w = (target_h/board_h)*board_w;
+			pos_1_board = new Rectangle();
+			pos_1_board.height = (int)target_h;
+			pos_1_board.width = (int)target_w;
+			pos_1_board.x = (capture_w-pos_1_board.width)/2;
+			pos_1_board.y = (capture_h-pos_1_board.height)/2;
+			
+			pos_1_tl = new Rectangle();
+			pos_1_tl.width = (int)(((target_w/board_w)*spot_r))*2;
+			pos_1_tl.height = (int)(((target_h/board_h)*spot_r))*2;
+			pos_1_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_1_tl.width;
+			pos_1_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_1_tl.height;
+
+			pos_1_tr = new Rectangle();
+			pos_1_tr.width = pos_1_tl.width;
+			pos_1_tr.height = pos_1_tl.height;
+			pos_1_tr.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
+			pos_1_tr.y = pos_1_tl.y;
+
+			pos_1_bl = new Rectangle();
+			pos_1_bl.width = pos_1_tl.width;
+			pos_1_bl.height = pos_1_tl.height;
+			pos_1_bl.x = pos_1_tl.x;
+			pos_1_bl.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2;
+
+			pos_1_br = new Rectangle();
+			pos_1_br.width = pos_1_tl.width;
+			pos_1_br.height = pos_1_tl.height;
+			pos_1_br.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
+			pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2;
+		}
+	}
+}
+
 class CircleDetection {
     private BufferedImage grey;
     private int[][] sobelX;
@@ -334,6 +404,7 @@ class PaintImage extends JPanel
   public BufferedImage m_image = null;
   public BufferedImage m_overlay = null;
   //public Mat circles;
+  public CalibrationData m_cal_data = null;
  
   public PaintImage ()
   {
@@ -345,6 +416,45 @@ class PaintImage extends JPanel
 	  if(m_image == null) return;
     g.drawImage(m_image, 0, 0, null);
     if(m_overlay != null) g.drawImage(m_overlay, 0, 0, null);
+    
+    g.setColor(Color.blue);
+    
+    g.drawRect(
+    		m_cal_data.pos_1_board.x,
+    		m_cal_data.pos_1_board.y,
+    		m_cal_data.pos_1_board.width,
+    		m_cal_data.pos_1_board.height
+    		);
+    g.drawRect(
+    		0,
+    		0,
+    		m_cal_data.capture_w,
+    		m_cal_data.capture_h
+    		);
+    g.drawOval(
+    		m_cal_data.pos_1_tl.x,
+    		m_cal_data.pos_1_tl.y,
+    		m_cal_data.pos_1_tl.width,
+    		m_cal_data.pos_1_tl.height
+    		);
+    g.drawOval(
+    		m_cal_data.pos_1_tr.x,
+    		m_cal_data.pos_1_tr.y,
+    		m_cal_data.pos_1_tr.width,
+    		m_cal_data.pos_1_tr.height
+    		);
+    g.drawOval(
+    		m_cal_data.pos_1_bl.x,
+    		m_cal_data.pos_1_bl.y,
+    		m_cal_data.pos_1_bl.width,
+    		m_cal_data.pos_1_bl.height
+    		);
+    g.drawOval(
+    		m_cal_data.pos_1_br.x,
+    		m_cal_data.pos_1_br.y,
+    		m_cal_data.pos_1_br.width,
+    		m_cal_data.pos_1_br.height
+    		);
 /*    if(circles!=null)
     {
 	   if (circles.cols() > 0) {
@@ -373,6 +483,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 	private JTextField txtMinRad;
 	private JTextField txtMaxRad;
 	private BufferedImage capturedImage = null;
+	private CalibrationData m_cal_data;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -384,7 +495,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		btnCapture.addActionListener(this);
 		
 		image = new PaintImage();
-		image.setBounds(12, 12, 1042, 732);
+		image.setBounds(12, 12, 1300, 732);
 		getContentPane().add(image);
 		
 		JLabel lblResRatio = new JLabel("Threshold");
@@ -435,7 +546,21 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		m_camera = a_camera;
 		
 		setSize(1300,900);
+		
+		calculateCalibrationPositions();
+		
 		setModal(true);
+	}
+
+	private void calculateCalibrationPositions() {
+		m_cal_data = new CalibrationData();
+		
+		m_cal_data.capture_w = (int)m_camera.getViewSize().getWidth();
+		m_cal_data.capture_h = (int)m_camera.getViewSize().getHeight();
+		
+		m_cal_data.calculate();
+		
+		image.m_cal_data = m_cal_data;
 	}
 
 	@Override
