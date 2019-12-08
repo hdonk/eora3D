@@ -101,6 +101,8 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		
 		addWindowListener(this);
 		
+		setTitle("Eora3D Scanner");
+		
 		setVisible(true);
 		
 		Bluetooth_Rescan();
