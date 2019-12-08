@@ -102,7 +102,7 @@ class CircleDetection {
     private int[][] sobelX;
     private int[][] sobelY;
     private double[][] sobelTotal;
-    public int threshold = 300;
+    public int threshold = 280;
 	public int[][][] A;
 	
 	int minr = 10;
@@ -110,9 +110,14 @@ class CircleDetection {
 	
 	BufferedImage displayimage = null;
 	public int minHits = 200;
+	
+	Rectangle searcharea = null;
+	private BufferedImage totalCircles;
 
-    void detect(BufferedImage image) throws Exception{
+    void detect(BufferedImage image, Rectangle a_searcharea) throws Exception{
 
+    	searcharea = a_searcharea;
+    	
         //runs the required processes for circle detection, ie sobel edge detection
         toGrayScale(image);
         edgeDetection();
@@ -136,16 +141,16 @@ class CircleDetection {
 
         BufferedImage total = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
         double max = 0;
-        for(int i = 0; i< grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight(); j++){
+        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
+            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
                 if(sobelTotal[i][j]>max){
                     max = sobelTotal[i][j];
                 }
             }
         }
         //displayimage = total;
-      for(int i = 0; i< grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight(); j++){
+      for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
+            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
                 //maps every pixel to a grayscale value between 0 and 255 from between 0 and the max value in sobelTotal
                 int rgb = new Color((int)map(sobelTotal[i][j], 0,max,0,255),
                         (int)map(sobelTotal[i][j], 0,max,0,255),
@@ -157,7 +162,7 @@ class CircleDetection {
         //displayimage = total;
         
         //outputs an image showing every pixel that is above the threshold
-/*        BufferedImage totalColour = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        BufferedImage totalColour = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_INT_ARGB);
         for(int i = 0; i < grey.getWidth(); i++) {
         	for(int j = 0; j < grey.getHeight(); j++) {
         		Color c1 = new Color(0,255,0);
@@ -166,9 +171,9 @@ class CircleDetection {
         		}
         	}
         }
-        displayimage = totalColour;*/
+        //displayimage = totalColour;
         
-        circleDetection(total);
+        //circleDetection(total);
     }
 
     //maps the given value between startCoord1 and endCoord1 to a value between startCoord2 and endCoord2
@@ -210,8 +215,8 @@ class CircleDetection {
         base[2][2] = 1;
 
 
-        for(int i = 0; i<grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight();j++){
+        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
+            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
                 sobelX[i][j] = getSobelResult(i,j,base);
             }
         }
@@ -233,8 +238,8 @@ class CircleDetection {
         base[2][2] = 1;
 
 
-        for(int i = 0; i<grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight();j++){
+        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
+            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
                 sobelY[i][j] = getSobelResult(i,j,base);
             }
         }
@@ -307,46 +312,34 @@ class CircleDetection {
     //performs the algorithm to combine the horizontal sweep and vertical sweep
     private void combineSobel(){
         sobelTotal = new double[grey.getWidth()][grey.getHeight()];
-        for(int i = 0; i <grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight(); j++){
+        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
+            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
                 sobelTotal[i][j] = Math.round(Math.sqrt(Math.pow((double)sobelX[i][j],2) + Math.pow((double)sobelY[i][j],2)));
             }
         }
     }
+
+    void initTotalCircles(BufferedImage image)
+    {
+    	totalCircles = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    	
+    }
     
-    private void circleDetection(BufferedImage image) throws Exception {
-        //sets the radius relative to 1/6 of the smallest side of the image, helps reduce space taken in memory during
-        //runtime
+    Rectangle findFirstCircle(BufferedImage image) throws Exception 
+    {
         int radius = maxr;
-/*        if (image.getHeight() < image.getWidth()) {
-            radius = image.getHeight() / 6;
-        } else {
-            radius = image.getWidth() / 6;
-        }*/
         A = new int[image.getWidth()][image.getHeight()][radius];
 
-//        BufferedImage newImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         for (int rad = 0; rad < radius; rad++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = searcharea.x; x < searcharea.x+searcharea.width; x++) {
+                for (int y = searcharea.y; y < searcharea.y+searcharea.height; y++) {
                     //if the given pixel is above the threshold, a circle will be drawn at radius rad around it and if it
                     //is a valid coordinate it will be accumulated in the A array and plotted in the pointSpace image
                     if (sobelTotal[x][y] > threshold) {
-//                    	System.out.println("Circle @ ("+x+","+y+") r="+rad);
                         for (int t = 0; t <= 360; t++) {
                             Integer a = (int) Math.floor(x - rad * Math.cos(t * Math.PI / 180));
                             Integer b = (int) Math.floor(y - rad * Math.sin(t * Math.PI / 180));
                             if (!((0 > a || a > image.getWidth() - 1) || (0 > b || b > image.getHeight() - 1))) {
-/*                                Color c = new Color(newImage.getRGB(a, b));
-                                Color c1;
-                                if (c.getBlue() == 255) {
-                                    c1 = new Color(c.getRed(), c.getGreen() + 1, 0);
-                                } else if (c.getGreen() == 255) {
-                                    c1 = new Color(c.getRed() + 1, 0, c.getBlue());
-                                } else {
-                                    c1 = new Color(c.getRed(), c.getGreen(), c.getBlue() + 1);
-                                }
-                                newImage.setRGB(a, b, c1.getRGB());*/
                                 if (!(a.equals(x) && b.equals(y))) {
                                    A[a][b][rad] += 1;
                                 }
@@ -356,27 +349,28 @@ class CircleDetection {
                 }
             }
         }
-        //displayimage = newImage;
 
-        BufferedImage totalCircles = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_INT_ARGB);
+        if(totalCircles == null) initTotalCircles(image);
+        displayimage = totalCircles;
         Graphics2D g = totalCircles.createGraphics();
         g.setColor(Color.RED);
 
         System.out.println("Looking for potential centers");
-        for (int x = 0; x < image.getWidth(); x++) {
-            for (int y = 0; y < image.getHeight(); y++) {
+        for (int x = searcharea.x; x < searcharea.x+searcharea.width; x++) {
+            for (int y = searcharea.y; y < searcharea.y+searcharea.height; y++) {
                 for (int r = minr; r < maxr; r++) {
                     if (A[x][y][r] > minHits) {
                         double a =  x - r * Math.cos(0 * Math.PI / 180);
                         double b =  y - r * Math.sin(90 * Math.PI / 180);
                         g.drawOval((int)a,(int)b,2*r,2*r);
                         System.out.println("A "+A[x][y][r]+ "("+x+","+y+") r="+r);
+                        return new Rectangle(x, y, r, r);
 //                        break;
                     }
                 }
             }
         }
-        displayimage = totalCircles;
+        return null;
     }
 
     //changes the brightness of an image by the factor given
@@ -437,11 +431,23 @@ class PaintImage extends JPanel
     		m_cal_data.pos_1_tl.width,
     		m_cal_data.pos_1_tl.height
     		);
+    g.drawRect(
+    		m_cal_data.pos_1_tl.x-10,
+    		m_cal_data.pos_1_tl.y-10,
+    		m_cal_data.pos_1_tl.width+20,
+    		m_cal_data.pos_1_tl.height+20
+    		);
     g.drawOval(
     		m_cal_data.pos_1_tr.x,
     		m_cal_data.pos_1_tr.y,
     		m_cal_data.pos_1_tr.width,
     		m_cal_data.pos_1_tr.height
+    		);
+    g.drawRect(
+    		m_cal_data.pos_1_tr.x-10,
+    		m_cal_data.pos_1_tr.y-10,
+    		m_cal_data.pos_1_tr.width+20,
+    		m_cal_data.pos_1_tr.height+20
     		);
     g.drawOval(
     		m_cal_data.pos_1_bl.x,
@@ -449,11 +455,23 @@ class PaintImage extends JPanel
     		m_cal_data.pos_1_bl.width,
     		m_cal_data.pos_1_bl.height
     		);
+    g.drawRect(
+    		m_cal_data.pos_1_bl.x-10,
+    		m_cal_data.pos_1_bl.y-10,
+    		m_cal_data.pos_1_bl.width+20,
+    		m_cal_data.pos_1_bl.height+20
+    		);
     g.drawOval(
     		m_cal_data.pos_1_br.x,
     		m_cal_data.pos_1_br.y,
     		m_cal_data.pos_1_br.width,
     		m_cal_data.pos_1_br.height
+    		);
+    g.drawRect(
+    		m_cal_data.pos_1_br.x-10,
+    		m_cal_data.pos_1_br.y-10,
+    		m_cal_data.pos_1_br.width+20,
+    		m_cal_data.pos_1_br.height+20
     		);
 /*    if(circles!=null)
     {
@@ -503,7 +521,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		getContentPane().add(lblResRatio);
 		
 		txtThreshold = new JTextField();
-		txtThreshold.setText("300");
+		txtThreshold.setText("280");
 		txtThreshold.setBounds(320, 754, 114, 19);
 		getContentPane().add(txtThreshold);
 		txtThreshold.setColumns(10);
@@ -588,8 +606,48 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 			l_cd.maxr = Integer.parseInt(txtMaxRad.getText());
 
 			try {
+				l_cd.initTotalCircles(capturedImage);
 				System.out.println("Detecting circles");
-				l_cd.detect(capturedImage);
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_1_tl.x-10,
+					    		m_cal_data.pos_1_tl.y-10,
+					    		m_cal_data.pos_1_tl.width+20,
+					    		m_cal_data.pos_1_tl.height+20
+								));
+				l_cd.findFirstCircle(
+						capturedImage
+						);
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_1_tr.x-10,
+					    		m_cal_data.pos_1_tr.y-10,
+					    		m_cal_data.pos_1_tr.width+20,
+					    		m_cal_data.pos_1_tr.height+20
+								));
+				l_cd.findFirstCircle(
+						capturedImage
+						);
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_1_bl.x-10,
+					    		m_cal_data.pos_1_bl.y-10,
+					    		m_cal_data.pos_1_bl.width+20,
+					    		m_cal_data.pos_1_bl.height+20
+								));
+				l_cd.findFirstCircle(
+						capturedImage
+						);
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_1_br.x-10,
+					    		m_cal_data.pos_1_br.y-10,
+					    		m_cal_data.pos_1_br.width+20,
+					    		m_cal_data.pos_1_br.height+20
+								));
+				l_cd.findFirstCircle(
+						capturedImage
+						);
 				System.out.println("Detection complete");
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
