@@ -8,13 +8,57 @@ import java.util.concurrent.locks.*;
 import java.util.concurrent.TimeUnit;
 
 class ValueNotification implements BluetoothNotification<byte[]> {
+	String m_lock;
+	boolean complete = true;
+	
+	ValueNotification()
+	{
+		super();
+		m_lock = new String();
+	}
+	
+	void unsetcomplete()
+	{
+		synchronized(m_lock)
+		{
+			complete = false;
+		}
+	}
 
-    public void run(byte[] tempRaw) {
-            System.out.print("ValueNotification raw = {");
-            for (byte b : tempRaw) {
-                System.out.print(String.format("%02x,", b));
-            }
-            System.out.print("}");
+	boolean waitforcomplete(int timeout)
+	{
+		while(!complete)
+		{
+			synchronized(m_lock)
+			{
+				try {
+					m_lock.wait(timeout);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					continue;
+				}
+				if(!complete) return false;
+			}
+		}
+		return true;
+	}
+	
+    public void run(byte[] tempRaw)
+    {
+        System.out.print("ValueNotification raw = {");
+        for (byte b : tempRaw) {
+            System.out.print(String.format("%02x,", b));
+        }
+        System.out.print("}");
+        if(tempRaw[0] == 1)
+        {
+        	synchronized(m_lock)
+        	{
+        		complete = true;
+        		m_lock.notifyAll();
+        	}
+    	}
     }
 
 }
@@ -82,6 +126,7 @@ public class eora3D_bluetooth {
     String UUID_turntable_motor_smode = "4d4f544f-5220-534d-4f44-452020202020";
     String UUID_turntable_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
     String UUID_turntable_motor_accel = "4d4f544f-5220-4143-4345-4c2020202020";
+	private ValueNotification m_motorNotification;
     
 	
     public eora3D_bluetooth()
@@ -204,11 +249,12 @@ public class eora3D_bluetooth {
         return null;
     }
     
-    void setLaser(BluetoothDevice a_laser)
+    boolean setLaser(BluetoothDevice a_laser)
     {
     	if(laser != null)
     		laser.disconnect();
     	laser = a_laser;
+
     	if(laser != null)
     		laser.connect();
     	// Wait for connect
@@ -216,18 +262,23 @@ public class eora3D_bluetooth {
     	if(laserServices==null)
 		{
     		System.out.println("No laser services?");
-    		return;
+    		return false;
 		}
         m_motorMMODE = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_mmode);
 
         if (m_motorMMODE==null)
         {
             System.err.println("Could not find the correct characteristic for MMODE.");
-            return;
+            laserServices = null;
+            laser.disconnect();
+            laser = null;
+            return false;
         }
 
-        m_motorMMODE.enableValueNotifications(new ValueNotification());
-    	
+        m_motorNotification = new ValueNotification();
+        m_motorMMODE.enableValueNotifications(m_motorNotification);
+
+        return true;
     }
     
     void setTurntable(BluetoothDevice a_turntable)
@@ -318,7 +369,12 @@ public class eora3D_bluetooth {
         }
 
         System.out.println("Found the motor ipos characteristic");
+        m_motorNotification.unsetcomplete();
         motorIPOS.writeValue(l_pos);
+        if(!m_motorNotification.waitforcomplete(10000))
+        {
+        	System.out.println("Motor move not completed in 5 seconds.");
+        }
 	}
 
 	public void setMotorSpeed(int a_speed) {
