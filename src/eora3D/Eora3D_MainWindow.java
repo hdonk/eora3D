@@ -125,7 +125,13 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				{
 					laser_selector.setText(device.getName());
 					laser = device;
-					m_e3D_bluetooth.setLaser(laser);
+					if(!m_e3D_bluetooth.setLaser(laser))
+					{
+						System.out.println("Not connected to laser successfully");
+						laser_selector.setText("Not found");
+						laser = null;
+						return;
+					}
 			        System.out.print("Found laser: ");
 			        eora3D_bluetooth.printDevice(laser);
 					break;
