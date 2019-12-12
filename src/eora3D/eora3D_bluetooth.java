@@ -354,18 +354,18 @@ public class eora3D_bluetooth {
         ledStatus.writeValue(colour);
 	}
 
-	public void setMotorPos(int a_pos) {
+	public boolean setMotorPos(int a_pos) {
     	byte[] l_pos = { (byte) (a_pos&0xff), (byte) ((a_pos&0xff00)>>8)};
 //    	byte[] l_pos = { (byte) ((a_pos&0xff00)>>8), (byte) (a_pos&0xff) };
 
-    	if(laser == null) return;
+    	if(laser == null) return false;
     	
     	BluetoothGattCharacteristic motorIPOS = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_ipos);
 
         if (motorIPOS==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the motor ipos characteristic");
@@ -373,8 +373,10 @@ public class eora3D_bluetooth {
         motorIPOS.writeValue(l_pos);
         if(!m_motorNotification.waitforcomplete(10000))
         {
-        	System.out.println("Motor move not completed in 5 seconds.");
+        	System.out.println("Motor move not completed in 10 seconds.");
+        	return false;
         }
+        return true;
 	}
 
 	public void setMotorSpeed(int a_speed) {

@@ -57,7 +57,7 @@ class extensionFileFilter extends javax.swing.filechooser.FileFilter {
 	}
 }
 public class Eora3D_MainWindow extends JDialog implements ActionListener, WindowListener {
-	static eora3D_bluetooth m_e3D_bluetooth;
+	static public eora3D_bluetooth m_e3D_bluetooth;
 	private JLabel laser_selector;
 	private BluetoothDevice laser = null;
 	private JLabel turntable_selector;
@@ -66,7 +66,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	List<Webcam> m_webcams = null;
 	private Webcam camera = null;
-	private eora3D_configuration_data_v1 m_e3d_config;
+	static eora3D_configuration_data_v1 m_e3d_config;
 	
 	public Eora3D_MainWindow()
 	{
@@ -135,7 +135,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		getContentPane().add(btnCalibration);
 		btnCalibration.addActionListener(this);
 		
-		setSize(449+16, 320+64);
+		setSize(449+16, 320+64+32);
 		
 		addWindowListener(this);
 		
@@ -190,8 +190,9 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		mntmSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser l_fc;
-				l_fc = new JFileChooser(System.getProperty("user.home"));
+				l_fc = new JFileChooser(m_e3d_config.sm_config_file);
 				l_fc.setFileFilter(new extensionFileFilter("e3d"));
+				l_fc.setSelectedFile(m_e3d_config.sm_config_file);
 				int l_ret = l_fc.showSaveDialog(getParent());
 
 				if (l_ret == JFileChooser.APPROVE_OPTION) {
