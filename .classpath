@@ -6,17 +6,17 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/tinyb.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/slf4j-simple-2.0.0-alpha1.jar">
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/slf4j-simple-2.0.0-alpha1.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/webcam-capture-0.3.12.jar"/>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/tinyb.jar">
+		<attributes>
+			<attribute name="module" value="true"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/nickh/eclipse/workspace/eora3D/libs"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/webcam-capture-0.3.12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

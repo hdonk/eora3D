@@ -697,7 +697,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 			JOptionPane.showMessageDialog(getContentPane(), "Failed", "Creating scanned imag store", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(a_start))
+		if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(a_start-1))
 		{
 			return;
 		}
@@ -719,6 +719,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 			l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+l_pos+".png");
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
 			{
+				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 				return;
 			}
 			l_image = m_camera.getImage();
@@ -729,8 +730,10 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 				return;
 			}
 		}
+		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 	}
 }
