@@ -135,7 +135,7 @@ public class eora3D_laser_controller extends JDialog implements ActionListener {
 		{
 			int l_pos = Integer.parseInt(motorPos.getText());
 			if(l_pos<0) l_pos = 0;
-			if(l_pos>0x2300) l_pos = 0x2300;
+			if(l_pos>9500) l_pos = 9500;
 			motorPos.setText(Integer.toString(l_pos));
 			m_eora3D_bluetooth.setMotorPos(l_pos);
 			System.out.println("Motor move complete");
