@@ -65,7 +65,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	private JComboBox<String> camera_selector;
 	
 	List<Webcam> m_webcams = null;
-	private Webcam camera = null;
+	public Webcam m_camera = null;
 	static eora3D_configuration_data_v1 m_e3d_config;
 	
 	public Eora3D_MainWindow()
@@ -274,10 +274,10 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	void Camera_Rescan()
 	{
-		if(camera!=null)
+		if(m_camera!=null)
 		{
-			camera.close();
-			camera=null;
+			m_camera.close();
+			m_camera=null;
 			System.gc();
 		}
 		camera_selector.removeAllItems();
@@ -290,13 +290,13 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(m_webcams.size()>0)
 		{
 			Dimension l_res[] = new Dimension[] {new Dimension(1280, 720)};
-			camera = m_webcams.get(0);
-			camera.setCustomViewSizes(l_res);
-			camera.setViewSize(new Dimension(1280,720));
-			camera.open();
+			m_camera = m_webcams.get(0);
+			m_camera.setCustomViewSizes(l_res);
+			m_camera.setViewSize(new Dimension(1280,720));
+			m_camera.open();
 		}
 		else
-			camera = null;
+			m_camera = null;
 	}
 
 	@Override
@@ -326,17 +326,17 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		} else
 		if(e.equals(this.camera_selector))
 		{
-			if(camera!=null)
-				camera.close();
+			if(m_camera!=null)
+				m_camera.close();
 			System.out.println("Selecting webcam");
-			camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
-			camera.isOpen();
+			m_camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
+			m_camera.isOpen();
 		} else
 		if(e.getActionCommand()=="Calibration")
 		{
-			System.out.println("Camera is "+camera);
-			if(camera==null) return;
-			new eora3D_calibration(camera).setVisible(true);
+			System.out.println("Camera is "+m_camera);
+			if(m_camera==null) return;
+			new eora3D_calibration(m_camera).setVisible(true);
 		}
 	}
 
