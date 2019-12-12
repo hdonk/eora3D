@@ -10,6 +10,8 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.RescaleOp;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -18,6 +20,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;*/
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 
@@ -560,10 +563,15 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		getContentPane().add(btnCircles);
 		btnCircles.addActionListener(this);
 		
+		JButton btnScan = new JButton("Scan");
+		btnScan.setBounds(12, 849, 91, 25);
+		getContentPane().add(btnScan);
+		btnScan.addActionListener(this);
+		
 		
 		m_camera = a_camera;
 		
-		setSize(1300,900);
+		setSize(1300,957);
 		
 		calculateCalibrationPositions();
 		
@@ -672,6 +680,57 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 					Integer.parseInt(txtMaxRad.getText()));
 			System.out.println("Detection complete");
 */
+		} else
+		if(e.getActionCommand()=="Scan")
+		{
+			captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset,
+					Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90,
+					Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/2);
+		}
+	}
+	
+	void captureScanChain(int a_start, int a_end, int a_stepsize)
+	{
+		if(!Eora3D_MainWindow.m_e3d_config.sm_image_dir.isDirectory())
+			if(!Eora3D_MainWindow.m_e3d_config.sm_image_dir.mkdir())
+		{
+			JOptionPane.showMessageDialog(getContentPane(), "Failed", "Creating scanned imag store", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
+		if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(a_start))
+		{
+			return;
+		}
+		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+		BufferedImage l_image = m_camera.getImage();
+		l_image.flush();
+
+		try {
+			ImageIO.write(l_image, "png", l_outfile);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			return;
+		}
+		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
+		for(int l_pos = a_start; l_pos < a_end; l_pos += a_stepsize)
+		{
+			l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+l_pos+".png");
+			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
+			{
+				return;
+			}
+			l_image = m_camera.getImage();
+			l_image.flush();
+
+			try {
+				ImageIO.write(l_image, "png", l_outfile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
 		}
 	}
 }
