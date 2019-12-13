@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.RescaleOp;
@@ -29,6 +31,7 @@ import javax.swing.JTextField;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
+import javax.swing.JScrollBar;
 
 class CalibrationData
 {
@@ -43,6 +46,7 @@ class CalibrationData
 	// pixels
 	public int capture_w = 1280;
 	public int capture_h = 720;
+	public int h_offset = 0;
 	
 	private double cal_pos_1_per = 0.90f;
 	private double cal_pos_2_per = 0.70f;
@@ -61,6 +65,8 @@ class CalibrationData
 	public Rectangle pos_1_board;
 	public Rectangle pos_2_board;
 	
+	public int h_offset_minmax = 0;
+	
 	void calculate()
 	{
 		if(capture_w > capture_h) // landscape
@@ -69,15 +75,16 @@ class CalibrationData
 			double target_w = (target_h/board_h)*board_w;
 			pos_1_board = new Rectangle();
 			pos_1_board.height = (int)target_h;
+			h_offset_minmax = (capture_h - (int)target_h)/2;
 			pos_1_board.width = (int)target_w;
 			pos_1_board.x = (capture_w-pos_1_board.width)/2;
-			pos_1_board.y = (capture_h-pos_1_board.height)/2;
+			pos_1_board.y = (capture_h-pos_1_board.height)/2 + h_offset;
 			
 			pos_1_tl = new Rectangle();
 			pos_1_tl.width = (int)(((target_w/board_w)*spot_r))*2;
 			pos_1_tl.height = (int)(((target_h/board_h)*spot_r))*2;
 			pos_1_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_1_tl.width;
-			pos_1_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_1_tl.height;
+			pos_1_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_1_tl.height + h_offset;
 
 			pos_1_tr = new Rectangle();
 			pos_1_tr.width = pos_1_tl.width;
@@ -89,13 +96,13 @@ class CalibrationData
 			pos_1_bl.width = pos_1_tl.width;
 			pos_1_bl.height = pos_1_tl.height;
 			pos_1_bl.x = pos_1_tl.x;
-			pos_1_bl.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2;
+			pos_1_bl.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + h_offset*2;
 
 			pos_1_br = new Rectangle();
 			pos_1_br.width = pos_1_tl.width;
 			pos_1_br.height = pos_1_tl.height;
 			pos_1_br.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
-			pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2;
+			pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + h_offset*2;
 		}
 	}
 }
@@ -497,7 +504,7 @@ class PaintImage extends JPanel
   }
 }
 
-public class eora3D_calibration extends JDialog implements ActionListener {
+public class eora3D_calibration extends JDialog implements ActionListener, AdjustmentListener {
 	private Webcam m_camera;
 	private PaintImage image;
 	private JTextField txtThreshold;
@@ -507,6 +514,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 	private BufferedImage capturedImage = null;
 	private CalibrationData m_cal_data;
 	private JTextField txtCalibImg;
+	private JScrollBar sbHeightOffset;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -573,6 +581,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		JButton btnDetect = new JButton("Detect");
 		btnDetect.setBounds(12, 886, 117, 25);
 		getContentPane().add(btnDetect);
+		btnDetect.addActionListener(this);
 		
 		txtCalibImg = new JTextField();
 		txtCalibImg.setText("3600");
@@ -583,7 +592,17 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		JLabel lblCompareimg = new JLabel("Compare Image Number");
 		lblCompareimg.setBounds(133, 891, 179, 15);
 		getContentPane().add(lblCompareimg);
-		btnDetect.addActionListener(this);
+		
+		sbHeightOffset = new JScrollBar();
+		sbHeightOffset.setMaximum(0);
+		sbHeightOffset.setOrientation(JScrollBar.HORIZONTAL);
+		sbHeightOffset.setBounds(571, 754, 221, 17);
+		getContentPane().add(sbHeightOffset);
+		sbHeightOffset.addAdjustmentListener(this);
+		
+		JLabel lblHeightOffset = new JLabel("Vertical offset");
+		lblHeightOffset.setBounds(462, 756, 102, 15);
+		getContentPane().add(lblHeightOffset);
 		
 		
 		m_camera = a_camera;
@@ -596,7 +615,8 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 	}
 
 	private void calculateCalibrationPositions() {
-		m_cal_data = new CalibrationData();
+		if(m_cal_data == null)
+			m_cal_data = new CalibrationData();
 		
 		m_cal_data.capture_w = (int)m_camera.getViewSize().getWidth();
 		m_cal_data.capture_h = (int)m_camera.getViewSize().getHeight();
@@ -604,6 +624,10 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		m_cal_data.calculate();
 		
 		image.m_cal_data = m_cal_data;
+		
+		sbHeightOffset.setMinimum(-m_cal_data.h_offset_minmax);
+		sbHeightOffset.setMaximum(m_cal_data.h_offset_minmax);
+
 	}
 
 	@Override
@@ -823,5 +847,17 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 			}
 		}
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+	}
+
+	@Override
+	public void adjustmentValueChanged(AdjustmentEvent e) {
+		if(e.getSource().equals(sbHeightOffset))
+		{
+//			System.out.println("Scrollbar at "+sbHeightOffset.getValue());
+			m_cal_data.h_offset = sbHeightOffset.getValue();
+			calculateCalibrationPositions();
+			image.repaint();
+		}
+		
 	}
 }
