@@ -411,6 +411,7 @@ class PaintImage extends JPanel
   public void paintComponent(Graphics g)
   {
 	  if(m_image == null) return;
+	g.clearRect(0,  0,  getWidth(), getHeight());
     g.drawImage(m_image, 0, 0, null);
     if(m_overlay != null) g.drawImage(m_overlay, 0, 0, null);
     
@@ -505,6 +506,7 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 	private JTextField txtMaxRad;
 	private BufferedImage capturedImage = null;
 	private CalibrationData m_cal_data;
+	private JTextField txtCalibImg;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -567,6 +569,21 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 		btnScan.setBounds(12, 849, 91, 25);
 		getContentPane().add(btnScan);
 		btnScan.addActionListener(this);
+		
+		JButton btnDetect = new JButton("Detect");
+		btnDetect.setBounds(12, 886, 117, 25);
+		getContentPane().add(btnDetect);
+		
+		txtCalibImg = new JTextField();
+		txtCalibImg.setText("3600");
+		txtCalibImg.setBounds(320, 889, 114, 19);
+		getContentPane().add(txtCalibImg);
+		txtCalibImg.setColumns(10);
+		
+		JLabel lblCompareimg = new JLabel("Compare Image Number");
+		lblCompareimg.setBounds(133, 891, 179, 15);
+		getContentPane().add(lblCompareimg);
+		btnDetect.addActionListener(this);
 		
 		
 		m_camera = a_camera;
@@ -686,7 +703,78 @@ public class eora3D_calibration extends JDialog implements ActionListener {
 			captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset,
 					Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90,
 					Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/2);
+		} else
+		if(e.getActionCommand()=="Detect")
+		{
+			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+			File l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+txtCalibImg.getText()+".png");
+			BufferedImage l_inimage, l_baseimage;
+
+			try {
+				l_baseimage = ImageIO.read(l_basefile);
+				l_inimage = ImageIO.read(l_infile);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return;
+			}
+			
+			image.m_image = analyzeImage(l_baseimage, l_inimage);;
+			image.m_overlay = null;
+			image.repaint();
 		}
+	}
+	
+	BufferedImage analyzeImage(BufferedImage a_base, BufferedImage a_in)
+	{
+		BufferedImage a_out = new BufferedImage(a_in.getWidth(), a_in.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		int x, y;
+
+		for(y = 0; y< a_in.getHeight(); ++y)
+		{
+			for(x = a_in.getWidth()-1; x>=0; --x)
+			{
+				int argb = a_in.getRGB(x, y);
+				int r = (argb & 0xff0000) >> 16;
+            	int g = (argb & 0x00ff00) >> 8;
+        		int b = (argb & 0x0000ff);
+        		
+				int argb_base = a_base.getRGB(x, y);
+				int r_base = (argb_base & 0xff0000) >> 16;
+            	int g_base = (argb_base & 0x00ff00) >> 8;
+        		int b_base = (argb_base & 0x0000ff);
+        		
+        		//r = ((255-r)-(255-r_base));
+        		//g = ((255-g)-(255-g_base));
+        		//b = ((255-b)-(255-b_base));
+        		r = Math.abs(r_base-r);
+        		g = Math.abs(g_base-g);
+        		b = Math.abs(b_base-b);
+//        		g = b = 0;
+/*        		r = Math.abs(r-r_base);
+        		g = Math.abs(g-g_base);
+        		b = Math.abs(b-b_base);*/
+        		
+/*        		r = Math.max(0, r);
+        		g = Math.max(0, g);
+        		b = Math.max(0, b);*/
+
+//        		r = 255-r;
+//        		g = 255-g;
+//        		b = 255-b;
+
+        		int l_thresh = 140;
+        		if(r>l_thresh || g>l_thresh || b>l_thresh) argb = 0xff00ff00;
+        		else argb = 0xff000000;
+//        		argb = (r << 16) | (g << 8) | (b);
+
+//				argb = 0x00ffffff - argb;				
+//				argb |= 0xff000000;
+				a_out.setRGB(x, y, argb);
+				if(argb == 0xff00ff00) break;
+			}
+		}
+		return a_out;
 	}
 	
 	void captureScanChain(int a_start, int a_end, int a_stepsize)
