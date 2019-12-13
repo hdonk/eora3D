@@ -15,5 +15,14 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public File sm_config_file = new File(System.getProperty("user.home")+File.separatorChar+"ScannerConfig.e3d");
 	public File sm_image_dir = new File(System.getProperty("user.home")+File.separatorChar+"e3d_caps");
+	
+	public int sm_circle_detection_threshold = 280;
+	public int sm_laser_detection_threshold_r = 140;
+	public int sm_laser_detection_threshold_g = 140;
+	public int sm_laser_detection_threshold_b = 140;
+	public String sm_laser_detection_threshold_logic = "Or";
+	
+	public int sm_calibration_vertical_offset = 0;
+
 }
 
