@@ -852,6 +852,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	void Calibrate()
 	{
 		Rectangle l_found[] = {new Rectangle(), new Rectangle(), new Rectangle(), new Rectangle()};
+		int l_corner_pos[] = {0, 0, 0, 0};
 		// Phase one, make sure board is in right place for pos1
 		int l_goodenough;
 		do
@@ -1019,8 +1020,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		} while (l_goodenough < 4);
 		// Phase two, hunt for laser in first detection box
 		{
-			int l_pos;
-			System.out.println("Move to base pos");
+			int l_pos, l_pos_slow;
+//			System.out.println("Move to base pos");
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-2))
 			{
 				return;
@@ -1049,27 +1050,61 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				for(
 						l_pos = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
 						l_pos < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
-						l_pos += Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/2)
+						l_pos += Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/4)
 				{
-					System.out.println("Move to base step "+l_pos);
+//					System.out.println("Move to base step "+l_pos);
 					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
 					{
 						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 						return;
 					}
-					System.out.println("Moved to base step "+l_pos);
+//					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
 	
 					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
-					if(l_found_offset!=-1) break;
+					if(l_found_offset!=-1)
+					{
+						System.out.println("Found corner "+corner);
+						break;
+					}
 				}
 				if(l_pos >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
+				// Slow search
+				for(
+						l_pos_slow = l_pos - Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+						l_pos_slow < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+						++l_pos_slow)
+				{
+//					System.out.println("Move to base step "+l_pos);
+					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos_slow))
+					{
+						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+						return;
+					}
+//					System.out.println("Moved to base step "+l_pos);
+					BufferedImage l_image = m_camera.getImage();
+					l_image.flush();
+	
+					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
+							l_search_box.x+m_cal_data.detection_box/2);
+					if(l_found_offset!=-1)
+					{
+						System.out.println("Found corner "+corner);
+						break;
+					}
+				}
+				if(l_pos_slow >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
+				{
+					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				l_corner_pos[corner] = l_pos_slow;
 			}
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 		}
