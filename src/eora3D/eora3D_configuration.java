@@ -23,6 +23,9 @@ class eora3D_configuration_data_v1 implements Serializable
 	public String sm_laser_detection_threshold_logic = "Or";
 	
 	public int sm_calibration_vertical_offset = 0;
+	
+	public int sm_calibration_tl_motorpos = 0;
+	public int sm_calibration_tr_motorpos = 0;
 
 }
 

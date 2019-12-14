@@ -1108,6 +1108,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			}
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 		}
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos = l_corner_pos[0];
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos = l_corner_pos[1];
 		// Phase three, hunt for first hit on circle in first detection box
 		// Phase four, hunt for laser in second detection box
 		// Phase five, hunt for first hit on circle in second detection box
