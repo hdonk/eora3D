@@ -823,7 +823,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				return;
 			}
 			
-			image.m_image = analyzeImage(l_baseimage, l_inimage);;
+			image.m_image = analyzeImage(l_baseimage, l_inimage);
 			image.m_overlay = null;
 			image.repaint();
 		} else
@@ -831,6 +831,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		{
 			if(m_calibration_thread == null)
 			{
+				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
 				m_stop_calibration_thread = false;
 				Runnable l_runnable = () -> {
 					Calibrate();
@@ -847,6 +851,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	void Calibrate()
 	{
+		Rectangle l_found[] = {new Rectangle(), new Rectangle(), new Rectangle(), new Rectangle()};
 		// Phase one, make sure board is in right place for pos1
 		int l_goodenough;
 		do
@@ -864,7 +869,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			l_cd.maxr = Integer.parseInt(txtMaxRad.getText());
 
 			try {
-				Rectangle l_found;
 //				System.out.println("Detecting circles");
 				l_cd.detect(capturedImage,
 						new Rectangle(
@@ -873,31 +877,31 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					    		m_cal_data.pos_1_tl.width+m_cal_data.detection_box,
 					    		m_cal_data.pos_1_tl.height+m_cal_data.detection_box
 								));
-				l_found = l_cd.findFirstCircle(
+				l_found[0] = l_cd.findFirstCircle(
 						capturedImage
 						);
-				if(l_found != null &&
-						Math.abs(l_found.x-(m_cal_data.pos_1_tl.x+m_cal_data.pos_1_tl.width/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.y-(m_cal_data.pos_1_tl.y+m_cal_data.pos_1_tl.height/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.width-(m_cal_data.pos_1_tl.width/2))<m_cal_data.circle_radius_threshold)
+				if(l_found[0] != null &&
+						Math.abs(l_found[0].x-(m_cal_data.pos_1_tl.x+m_cal_data.pos_1_tl.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[0].y-(m_cal_data.pos_1_tl.y+m_cal_data.pos_1_tl.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[0].width-(m_cal_data.pos_1_tl.width/2))<m_cal_data.circle_radius_threshold)
 				{
 					++l_goodenough;
 					g.setColor(Color.green);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[0].x- l_found[0].width,
+				    		l_found[0].y - l_found[0].height,
+				    		l_found[0].width * 2,
+				    		l_found[0].height * 2
 				    		);
 				}
-				else if(l_found != null)
+				else if(l_found[0] != null)
 				{
 					g.setColor(Color.red);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[0].x- l_found[0].width,
+				    		l_found[0].y - l_found[0].height,
+				    		l_found[0].width * 2,
+				    		l_found[0].height * 2
 				    		);
 				}
 				l_cd.detect(capturedImage,
@@ -907,31 +911,31 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					    		m_cal_data.pos_1_tr.width+m_cal_data.detection_box,
 					    		m_cal_data.pos_1_tr.height+m_cal_data.detection_box
 								));
-				l_found = l_cd.findFirstCircle(
+				l_found[1] = l_cd.findFirstCircle(
 						capturedImage
 						);
-				if(l_found != null &&
-						Math.abs(l_found.x-(m_cal_data.pos_1_tr.x+m_cal_data.pos_1_tr.width/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.y-(m_cal_data.pos_1_tr.y+m_cal_data.pos_1_tr.height/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.width-(m_cal_data.pos_1_tr.width/2))<m_cal_data.circle_radius_threshold)
+				if(l_found[1] != null &&
+						Math.abs(l_found[1].x-(m_cal_data.pos_1_tr.x+m_cal_data.pos_1_tr.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[1].y-(m_cal_data.pos_1_tr.y+m_cal_data.pos_1_tr.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[1].width-(m_cal_data.pos_1_tr.width/2))<m_cal_data.circle_radius_threshold)
 				{
 					++l_goodenough;
 					g.setColor(Color.green);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[1].x- l_found[1].width,
+				    		l_found[1].y - l_found[1].height,
+				    		l_found[1].width * 2,
+				    		l_found[1].height * 2
 				    		);
 				}
-				else if(l_found != null)
+				else if(l_found[1] != null)
 				{
 					g.setColor(Color.red);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[1].x- l_found[1].width,
+				    		l_found[1].y - l_found[1].height,
+				    		l_found[1].width * 2,
+				    		l_found[1].height * 2
 				    		);
 				}
 				l_cd.detect(capturedImage,
@@ -941,31 +945,31 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					    		m_cal_data.pos_1_bl.width+m_cal_data.detection_box,
 					    		m_cal_data.pos_1_bl.height+m_cal_data.detection_box
 								));
-				l_found = l_cd.findFirstCircle(
+				l_found[2] = l_cd.findFirstCircle(
 						capturedImage
 						);
-				if(l_found != null &&
-						Math.abs(l_found.x-(m_cal_data.pos_1_bl.x+m_cal_data.pos_1_bl.width/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.y-(m_cal_data.pos_1_bl.y+m_cal_data.pos_1_bl.height/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.width-(m_cal_data.pos_1_bl.width/2))<m_cal_data.circle_radius_threshold)
+				if(l_found[2] != null &&
+						Math.abs(l_found[2].x-(m_cal_data.pos_1_bl.x+m_cal_data.pos_1_bl.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[2].y-(m_cal_data.pos_1_bl.y+m_cal_data.pos_1_bl.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[2].width-(m_cal_data.pos_1_bl.width/2))<m_cal_data.circle_radius_threshold)
 				{
 					++l_goodenough;
 					g.setColor(Color.green);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[2].x- l_found[2].width,
+				    		l_found[2].y - l_found[2].height,
+				    		l_found[2].width * 2,
+				    		l_found[2].height * 2
 				    		);
 				}
-				else if(l_found != null)
+				else if(l_found[2] != null)
 				{
 					g.setColor(Color.red);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[2].x- l_found[2].width,
+				    		l_found[2].y - l_found[2].height,
+				    		l_found[2].width * 2,
+				    		l_found[2].height * 2
 				    		);
 				}
 				l_cd.detect(capturedImage,
@@ -975,34 +979,33 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					    		m_cal_data.pos_1_br.width+m_cal_data.detection_box,
 					    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
 								));
-				l_found = l_cd.findFirstCircle(
+				l_found[3] = l_cd.findFirstCircle(
 						capturedImage
 						);
-				if(l_found != null &&
-						Math.abs(l_found.x-(m_cal_data.pos_1_br.x+m_cal_data.pos_1_br.width/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.y-(m_cal_data.pos_1_br.y+m_cal_data.pos_1_br.height/2))<m_cal_data.circle_center_threshold &&
-						Math.abs(l_found.width-(m_cal_data.pos_1_br.width/2))<m_cal_data.circle_radius_threshold)
+				if(l_found[3] != null &&
+						Math.abs(l_found[3].x-(m_cal_data.pos_1_br.x+m_cal_data.pos_1_br.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[3].y-(m_cal_data.pos_1_br.y+m_cal_data.pos_1_br.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[3].width-(m_cal_data.pos_1_br.width/2))<m_cal_data.circle_radius_threshold)
 				{
 					++l_goodenough;
 					g.setColor(Color.green);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[3].x- l_found[3].width,
+				    		l_found[3].y - l_found[3].height,
+				    		l_found[3].width * 2,
+				    		l_found[3].height * 2
 				    		);
 				}
-				else if(l_found != null)
+				else if(l_found[3] != null)
 				{
 					g.setColor(Color.red);
 				    g.fillOval(
-				    		l_found.x- l_found.width,
-				    		l_found.y - l_found.height,
-				    		l_found.width * 2,
-				    		l_found.height * 2
+				    		l_found[3].x- l_found[3].width,
+				    		l_found[3].y - l_found[3].height,
+				    		l_found[3].width * 2,
+				    		l_found[3].height * 2
 				    		);
 				}
-				System.out.println("Found "+l_goodenough);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -1015,11 +1018,67 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			}
 		} while (l_goodenough < 4);
 		// Phase two, hunt for laser in first detection box
+		{
+			int l_pos;
+			System.out.println("Move to base pos");
+			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-2))
+			{
+				return;
+			}
+			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+			BufferedImage l_base_image = m_camera.getImage();
+			l_base_image.flush();
+
+			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
+			for(int corner=0; corner<2; ++corner)
+			{
+				Rectangle l_search_box = null;
+				System.out.println("Scan corner "+corner);
+				switch(corner)
+				{
+					case 0: l_search_box = m_cal_data.pos_1_tl; break;
+					case 1: l_search_box = m_cal_data.pos_1_tr; break;
+					case 2: l_search_box = m_cal_data.pos_1_bl; break;
+					case 3: l_search_box = m_cal_data.pos_1_br; break;
+				}
+				if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-1))
+				{
+					return;
+				}
+				// Fast search
+				for(
+						l_pos = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
+						l_pos < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+						l_pos += Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/2)
+				{
+					System.out.println("Move to base step "+l_pos);
+					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
+					{
+						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+						return;
+					}
+					System.out.println("Moved to base step "+l_pos);
+					BufferedImage l_image = m_camera.getImage();
+					l_image.flush();
+	
+					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
+							l_search_box.x+m_cal_data.detection_box/2);
+					if(l_found_offset!=-1) break;
+				}
+				if(l_pos >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
+				{
+					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
+			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+		}
 		// Phase three, hunt for first hit on circle in first detection box
 		// Phase four, hunt for laser in second detection box
 		// Phase five, hunt for first hit on circle in second detection box
 		
 		// Repeat 1-5 for pos2
+		m_calibration_thread = null;
 
 	}
 	
@@ -1083,6 +1142,39 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			}
 		}
 		return a_out;
+	}
+	
+	int findLaserPoint(BufferedImage a_base, BufferedImage a_in, int a_y, int a_x_min, int a_x_max)
+	{
+		for(int x = a_x_max-1; x>=a_x_min; --x)
+		{
+			int argb = a_in.getRGB(x, a_y);
+			int r = (argb & 0xff0000) >> 16;
+        	int g = (argb & 0x00ff00) >> 8;
+    		int b = (argb & 0x0000ff);
+    		
+			int argb_base = a_base.getRGB(x, a_y);
+			int r_base = (argb_base & 0xff0000) >> 16;
+        	int g_base = (argb_base & 0x00ff00) >> 8;
+    		int b_base = (argb_base & 0x0000ff);
+    		
+    		r = Math.abs(r_base-r);
+    		g = Math.abs(g_base-g);
+    		b = Math.abs(b_base-b);
+
+    		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
+    		{
+        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
+        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
+        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+    		} else
+    		{
+        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
+        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
+        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+    		}
+		}
+		return -1;
 	}
 	
 	void captureScanChain(int a_start, int a_end, int a_stepsize)
