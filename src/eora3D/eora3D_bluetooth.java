@@ -158,7 +158,7 @@ public class eora3D_bluetooth {
                 return null;
 
             for (BluetoothGattService service : bluetoothServices) {
-                System.out.println("UUID: " + service.getUUID());
+//                System.out.println("UUID: " + service.getUUID());
                 if (service.getUUID().equals(UUID))
                     tempService = service;
             }
@@ -216,10 +216,10 @@ public class eora3D_bluetooth {
     		return null;
     	}
         for (BluetoothGattService service : laserServices) {
-            System.out.println("serviceUUID: " + service.getUUID());
+            //System.out.println("serviceUUID: " + service.getUUID());
             if (service.getUUID().equals(serviceUUID)) {
                 for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                    System.out.println("characteristicUUID: " + characteristic.getUUID());
+                    //System.out.println("characteristicUUID: " + characteristic.getUUID());
                     if (characteristic.getUUID().equals(characteristicUUID))
                         return characteristic;
                 }
@@ -236,10 +236,10 @@ public class eora3D_bluetooth {
     		return null;
     	}
         for (BluetoothGattService service : turntableServices) {
-            System.out.println("serviceUUID: " + service.getUUID());
+            //System.out.println("serviceUUID: " + service.getUUID());
             if (service.getUUID().equals(serviceUUID)) {
                 for (BluetoothGattCharacteristic characteristic : service.getCharacteristics()) {
-                    System.out.println("characteristicUUID: " + characteristic.getUUID());
+                    //System.out.println("characteristicUUID: " + characteristic.getUUID());
                     if (characteristic.getUUID().equals(characteristicUUID))
                         return characteristic;
                 }
@@ -368,7 +368,7 @@ public class eora3D_bluetooth {
             return false;
         }
 
-        System.out.println("Found the motor ipos characteristic");
+//        System.out.println("Found the motor ipos characteristic");
         m_motorNotification.unsetcomplete();
         motorIPOS.writeValue(l_pos);
         if(!m_motorNotification.waitforcomplete(10000))
