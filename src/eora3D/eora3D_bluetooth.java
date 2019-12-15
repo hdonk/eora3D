@@ -46,11 +46,11 @@ class ValueNotification implements BluetoothNotification<byte[]> {
 	
     public void run(byte[] tempRaw)
     {
-        System.out.print("ValueNotification raw = {");
+/*        System.out.print("ValueNotification raw = {");
         for (byte b : tempRaw) {
             System.out.print(String.format("%02x,", b));
         }
-        System.out.print("}");
+        System.out.print("}");*/
         if(tempRaw[0] == 1)
         {
         	synchronized(m_lock)

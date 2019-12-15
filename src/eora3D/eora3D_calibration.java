@@ -17,6 +17,7 @@ import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 /*import org.opencv.core.Core;
@@ -35,6 +36,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import javax.swing.JScrollBar;
 import javax.swing.JComboBox;
+import javax.swing.JRadioButton;
 
 class CalibrationData
 {
@@ -50,6 +52,7 @@ class CalibrationData
 	public int capture_w = 1280;
 	public int capture_h = 720;
 	public int v_offset = 0;
+	public int v_offset_2 = 0;
 	
 	private double cal_pos_1_per = 0.90f;
 	private double cal_pos_2_per = 0.70f;
@@ -110,6 +113,40 @@ class CalibrationData
 			pos_1_br.height = pos_1_tl.height;
 			pos_1_br.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
 			pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
+
+		
+			target_h = ((double)capture_h * cal_pos_2_per);
+			target_w = (target_h/board_h)*board_w;
+			v_offset_2 = (int)(((double)v_offset) * (cal_pos_2_per/cal_pos_1_per));
+			pos_2_board = new Rectangle();
+			pos_2_board.height = (int)target_h;
+			pos_2_board.width = (int)target_w;
+			pos_2_board.x = (capture_w-pos_2_board.width)/2;
+			pos_2_board.y = (capture_h-pos_2_board.height)/2 + v_offset_2;
+			
+			pos_2_tl = new Rectangle();
+			pos_2_tl.width = (int)(((target_w/board_w)*spot_r))*2;
+			pos_2_tl.height = (int)(((target_h/board_h)*spot_r))*2;
+			pos_2_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_2_tl.width;
+			pos_2_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_2_tl.height + v_offset_2;
+
+			pos_2_tr = new Rectangle();
+			pos_2_tr.width = pos_2_tl.width;
+			pos_2_tr.height = pos_2_tl.height;
+			pos_2_tr.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
+			pos_2_tr.y = pos_2_tl.y;
+
+			pos_2_bl = new Rectangle();
+			pos_2_bl.width = pos_2_tl.width;
+			pos_2_bl.height = pos_2_tl.height;
+			pos_2_bl.x = pos_2_tl.x;
+			pos_2_bl.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
+
+			pos_2_br = new Rectangle();
+			pos_2_br.width = pos_2_tl.width;
+			pos_2_br.height = pos_2_tl.height;
+			pos_2_br.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
+			pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
 		}
 	}
 }
@@ -419,6 +456,8 @@ class PaintImage extends JPanel
   //public Mat circles;
   public CalibrationData m_cal_data = null;
  
+  public int pos = 1;
+  
   public PaintImage ()
   {
     super();
@@ -432,83 +471,132 @@ class PaintImage extends JPanel
     if(m_overlay != null) g.drawImage(m_overlay, 0, 0, null);
     
     g.setColor(Color.blue);
-    
-    g.drawRect(
-    		m_cal_data.pos_1_board.x,
-    		m_cal_data.pos_1_board.y,
-    		m_cal_data.pos_1_board.width,
-    		m_cal_data.pos_1_board.height
-    		);
-    g.drawRect(
-    		0,
-    		0,
-    		m_cal_data.capture_w,
-    		m_cal_data.capture_h
-    		);
-    g.drawOval(
-    		m_cal_data.pos_1_tl.x,
-    		m_cal_data.pos_1_tl.y,
-    		m_cal_data.pos_1_tl.width,
-    		m_cal_data.pos_1_tl.height
-    		);
-    g.drawRect(
-    		m_cal_data.pos_1_tl.x-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_tl.y-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_tl.width+m_cal_data.detection_box,
-    		m_cal_data.pos_1_tl.height+m_cal_data.detection_box
-    		);
-    g.drawOval(
-    		m_cal_data.pos_1_tr.x,
-    		m_cal_data.pos_1_tr.y,
-    		m_cal_data.pos_1_tr.width,
-    		m_cal_data.pos_1_tr.height
-    		);
-    g.drawRect(
-    		m_cal_data.pos_1_tr.x-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_tr.y-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_tr.width+m_cal_data.detection_box,
-    		m_cal_data.pos_1_tr.height+m_cal_data.detection_box
-    		);
-    g.drawOval(
-    		m_cal_data.pos_1_bl.x,
-    		m_cal_data.pos_1_bl.y,
-    		m_cal_data.pos_1_bl.width,
-    		m_cal_data.pos_1_bl.height
-    		);
-    g.drawRect(
-    		m_cal_data.pos_1_bl.x-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_bl.y-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_bl.width+m_cal_data.detection_box,
-    		m_cal_data.pos_1_bl.height+m_cal_data.detection_box
-    		);
-    g.drawOval(
-    		m_cal_data.pos_1_br.x,
-    		m_cal_data.pos_1_br.y,
-    		m_cal_data.pos_1_br.width,
-    		m_cal_data.pos_1_br.height
-    		);
-    g.drawRect(
-    		m_cal_data.pos_1_br.x-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_br.y-m_cal_data.detection_box/2,
-    		m_cal_data.pos_1_br.width+m_cal_data.detection_box,
-    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
-    		);
-/*    if(circles!=null)
+    if(pos==1)
     {
-	   if (circles.cols() > 0) {
-	        for (int x=0; x < Math.min(circles.cols(), 5); x++ ) {
-	            double circleVec[] = circles.get(0, x);
-
-	            if (circleVec == null) {
-	                break;
-	            }
-
-	            int radius = (int) circleVec[2];
-
-	            g.drawOval((int) circleVec[0], (int) circleVec[1], radius*2, radius*2);
-	        }
-	    }
-    }*/
+	    g.drawRect(
+	    		m_cal_data.pos_1_board.x,
+	    		m_cal_data.pos_1_board.y,
+	    		m_cal_data.pos_1_board.width,
+	    		m_cal_data.pos_1_board.height
+	    		);
+	    g.drawRect(
+	    		0,
+	    		0,
+	    		m_cal_data.capture_w,
+	    		m_cal_data.capture_h
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_1_tl.x,
+	    		m_cal_data.pos_1_tl.y,
+	    		m_cal_data.pos_1_tl.width,
+	    		m_cal_data.pos_1_tl.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_1_tl.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_tl.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_tl.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_1_tl.height+m_cal_data.detection_box
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_1_tr.x,
+	    		m_cal_data.pos_1_tr.y,
+	    		m_cal_data.pos_1_tr.width,
+	    		m_cal_data.pos_1_tr.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_1_tr.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_tr.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_tr.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_1_tr.height+m_cal_data.detection_box
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_1_bl.x,
+	    		m_cal_data.pos_1_bl.y,
+	    		m_cal_data.pos_1_bl.width,
+	    		m_cal_data.pos_1_bl.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_1_bl.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_bl.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_bl.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_1_bl.height+m_cal_data.detection_box
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_1_br.x,
+	    		m_cal_data.pos_1_br.y,
+	    		m_cal_data.pos_1_br.width,
+	    		m_cal_data.pos_1_br.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_1_br.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_br.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_1_br.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
+	    		);
+    }
+    else
+    {
+	    g.drawRect(
+	    		m_cal_data.pos_2_board.x,
+	    		m_cal_data.pos_2_board.y,
+	    		m_cal_data.pos_2_board.width,
+	    		m_cal_data.pos_2_board.height
+	    		);
+	    g.drawRect(
+	    		0,
+	    		0,
+	    		m_cal_data.capture_w,
+	    		m_cal_data.capture_h
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_2_tl.x,
+	    		m_cal_data.pos_2_tl.y,
+	    		m_cal_data.pos_2_tl.width,
+	    		m_cal_data.pos_2_tl.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_2_tl.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_tl.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_tl.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_2_tl.height+m_cal_data.detection_box
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_2_tr.x,
+	    		m_cal_data.pos_2_tr.y,
+	    		m_cal_data.pos_2_tr.width,
+	    		m_cal_data.pos_2_tr.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_2_tr.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_tr.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_tr.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_2_tr.height+m_cal_data.detection_box
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_2_bl.x,
+	    		m_cal_data.pos_2_bl.y,
+	    		m_cal_data.pos_2_bl.width,
+	    		m_cal_data.pos_2_bl.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_2_bl.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_bl.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_bl.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_2_bl.height+m_cal_data.detection_box
+	    		);
+	    g.drawOval(
+	    		m_cal_data.pos_2_br.x,
+	    		m_cal_data.pos_2_br.y,
+	    		m_cal_data.pos_2_br.width,
+	    		m_cal_data.pos_2_br.height
+	    		);
+	    g.drawRect(
+	    		m_cal_data.pos_2_br.x-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_br.y-m_cal_data.detection_box/2,
+	    		m_cal_data.pos_2_br.width+m_cal_data.detection_box,
+	    		m_cal_data.pos_2_br.height+m_cal_data.detection_box
+	    		);
+    }
     repaint();
   }
 }
@@ -530,6 +618,17 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private JComboBox<String> cbThresholdLogic;
 	private Thread m_calibration_thread = null;
 	private boolean m_stop_calibration_thread;
+	private JTextField txtTopleftmotorpos;
+	private JTextField txtToprightmotorpos;
+	private JLabel lblTopRightMotor;
+	private JLabel lblTopLeftMotor;
+	private JLabel lblTopLeftMotor_1;
+	private JLabel lblTopRightMotor_1;
+	private JTextField txtTopleftmotorpos_2;
+	private JTextField txtToprightmotorpos_2;
+	private JLabel lblCalibrationPosition;
+	private JRadioButton radioButton;
+	private JRadioButton radioButton_1;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -573,13 +672,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		getContentPane().add(txtMinHits);
 		
 		txtMinRad = new JTextField();
-		txtMinRad.setText("5");
+		txtMinRad.setText(""+Eora3D_MainWindow.m_e3d_config.sm_circle_min_rad);
 		txtMinRad.setBounds(571, 782, 114, 19);
 		getContentPane().add(txtMinRad);
 		txtMinRad.setColumns(10);
 		
 		txtMaxRad = new JTextField();
-		txtMaxRad.setText("10");
+		txtMaxRad.setText(""+Eora3D_MainWindow.m_e3d_config.sm_circle_max_rad);
 		txtMaxRad.setBounds(571, 809, 114, 19);
 		getContentPane().add(txtMaxRad);
 		txtMaxRad.setColumns(10);
@@ -677,7 +776,65 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		getContentPane().add(btnCalibrate);
 		btnCalibrate.addActionListener(this);
 		
+		lblTopLeftMotor = new JLabel("Top left motor pos 1");
+		lblTopLeftMotor.setBounds(722, 784, 143, 15);
+		getContentPane().add(lblTopLeftMotor);
 		
+		lblTopRightMotor = new JLabel("Top right motor pos 1 ");
+		lblTopRightMotor.setBounds(713, 811, 152, 15);
+		getContentPane().add(lblTopRightMotor);
+		
+		txtTopleftmotorpos = new JTextField();
+		txtTopleftmotorpos.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1);
+		txtTopleftmotorpos.setBounds(883, 782, 114, 19);
+		getContentPane().add(txtTopleftmotorpos);
+		txtTopleftmotorpos.setColumns(10);
+		
+		txtToprightmotorpos = new JTextField();
+		txtToprightmotorpos.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1);
+		txtToprightmotorpos.setBounds(883, 809, 114, 19);
+		getContentPane().add(txtToprightmotorpos);
+		txtToprightmotorpos.setColumns(10);
+		
+		lblTopLeftMotor_1 = new JLabel("Top left motor pos 2");
+		lblTopLeftMotor_1.setBounds(722, 838, 143, 15);
+		getContentPane().add(lblTopLeftMotor_1);
+		
+		lblTopRightMotor_1 = new JLabel("Top right motor pos 2");
+		lblTopRightMotor_1.setBounds(713, 865, 152, 15);
+		getContentPane().add(lblTopRightMotor_1);
+		
+		txtTopleftmotorpos_2 = new JTextField();
+		txtTopleftmotorpos_2.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2);
+		txtTopleftmotorpos_2.setBounds(883, 836, 114, 19);
+		getContentPane().add(txtTopleftmotorpos_2);
+		txtTopleftmotorpos_2.setColumns(10);
+		
+		txtToprightmotorpos_2 = new JTextField();
+		txtToprightmotorpos_2.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2);
+		txtToprightmotorpos_2.setBounds(883, 863, 114, 19);
+		getContentPane().add(txtToprightmotorpos_2);
+		txtToprightmotorpos_2.setColumns(10);
+		
+		lblCalibrationPosition = new JLabel("Calibration position");
+		lblCalibrationPosition.setBounds(121, 784, 143, 15);
+		getContentPane().add(lblCalibrationPosition);
+		
+		ButtonGroup calibrationPositionGroup = new ButtonGroup();
+		radioButton = new JRadioButton("1");
+		radioButton.setBounds(278, 780, 33, 23);
+		getContentPane().add(radioButton);
+		radioButton.addActionListener(this);
+		calibrationPositionGroup.add(radioButton);
+		
+		radioButton_1 = new JRadioButton("2");
+		radioButton_1.setBounds(330, 780, 47, 23);
+		getContentPane().add(radioButton_1);
+		radioButton_1.addActionListener(this);
+		calibrationPositionGroup.add(radioButton_1);
+		
+		radioButton.setSelected(true);
+
 		m_camera = a_camera;
 		
 		setSize(1300,990);
@@ -701,8 +858,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		image.m_cal_data = m_cal_data;
 		
+		sbHeightOffset.removeAdjustmentListener(this);
 		sbHeightOffset.setMinimum(-m_cal_data.v_offset_minmax);
 		sbHeightOffset.setMaximum(m_cal_data.v_offset_minmax);
+		sbHeightOffset.setValue(m_cal_data.v_offset);
+		sbHeightOffset.addAdjustmentListener(this);
 
 	}
 
@@ -733,46 +893,92 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			try {
 				l_cd.initTotalCircles(capturedImage);
 //				System.out.println("Detecting circles");
-				l_cd.detect(capturedImage,
-						new Rectangle(
-					    		m_cal_data.pos_1_tl.x-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_tl.y-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_tl.width+m_cal_data.detection_box,
-					    		m_cal_data.pos_1_tl.height+m_cal_data.detection_box
-								));
-				l_cd.findFirstCircle(
-						capturedImage
-						);
-				l_cd.detect(capturedImage,
-						new Rectangle(
-					    		m_cal_data.pos_1_tr.x-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_tr.y-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_tr.width+m_cal_data.detection_box,
-					    		m_cal_data.pos_1_tr.height+m_cal_data.detection_box
-								));
-				l_cd.findFirstCircle(
-						capturedImage
-						);
-				l_cd.detect(capturedImage,
-						new Rectangle(
-					    		m_cal_data.pos_1_bl.x-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_bl.y-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_bl.width+m_cal_data.detection_box,
-					    		m_cal_data.pos_1_bl.height+m_cal_data.detection_box
-								));
-				l_cd.findFirstCircle(
-						capturedImage
-						);
-				l_cd.detect(capturedImage,
-						new Rectangle(
-					    		m_cal_data.pos_1_br.x-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_br.y-m_cal_data.detection_box/2,
-					    		m_cal_data.pos_1_br.width+m_cal_data.detection_box,
-					    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
-								));
-				l_cd.findFirstCircle(
-						capturedImage
-						);
+				if(image.pos==1)
+				{
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_1_tl.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_tl.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_tl.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_1_tl.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_1_tr.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_tr.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_tr.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_1_tr.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_1_bl.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_bl.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_bl.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_1_bl.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_1_br.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_br.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_1_br.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+				}
+				else
+				{
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_2_tl.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_tl.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_tl.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_2_tl.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_2_tr.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_tr.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_tr.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_2_tr.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_2_bl.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_bl.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_bl.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_2_bl.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+					l_cd.detect(capturedImage,
+							new Rectangle(
+						    		m_cal_data.pos_2_br.x-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_br.y-m_cal_data.detection_box/2,
+						    		m_cal_data.pos_2_br.width+m_cal_data.detection_box,
+						    		m_cal_data.pos_2_br.height+m_cal_data.detection_box
+									));
+					l_cd.findFirstCircle(
+							capturedImage
+							);
+				}
 //				System.out.println("Detection complete");
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
@@ -806,26 +1012,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		} else
 		if(e.getActionCommand()=="Detect")
 		{
-			Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
-			Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
-			Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
-			Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
-			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
-			File l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+txtCalibImg.getText()+".png");
-			BufferedImage l_inimage, l_baseimage;
-
-			try {
-				l_baseimage = ImageIO.read(l_basefile);
-				l_inimage = ImageIO.read(l_infile);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-				return;
-			}
-			
-			image.m_image = analyzeImage(l_baseimage, l_inimage);
-			image.m_overlay = null;
-			image.repaint();
 		} else
 		if(e.getActionCommand()=="Calibrate")
 		{
@@ -846,6 +1032,14 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			{
 				m_stop_calibration_thread = true;
 			}
+		} else
+		if(e.getSource().equals(radioButton))
+		{
+			if(radioButton.isSelected()) image.pos = 1;
+		} else
+		if(e.getSource().equals(radioButton_1))
+		{
+			if(radioButton_1.isSelected()) image.pos = 2;
 		}
 	}
 
@@ -854,6 +1048,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Rectangle l_found[] = {new Rectangle(), new Rectangle(), new Rectangle(), new Rectangle()};
 		int l_corner_pos[] = {0, 0, 0, 0};
 		// Phase one, make sure board is in right place for pos1
+		image.pos = 1;
 		int l_goodenough;
 		do
 		{
@@ -1018,12 +1213,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				return;
 			}
 		} while (l_goodenough < 4);
-		// Phase two, hunt for laser in first detection box
+		// Hunt for laser in detection circles
 		{
 			int l_pos, l_pos_slow;
 //			System.out.println("Move to base pos");
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-2))
 			{
+				m_calibration_thread = null;
 				return;
 			}
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
@@ -1044,6 +1240,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				}
 				if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-1))
 				{
+					m_calibration_thread = null;
 					return;
 				}
 				// Fast search
@@ -1056,6 +1253,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
 					{
 						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+						m_calibration_thread = null;
 						return;
 					}
 //					System.out.println("Moved to base step "+l_pos);
@@ -1073,6 +1271,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				if(l_pos >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
+					m_calibration_thread = null;
 					return;
 				}
 				// Slow search
@@ -1085,6 +1284,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos_slow))
 					{
 						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+						m_calibration_thread = null;
 						return;
 					}
 //					System.out.println("Moved to base step "+l_pos);
@@ -1102,21 +1302,339 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				if(l_pos_slow >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
+					m_calibration_thread = null;
 					return;
 				}
 				l_corner_pos[corner] = l_pos_slow;
 			}
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 		}
-		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos = l_corner_pos[0];
-		Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos = l_corner_pos[1];
-		// Phase three, hunt for first hit on circle in first detection box
-		// Phase four, hunt for laser in second detection box
-		// Phase five, hunt for first hit on circle in second detection box
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1 = l_corner_pos[0];
+		txtTopleftmotorpos.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1);
+		System.out.println("Motorpos TL 1: "+l_corner_pos[0]);
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1 = l_corner_pos[1];
+		txtToprightmotorpos.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1);
+		System.out.println("Motorpos TR 1: "+l_corner_pos[1]);
 		
-		// Repeat 1-5 for pos2
+		
+		
+		
+		image.pos = 2;
+		// Repeat for pos2
+		int l_corner_pos_2[] = {0, 0, 0, 0};
+		// Phase one, make sure board is in right place for pos1
+		do
+		{
+			l_goodenough = 0;
+			capturedImage = m_camera.getImage();
+			capturedImage.flush();
+			image.m_image = capturedImage;
+			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			Graphics g = image.m_overlay.getGraphics();
+			CircleDetection l_cd = new CircleDetection();
+			l_cd.threshold = Integer.parseInt(txtThreshold.getText());
+			l_cd.minHits = Integer.parseInt(txtMinHits.getText());
+			l_cd.minr = Integer.parseInt(txtMinRad.getText());
+			l_cd.maxr = Integer.parseInt(txtMaxRad.getText());
+
+			try {
+//				System.out.println("Detecting circles");
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_2_tl.x-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_tl.y-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_tl.width+m_cal_data.detection_box,
+					    		m_cal_data.pos_2_tl.height+m_cal_data.detection_box
+								));
+				l_found[0] = l_cd.findFirstCircle(
+						capturedImage
+						);
+				if(l_found[0] != null &&
+						Math.abs(l_found[0].x-(m_cal_data.pos_2_tl.x+m_cal_data.pos_2_tl.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[0].y-(m_cal_data.pos_2_tl.y+m_cal_data.pos_2_tl.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[0].width-(m_cal_data.pos_2_tl.width/2))<m_cal_data.circle_radius_threshold)
+				{
+					++l_goodenough;
+					g.setColor(Color.green);
+				    g.fillOval(
+				    		l_found[0].x- l_found[0].width,
+				    		l_found[0].y - l_found[0].height,
+				    		l_found[0].width * 2,
+				    		l_found[0].height * 2
+				    		);
+				}
+				else if(l_found[0] != null)
+				{
+					g.setColor(Color.red);
+				    g.fillOval(
+				    		l_found[0].x- l_found[0].width,
+				    		l_found[0].y - l_found[0].height,
+				    		l_found[0].width * 2,
+				    		l_found[0].height * 2
+				    		);
+				}
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_2_tr.x-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_tr.y-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_tr.width+m_cal_data.detection_box,
+					    		m_cal_data.pos_2_tr.height+m_cal_data.detection_box
+								));
+				l_found[1] = l_cd.findFirstCircle(
+						capturedImage
+						);
+				if(l_found[1] != null &&
+						Math.abs(l_found[1].x-(m_cal_data.pos_2_tr.x+m_cal_data.pos_2_tr.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[1].y-(m_cal_data.pos_2_tr.y+m_cal_data.pos_2_tr.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[1].width-(m_cal_data.pos_2_tr.width/2))<m_cal_data.circle_radius_threshold)
+				{
+					++l_goodenough;
+					g.setColor(Color.green);
+				    g.fillOval(
+				    		l_found[1].x- l_found[1].width,
+				    		l_found[1].y - l_found[1].height,
+				    		l_found[1].width * 2,
+				    		l_found[1].height * 2
+				    		);
+				}
+				else if(l_found[1] != null)
+				{
+					g.setColor(Color.red);
+				    g.fillOval(
+				    		l_found[1].x- l_found[1].width,
+				    		l_found[1].y - l_found[1].height,
+				    		l_found[1].width * 2,
+				    		l_found[1].height * 2
+				    		);
+				}
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_2_bl.x-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_bl.y-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_bl.width+m_cal_data.detection_box,
+					    		m_cal_data.pos_2_bl.height+m_cal_data.detection_box
+								));
+				l_found[2] = l_cd.findFirstCircle(
+						capturedImage
+						);
+				if(l_found[2] != null &&
+						Math.abs(l_found[2].x-(m_cal_data.pos_2_bl.x+m_cal_data.pos_2_bl.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[2].y-(m_cal_data.pos_2_bl.y+m_cal_data.pos_2_bl.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[2].width-(m_cal_data.pos_2_bl.width/2))<m_cal_data.circle_radius_threshold)
+				{
+					++l_goodenough;
+					g.setColor(Color.green);
+				    g.fillOval(
+				    		l_found[2].x- l_found[2].width,
+				    		l_found[2].y - l_found[2].height,
+				    		l_found[2].width * 2,
+				    		l_found[2].height * 2
+				    		);
+				}
+				else if(l_found[2] != null)
+				{
+					g.setColor(Color.red);
+				    g.fillOval(
+				    		l_found[2].x- l_found[2].width,
+				    		l_found[2].y - l_found[2].height,
+				    		l_found[2].width * 2,
+				    		l_found[2].height * 2
+				    		);
+				}
+				l_cd.detect(capturedImage,
+						new Rectangle(
+					    		m_cal_data.pos_2_br.x-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_br.y-m_cal_data.detection_box/2,
+					    		m_cal_data.pos_2_br.width+m_cal_data.detection_box,
+					    		m_cal_data.pos_2_br.height+m_cal_data.detection_box
+								));
+				l_found[3] = l_cd.findFirstCircle(
+						capturedImage
+						);
+				if(l_found[3] != null &&
+						Math.abs(l_found[3].x-(m_cal_data.pos_2_br.x+m_cal_data.pos_2_br.width/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[3].y-(m_cal_data.pos_2_br.y+m_cal_data.pos_2_br.height/2))<m_cal_data.circle_center_threshold &&
+						Math.abs(l_found[3].width-(m_cal_data.pos_2_br.width/2))<m_cal_data.circle_radius_threshold)
+				{
+					++l_goodenough;
+					g.setColor(Color.green);
+				    g.fillOval(
+				    		l_found[3].x- l_found[3].width,
+				    		l_found[3].y - l_found[3].height,
+				    		l_found[3].width * 2,
+				    		l_found[3].height * 2
+				    		);
+				}
+				else if(l_found[3] != null)
+				{
+					g.setColor(Color.red);
+				    g.fillOval(
+				    		l_found[3].x- l_found[3].width,
+				    		l_found[3].y - l_found[3].height,
+				    		l_found[3].width * 2,
+				    		l_found[3].height * 2
+				    		);
+				}
+			} catch (Exception e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			image.repaint();
+			if(m_stop_calibration_thread)
+			{
+				m_calibration_thread = null;
+				image.pos = 1;
+				return;
+			}
+		} while (l_goodenough < 4);
+		// Hunt for laser in detection circles
+		{
+			int l_pos, l_pos_slow;
+//			System.out.println("Move to base pos");
+			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-2))
+			{
+				image.pos = 1;
+				return;
+			}
+			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+			BufferedImage l_base_image = m_camera.getImage();
+			l_base_image.flush();
+
+			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
+			for(int corner=0; corner<2; ++corner)
+			{
+				Rectangle l_search_box = null;
+				System.out.println("Scan corner "+corner);
+				switch(corner)
+				{
+					case 0: l_search_box = m_cal_data.pos_2_tl; break;
+					case 1: l_search_box = m_cal_data.pos_2_tr; break;
+					case 2: l_search_box = m_cal_data.pos_2_bl; break;
+					case 3: l_search_box = m_cal_data.pos_2_br; break;
+				}
+				if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-1))
+				{
+					image.pos = 1;
+					return;
+				}
+				// Fast search
+				for(
+						l_pos = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
+						l_pos < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+						l_pos += Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/4)
+				{
+//					System.out.println("Move to base step "+l_pos);
+					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
+					{
+						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+						image.pos = 1;
+						return;
+					}
+//					System.out.println("Moved to base step "+l_pos);
+					BufferedImage l_image = m_camera.getImage();
+					l_image.flush();
+	
+					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
+							l_search_box.x+m_cal_data.detection_box/2);
+					if(l_found_offset!=-1)
+					{
+						System.out.println("Found corner "+corner);
+						image.pos = 1;
+						break;
+					}
+				}
+				if(l_pos >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
+				{
+					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
+					image.pos = 1;
+					return;
+				}
+				// Slow search
+				for(
+						l_pos_slow = l_pos - Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+						l_pos_slow < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+						++l_pos_slow)
+				{
+//					System.out.println("Move to base step "+l_pos);
+					if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos_slow))
+					{
+						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+						image.pos = 1;
+						return;
+					}
+//					System.out.println("Moved to base step "+l_pos);
+					BufferedImage l_image = m_camera.getImage();
+					l_image.flush();
+	
+					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
+							l_search_box.x+m_cal_data.detection_box/2);
+					if(l_found_offset!=-1)
+					{
+						System.out.println("Found corner "+corner);
+						break;
+					}
+				}
+				if(l_pos_slow >= Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90)
+				{
+					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
+					image.pos = 1;
+					return;
+				}
+				l_corner_pos_2[corner] = l_pos_slow;
+			}
+			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+		}
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2 = l_corner_pos_2[0];
+		txtTopleftmotorpos_2.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2);
+		System.out.println("Motorpos TL 2: "+l_corner_pos_2[0]);
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2 = l_corner_pos_2[1];
+		txtToprightmotorpos_2.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2);
+		System.out.println("Motorpos TR 2: "+l_corner_pos_2[1]);
+		invalidate();
+		
+		image.pos = 1;
 		m_calibration_thread = null;
 
+	}
+
+	void Detect()
+	{
+		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
+		File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+		for (int l_pos = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
+				l_pos < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+				++l_pos)
+		{
+			File l_infile;
+			try {
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+txtCalibImg.getText()+".png");
+			}
+			catch(Exception e)
+			{
+				continue;
+			}
+			System.out.println("Analysing "+l_infile.toString());
+			BufferedImage l_inimage, l_baseimage;
+
+			try {
+				l_baseimage = ImageIO.read(l_basefile);
+				l_inimage = ImageIO.read(l_infile);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+				return;
+			}
+			
+			int l_x_points[];
+			image.m_image = analyzeImage(l_baseimage, l_inimage);
+			l_x_points = analyzeImagetoArray(l_baseimage, l_inimage);
+			image.m_overlay = null;
+			image.repaint();
+			
+		}
 	}
 	
 	BufferedImage analyzeImage(BufferedImage a_base, BufferedImage a_in)
@@ -1177,6 +1695,46 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				a_out.setRGB(x, y, argb);
 				if(argb == 0xff00ff00) break;
 			}
+		}
+		return a_out;
+	}
+	
+	int[] analyzeImagetoArray(BufferedImage a_base, BufferedImage a_in)
+	{
+		int[] a_out = new int[a_in.getHeight()];
+		int x, y;
+
+		for(y = 0; y< a_in.getHeight(); ++y)
+		{
+			for(x = a_in.getWidth()-1; x>=0; --x)
+			{
+				int argb = a_in.getRGB(x, y);
+				int r = (argb & 0xff0000) >> 16;
+            	int g = (argb & 0x00ff00) >> 8;
+        		int b = (argb & 0x0000ff);
+        		
+				int argb_base = a_base.getRGB(x, y);
+				int r_base = (argb_base & 0xff0000) >> 16;
+            	int g_base = (argb_base & 0x00ff00) >> 8;
+        		int b_base = (argb_base & 0x0000ff);
+        		
+        		r = Math.abs(r_base-r);
+        		g = Math.abs(g_base-g);
+        		b = Math.abs(b_base-b);
+
+        		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
+        		{
+	        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
+	        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
+	        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) break;
+        		} else
+        		{
+	        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
+	        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
+	        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) break;
+        		}
+			}
+			a_out[y] = x;
 		}
 		return a_out;
 	}
@@ -1288,6 +1846,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
 		Eora3D_MainWindow.m_e3d_config.sm_calibration_vertical_offset = m_cal_data.v_offset;
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1 = Integer.parseInt(txtTopleftmotorpos.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1 = Integer.parseInt(txtToprightmotorpos.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2 = Integer.parseInt(txtTopleftmotorpos_2.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2 = Integer.parseInt(txtToprightmotorpos_2.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_circle_min_rad = Integer.parseInt(this.txtMinRad.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_circle_max_rad = Integer.parseInt(this.txtMaxRad.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_calibration_v_offset = sbHeightOffset.getValue();
 	}
 
 	@Override
