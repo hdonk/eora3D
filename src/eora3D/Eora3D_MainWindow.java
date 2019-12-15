@@ -293,7 +293,13 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			m_camera = m_webcams.get(0);
 			m_camera.setCustomViewSizes(l_res);
 			m_camera.setViewSize(new Dimension(1280,720));
-			m_camera.open();
+			try
+			{
+				m_camera.open();
+			} catch(Exception e)
+			{
+				System.exit(1);
+			}
 		}
 		else
 			m_camera = null;
