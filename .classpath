@@ -18,5 +18,26 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/webcam-capture-0.3.12.jar"/>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-opengles.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-opengles-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-glfw.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-glfw-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-glfw-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-sources.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:file:/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/lwjgl-javadoc.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="libs/lwjgl.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
