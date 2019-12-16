@@ -16,6 +16,8 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.RescaleOp;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.IntBuffer;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -28,9 +30,31 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
+import org.lwjgl.egl.EGLCapabilities;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.opengles.GLESCapabilities;
+import org.lwjgl.BufferUtils;
 
+import org.lwjgl.opengles.*;
+import org.lwjgl.opengles.GLES.*;
+import org.lwjgl.opengles.GLES32.*;
+import org.lwjgl.opengles.OESMapbuffer.*;
 
+import org.lwjgl.system.Configuration;
+import org.lwjgl.system.Platform;
 
+import org.lwjgl.system.*;
+import org.lwjgl.egl.*;
+import org.lwjgl.egl.EGLCapabilities;
+import org.lwjgl.glfw.*;
+//import org.lwjgl.opengl.GLUtil.*;
+import static org.lwjgl.glfw.Callbacks.*;
+import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFWNativeEGL.*;
+import static org.lwjgl.egl.EGL10.*;
+import static org.lwjgl.opengles.GLES20.*;
+import static org.lwjgl.system.MemoryStack.*;
+import static org.lwjgl.system.MemoryUtil.*;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -630,6 +654,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private JRadioButton radioButton;
 	private JRadioButton radioButton_1;
 
+	EGLCapabilities m_egl;
+	GLESCapabilities m_gles;
+	private long m_window;
+
 	eora3D_calibration(Webcam a_camera)
 	{
 		this.addWindowListener(this);
@@ -842,7 +870,148 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		calculateCalibrationPositions();
 		
 		setModal(true);
-	}
+
+		float scale = java.awt.Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
+		System.out.println("Res: " + java.awt.Toolkit.getDefaultToolkit().getScreenResolution());
+		int displayW = 600;//(int) ((float) m_glpanel.getWidth() * scale);
+		int displayH = 800;//(int) ((float) m_glpanel.getHeight() * scale);
+		/*
+		 * try (MemoryStack stack = stackPush()) { IntBuffer peError =
+		 * stack.mallocInt(1);
+		 * 
+		 * int token = VR_InitInternal(peError, 0); if (peError.get(0) == 0) { try {
+		 * OpenVR.create(token);
+		 * 
+		 * System.err.println("Model Number : " +
+		 * VRSystem_GetStringTrackedDeviceProperty( k_unTrackedDeviceIndex_Hmd,
+		 * ETrackedDeviceProperty_Prop_ModelNumber_String, peError));
+		 * System.err.println("Serial Number: " +
+		 * VRSystem_GetStringTrackedDeviceProperty( k_unTrackedDeviceIndex_Hmd,
+		 * ETrackedDeviceProperty_Prop_SerialNumber_String, peError));
+		 * 
+		 * IntBuffer w = stack.mallocInt(1); IntBuffer h = stack.mallocInt(1);
+		 * VRSystem_GetRecommendedRenderTargetSize(w, h);
+		 * System.err.println("Recommended width : " + w.get(0));
+		 * System.err.println("Recommended height: " + h.get(0)); displayW = w.get(0);
+		 * displayH = h.get(0); } finally { VR_ShutdownInternal(); } } else {
+		 * System.out.println("INIT ERROR SYMBOL: " +
+		 * VR_GetVRInitErrorAsSymbol(peError.get(0)));
+		 * System.out.println("INIT ERROR  DESCR: " +
+		 * VR_GetVRInitErrorAsEnglishDescription(peError.get(0))); } }
+		 */
+		{
+			// OpenGL ES 3.0 EGL init
+			GLFWErrorCallback.createPrint().set();
+			if (!glfwInit()) {
+				throw new IllegalStateException("Unable to initialize glfw");
+			}
+
+			glfwDefaultWindowHints();
+			glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+			glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+			glfwWindowHint(GLFW_DECORATED, GLFW_TRUE);
+			//glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
+
+			// GLFW setup for EGL & OpenGL ES
+			glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+			m_window = glfwCreateWindow(displayW, displayH, "glpanel", NULL, NULL);
+			if (m_window == NULL) {
+				throw new RuntimeException("Failed to create the GLFW window");
+			}
+			/*glfwSetWindowPos(m_window, (int) (m_glpanel.getLocationOnScreen().getX() * scale),
+					(int) (m_glpanel.getLocationOnScreen().getY() * scale));*/
+
+			glfwSetKeyCallback(m_window, (windowHnd, key, scancode, action, mods) -> {
+				/*
+				 * if (action == GLFW_RELEASE && key == GLFW_KEY_ESCAPE) {
+				 * glfwSetWindowShouldClose(windowHnd, true); }
+				 */
+			});
+			glfwSetWindowPosCallback(m_window, (windowHnd, xpos, ypos) -> {
+				System.out.println("Moved by system to " + xpos + "," + ypos);
+			});
+
+			// EGL capabilities
+			long dpy = glfwGetEGLDisplay();
+
+			try (MemoryStack stack = stackPush()) {
+				IntBuffer major = stack.mallocInt(1);
+				IntBuffer minor = stack.mallocInt(1);
+
+				if (!eglInitialize(dpy, major, minor)) {
+					throw new IllegalStateException(String.format("Failed to initialize EGL [0x%X]", eglGetError()));
+				}
+
+				m_egl = EGL.createDisplayCapabilities(dpy, major.get(0), minor.get(0));
+			}
+
+			try {
+				System.out.println("EGL Capabilities:");
+				for (Field f : EGLCapabilities.class.getFields()) {
+					if (f.getType() == boolean.class) {
+						if (f.get(m_egl).equals(Boolean.TRUE)) {
+							System.out.println("\t" + f.getName());
+						}
+					}
+				}
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+
+			// OpenGL ES capabilities
+			glfwMakeContextCurrent(m_window);
+			m_gles = GLES.createCapabilities();
+
+			try {
+				System.out.println("OpenGL ES Capabilities:");
+				for (Field f : GLESCapabilities.class.getFields()) {
+					if (f.getType() == boolean.class) {
+						if (f.get(m_gles).equals(Boolean.TRUE)) {
+							System.out.println("\t" + f.getName());
+						}
+					}
+				}
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+
+			System.out.println("GL_VENDOR: " + glGetString(GL_VENDOR));
+			System.out.println("GL_VERSION: " + glGetString(GL_VERSION));
+			System.out.println("GL_RENDERER: " + glGetString(GL_RENDERER));
+
+/*			m_main_program = shaderInit("mainVertexShader.glsl", "mainFragmentShader.glsl");
+			if (m_main_program == -1) {
+				System.err.println("Failed to initialise main shaders");
+				GLES.setCapabilities(null);
+
+				glfwFreeCallbacks(m_window);
+				glfwTerminate();
+				System.exit(1);
+			}
+			m_point_program = shaderInit("pointVertexShader.glsl", "pointFragmentShader.glsl");
+			if (m_point_program == -1) {
+				System.err.println("Failed to initialise point shaders");
+				GLES.setCapabilities(null);
+
+				glfwFreeCallbacks(m_window);
+				glfwTerminate();
+				System.exit(1);
+			}
+			m_point_program_col = shaderInit("pointVertexShaderCol.glsl", "pointFragmentShaderCol.glsl");
+			if (m_point_program_col == -1) {
+				System.err.println("Failed to initialise colored point shaders");
+				GLES.setCapabilities(null);
+
+				glfwFreeCallbacks(m_window);
+				glfwTerminate();
+				System.exit(1);
+			}*/
+		}
+}
 
 	private void calculateCalibrationPositions() {
 		if(m_cal_data == null)
@@ -1015,6 +1184,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		} else
 		if(e.getActionCommand()=="Calibrate")
 		{
+			glfwShowWindow(m_window);
 			if(m_calibration_thread == null)
 			{
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
@@ -1857,7 +2027,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		// TODO Auto-generated method stub
+		glfwHideWindow(m_window);
+
+		glfwSetWindowShouldClose(m_window, true);
+		GLES.setCapabilities(null);
+
+		glfwFreeCallbacks(m_window);
+		glfwTerminate();
 		
 	}
 
