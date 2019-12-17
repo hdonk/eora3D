@@ -47,7 +47,7 @@ import org.lwjgl.BufferUtils;
 import org.lwjgl.opengles.*;
 import org.lwjgl.opengles.GLES.*;
 import static org.lwjgl.opengles.GLES30.glBindVertexArray;
-import org.lwjgl.opengles.GLES32.*;
+//import org.lwjgl.opengles.GLES32.*;
 import org.lwjgl.opengles.OESMapbuffer.*;
 
 import org.lwjgl.system.Configuration;
@@ -1288,10 +1288,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
 
 		/* .rotate(q.rotateZ((float) Math.toRadians(rot)).normalize()) */;
-
+		int l_program;
 /*		if(m_pcd.m_layers.get(i).fixedColor)
 		{
 			glUseProgram(m_point_program);
+			l_program = m_point_program;
 			if (!GLok("glUseProgram(m_point_program)"))
 				return;
 			int l_colorloc = glGetUniformLocation(m_point_program, "color");
@@ -1304,32 +1305,30 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 						);
 		}
 		else*/
-		{
+	//	{
 			glUseProgram(m_point_program_col);
+			l_program = m_point_program_col;
 			if (!GLok("glUseProgram(m_point_program_col)"))
 				return;
 			glBindAttribLocation(m_point_program, 1, "color");
 			if (!GLok("Setting glBindAttribLocation"))
 				return;
-		}
-		modelViewLoc = glGetUniformLocation(m_point_program_col, "modelView");
+		//}
+		modelViewLoc = glGetUniformLocation(l_program, "modelView");
 		if (!GLok("Calling glGetUniformLocation"))
-			return;
-		System.out.println("modelView "+modelViewLoc);
-		glUniform4f(modelViewLoc, 1.0f, 1.0f, 1.0f, 1.0f);
-		if (!GLok("Setting glUniform4f"))
 			return;
 		modelView.identity();
 		modelView.mul(projectM).mul(viewM).mul(modelM);
+		System.out.println("modelView "+modelViewLoc);
 		glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
 		if (!GLok("Setting glUniformMatrix4fv"))
 			return;
-		scaleLoc = glGetUniformLocation(m_point_program, "scale");
+		scaleLoc = glGetUniformLocation(l_program, "scale");
 		GLok("Retrieving scale uniform location");
 		glUniform1f(scaleLoc, 1.0f); // m_scalefactor 
 		GLok("Set scale uniform");
 
-		glBindAttribLocation(m_point_program, 0, "vertex");
+		glBindAttribLocation(l_program, 0, "vertex");
 		errorCheckValue = glGetError();
 		if (errorCheckValue != GL_NO_ERROR) {
 			System.err.println("GL Error " + errorCheckValue);
@@ -1345,6 +1344,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			m_rot = 0.0f;
 		}
 		lastTime = thisTime;
+		System.out.println("Rot: "+m_rot);
 	}
 
 
@@ -1522,6 +1522,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				m_thread = new Thread(this);
 			}
 			m_thread.start();
+			m_pco.clear();
+			m_pco.addPoint(10, 10, 10, 255, 0, 0);
+			m_pco.addPoint(20, 20, 10, 0, 255, 0);
+			m_pco.addPoint(40, 40, 10, 255, 255, 0);
+			m_pco.addPoint(70, 70, 70, 255, 0, 255);
 		} else
 		if(e.getActionCommand()=="Calibrate")
 		{
@@ -2582,7 +2587,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				glfwSwapBuffers(m_window);
 				
 				try {
-					Thread.sleep(1000);
+					Thread.sleep(200);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
