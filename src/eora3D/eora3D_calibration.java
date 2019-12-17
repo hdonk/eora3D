@@ -24,6 +24,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -45,6 +46,7 @@ import org.lwjgl.BufferUtils;
 
 import org.lwjgl.opengles.*;
 import org.lwjgl.opengles.GLES.*;
+import static org.lwjgl.opengles.GLES30.glBindVertexArray;
 import org.lwjgl.opengles.GLES32.*;
 import org.lwjgl.opengles.OESMapbuffer.*;
 
@@ -81,6 +83,133 @@ class PointCloudData
 	float y_rot = 0.0f;
 	float z_rot = 0.0f;
 };
+
+class RGBPoint
+{
+	public int m_x;
+	public int m_y;
+	public int m_z;
+	public int m_r;
+	public int m_g;
+	public int m_b;
+	
+	public RGBPoint(int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
+	{
+		m_x = a_x;
+		m_y = a_y;
+		m_z = a_z;
+		m_r = a_r;
+		m_g = a_g;
+		m_b = a_b;
+	}
+}
+
+class PointCloudObject {
+	int m_point_vbo;
+	int m_point_ibo;
+	float m_scalefactor = 1.0f;
+	ArrayList<RGBPoint> m_points;
+	boolean m_refresh = false;
+	
+	public PointCloudObject()
+	{
+		clear();
+	}
+	
+	public void clear()
+	{
+		m_points = new ArrayList<RGBPoint>();
+		m_point_vbo = -1;
+		m_point_ibo = -1;
+	}
+	
+	boolean GLok(String message)
+	{
+		int errorCheckValue = glGetError();
+		if (errorCheckValue != GL_NO_ERROR) {
+			System.err.println("GL Error "+errorCheckValue+" "+message);
+			Thread.dumpStack();
+			return false;
+		}
+		return true;
+	}
+
+	public void draw()
+	{
+		if(m_refresh)
+		{
+			int l_vertexcount = m_points.size();
+	        // Number of bytes we need per vertex.
+	        int l_vertexsize = 3*4 + 4*4;
+
+	        // A bit of opengl magic to allocate a vertex-buffer-object to
+	        // store the vertices.
+	        IntBuffer l_intbuffer = BufferUtils.createIntBuffer(2);
+	        glGenBuffers(l_intbuffer);
+	        m_point_vbo = l_intbuffer.get(0);
+	        m_point_ibo = l_intbuffer.get(1);
+	        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
+	        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
+	        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
+	                GLES32.GL_WRITE_ONLY, null).asFloatBuffer();
+	        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+	        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
+	        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
+	                GLES32.GL_WRITE_ONLY, null).asIntBuffer();
+
+	        for(int i=0; i<m_points.size(); ++i)
+	        {
+	        	RGBPoint l_pt = m_points.get(i);
+	        	float x = (float)l_pt.m_x;
+	        	float y = (float)l_pt.m_y;
+	        	float z = (float)l_pt.m_z;
+	        	float r = (float)l_pt.m_r/255.0f;
+	        	float g = (float)l_pt.m_g/255.0f;
+	        	float b = (float)l_pt.m_b/255.0f;
+                vertexBuffer.put((float) x);
+                vertexBuffer.put((float) y);
+                vertexBuffer.put((float) z);
+                vertexBuffer.put((float) r);
+                vertexBuffer.put((float) g);
+                vertexBuffer.put((float) b);
+                vertexBuffer.put((float) 1.0f);
+	        }
+		            
+	        // Tell openGL that we filled the buffers.
+	        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
+	        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
+
+	        m_refresh = false;
+		}
+		glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
+		if(!GLok("Setting glBindBuffer)")) return;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+		if(!GLok("Setting glBindBuffer")) return;
+		glEnableVertexAttribArray(0);
+		if(!GLok("Setting glEnableVertexAttribArray (vertex)")) return;
+		glEnableVertexAttribArray(1);
+		if(!GLok("Setting glEnableVertexAttribArray (color)")) return;
+		
+		int l_vertexstride = 3 * 4 + 4 * 4;
+		glVertexAttribPointer(0, 3, GL_FLOAT, false, l_vertexstride, 0);
+		if(!GLok("Setting glVertexAttribPointer (vertex)")) return;
+		glVertexAttribPointer(1, 4, GL_FLOAT, false, l_vertexstride, 3*4);
+		if(!GLok("Setting glVertexAttribPointer (color)")) return;
+		glBindVertexArray(0);
+		if(!GLok("Setting glBindVertexArray")) return;
+		
+		
+		glDrawElements(GL_POINTS, m_points.size(), GL_UNSIGNED_INT, 0);
+		if(!GLok("glDrawElements")) return;
+	}
+
+	public void addPoint(int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
+	{
+		RGBPoint l_point = new RGBPoint(a_x, a_y, a_z, a_r, a_g, a_b);
+		this.m_points.add(l_point);
+		m_refresh = true;
+	}
+}
 
 class CalibrationData
 {
@@ -683,8 +812,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private int displayW;
 	private int displayH;
 	PointCloudData m_pcd = null;
-	int m_rot;
+	PointCloudObject m_pco = null;
+	float m_rot = 0.0f;
 	private Thread m_thread = null;
+	
+	long lastTime = 0;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -901,6 +1033,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		setModal(true);
 
 		m_pcd = new PointCloudData();
+		m_pco = new PointCloudObject();
+		
 }
 	
 	private static String readFileAsString(String filename) throws Exception {
@@ -1128,50 +1262,26 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		// System.out.println("Z "+(-2f+rot/120.0f));
 
 		glUseProgram(m_main_program);
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
+		if (!GLok(""))
 			return;
-		}
 		modelViewLoc = glGetUniformLocation(m_main_program, "modelView");
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
+		if (!GLok(""))
 			return;
-		}
 		modelView.identity();
 		modelView.mul(projectM).mul(viewM).mul(modelM);
 //		modelView = projectM.mul(viewM).mul(modelM);
 		glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
+		if (!GLok(""))
 			return;
-		}
 		glBindAttribLocation(m_main_program, 0, "vertex");
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
+		if (!GLok(""))
 			return;
-		}
 		glBindAttribLocation(m_main_program, 0, "color");
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
+		if (!GLok(""))
 			return;
-		}
 		glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
+		if (!GLok(""))
 			return;
-		}
 
 		modelM.identity();
 		modelM.translate(0.0f, 0.0f, -500.0f).rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize())
@@ -1179,57 +1289,62 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		/* .rotate(q.rotateZ((float) Math.toRadians(rot)).normalize()) */;
 
-/*		for (int i = 0; i < m_pcos.size(); ++i) {
-			if(!m_pcd.m_layers.get(i).displayed) return;
-			if(m_pcd.m_layers.get(i).fixedColor)
-			{
-				glUseProgram(m_point_program);
-				int l_colorloc = glGetUniformLocation(m_point_program, "color");
-				GLok("Retrieving scale uniform location");
+/*		if(m_pcd.m_layers.get(i).fixedColor)
+		{
+			glUseProgram(m_point_program);
+			if (!GLok("glUseProgram(m_point_program)"))
+				return;
+			int l_colorloc = glGetUniformLocation(m_point_program, "color");
+			GLok("Retrieving scale uniform location");
 				glUniform4f(l_colorloc,
 						m_pcd.m_layers.get(i).r/255.0f,
 						m_pcd.m_layers.get(i).g/255.0f,
 						m_pcd.m_layers.get(i).b/255.0f,
 						0.0f
 						);
-			}
-			else
-			{
-				glUseProgram(m_point_program_col);
-				glBindAttribLocation(m_point_program, 1, "color");
-				if (!GLok("Setting glBindAttribLocation"))
-					return;
-			}
-			modelViewLoc = glGetUniformLocation(m_point_program, "modelView");
-			if (!GLok("Setting glGetUniformLocation"))
+		}
+		else*/
+		{
+			glUseProgram(m_point_program_col);
+			if (!GLok("glUseProgram(m_point_program_col)"))
 				return;
-			modelView.identity();
-			modelView.mul(projectM).mul(viewM).mul(modelM);
-			glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
-			if (!GLok("Setting glUniformMatrix4fv"))
+			glBindAttribLocation(m_point_program, 1, "color");
+			if (!GLok("Setting glBindAttribLocation"))
 				return;
-			scaleLoc = glGetUniformLocation(m_point_program, "scale");
-			GLok("Retrieving scale uniform location");
-			glUniform1f(scaleLoc, 1.0f); // m_scalefactor 
-			GLok("Set scale uniform");
-	
-			glBindAttribLocation(m_point_program, 0, "vertex");
-			errorCheckValue = glGetError();
-			if (errorCheckValue != GL_NO_ERROR) {
-				System.err.println("GL Error " + errorCheckValue);
-				Thread.dumpStack();
-				return;
-			}
-			m_pcos.get(i).draw();
-		}*/
+		}
+		modelViewLoc = glGetUniformLocation(m_point_program_col, "modelView");
+		if (!GLok("Calling glGetUniformLocation"))
+			return;
+		System.out.println("modelView "+modelViewLoc);
+		glUniform4f(modelViewLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+		if (!GLok("Setting glUniform4f"))
+			return;
+		modelView.identity();
+		modelView.mul(projectM).mul(viewM).mul(modelM);
+		glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
+		if (!GLok("Setting glUniformMatrix4fv"))
+			return;
+		scaleLoc = glGetUniformLocation(m_point_program, "scale");
+		GLok("Retrieving scale uniform location");
+		glUniform1f(scaleLoc, 1.0f); // m_scalefactor 
+		GLok("Set scale uniform");
 
-/*		long thisTime = System.nanoTime();
+		glBindAttribLocation(m_point_program, 0, "vertex");
+		errorCheckValue = glGetError();
+		if (errorCheckValue != GL_NO_ERROR) {
+			System.err.println("GL Error " + errorCheckValue);
+			Thread.dumpStack();
+			return;
+		}
+		m_pco.draw();
+
+		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
 		m_rot += delta * 10f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
-		lastTime = thisTime;*/
+		lastTime = thisTime;
 	}
 
 
