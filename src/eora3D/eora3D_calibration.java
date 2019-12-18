@@ -110,6 +110,7 @@ class PointCloudObject {
 	float m_scalefactor = 1.0f;
 	ArrayList<RGBPoint> m_points;
 	boolean m_refresh = false;
+	private IntBuffer m_intbuffer;
 	
 	public PointCloudObject()
 	{
@@ -142,12 +143,15 @@ class PointCloudObject {
 	        // Number of bytes we need per vertex.
 	        int l_vertexsize = 3*4 + 4*4;
 
-	        // A bit of opengl magic to allocate a vertex-buffer-object to
-	        // store the vertices.
-	        IntBuffer l_intbuffer = BufferUtils.createIntBuffer(2);
-	        glGenBuffers(l_intbuffer);
-	        m_point_vbo = l_intbuffer.get(0);
-	        m_point_ibo = l_intbuffer.get(1);
+	        System.out.println("Refreshing points");
+	        if(m_intbuffer != null)
+	        {
+	        	glDeleteBuffers(m_intbuffer);
+	        }
+	        m_intbuffer = BufferUtils.createIntBuffer(2);
+	        glGenBuffers(m_intbuffer);
+	        m_point_vbo = m_intbuffer.get(0);
+	        m_point_ibo = m_intbuffer.get(1);
 	        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
 	        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
 	        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
@@ -180,7 +184,10 @@ class PointCloudObject {
 	        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
 
 	        m_refresh = false;
+	        System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
+	        System.gc();
 		}
+		System.out.println("Displaying "+m_points.size()+" points");
 		glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
 		if(!GLok("Setting glBindBuffer)")) return;
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
@@ -817,6 +824,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private Thread m_thread = null;
 	
 	long lastTime = 0;
+	private Thread m_detect_thread = null;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -1319,7 +1327,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			return;
 		modelView.identity();
 		modelView.mul(projectM).mul(viewM).mul(modelM);
-		System.out.println("modelView "+modelViewLoc);
 		glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
 		if (!GLok("Setting glUniformMatrix4fv"))
 			return;
@@ -1339,12 +1346,12 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		m_rot += delta * 10f;
+//		m_rot += delta * 10f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
+//		System.out.println("Rot: "+m_rot);
 		lastTime = thisTime;
-		System.out.println("Rot: "+m_rot);
 	}
 
 
@@ -1520,13 +1527,16 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			if(m_thread == null)
 			{
 				m_thread = new Thread(this);
+				m_thread.start();
 			}
-			m_thread.start();
-			m_pco.clear();
-			m_pco.addPoint(10, 10, 10, 255, 0, 0);
-			m_pco.addPoint(20, 20, 10, 0, 255, 0);
-			m_pco.addPoint(40, 40, 10, 255, 255, 0);
-			m_pco.addPoint(70, 70, 70, 255, 0, 255);
+			if(m_detect_thread == null)
+			{
+				Runnable l_runnable = () -> {
+					Detect();
+				};
+				m_detect_thread = new Thread(l_runnable);
+				m_detect_thread.start();
+			}
 		} else
 		if(e.getActionCommand()=="Calibrate")
 		{
@@ -2120,17 +2130,20 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
 		File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
 		for (int l_pos = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
-				l_pos < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+				l_pos < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*45;
 				++l_pos)
 		{
 			File l_infile;
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+txtCalibImg.getText()+".png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+l_pos+".png");
 			}
 			catch(Exception e)
 			{
-				continue;
+				e.printStackTrace();
+				m_detect_thread = null;
+				return;
 			}
+			if(!l_infile.exists()) continue;
 			System.out.println("Analysing "+l_infile.toString());
 			BufferedImage l_inimage, l_baseimage;
 
@@ -2138,18 +2151,30 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				l_baseimage = ImageIO.read(l_basefile);
 				l_inimage = ImageIO.read(l_infile);
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
+				m_detect_thread = null;
 				return;
 			}
 			
 			int l_x_points[];
-			image.m_image = analyzeImage(l_baseimage, l_inimage);
+			image.m_image = l_baseimage;
+			image.m_overlay = analyzeImage(l_baseimage, l_inimage);
 			l_x_points = analyzeImagetoArray(l_baseimage, l_inimage);
-			image.m_overlay = null;
 			image.repaint();
 			
+			for( int i=0; i<l_baseimage.getHeight(); ++i)
+			{
+				if(l_x_points[i]>=0)
+					m_pco.addPoint(l_x_points[i], i, 0/* to calculate */,
+							(l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16,
+							(l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8,
+							(l_baseimage.getRGB(l_x_points[i], i) & 0x00)
+							);
+			}
+			
+			System.out.println("Complete "+l_infile.toString());
 		}
+		m_detect_thread = null;
 	}
 	
 	BufferedImage analyzeImage(BufferedImage a_base, BufferedImage a_in)
@@ -2372,14 +2397,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	@Override
 	public void windowClosed(WindowEvent e) {
-		glfwHideWindow(m_window);
-
 		glfwSetWindowShouldClose(m_window, true);
-		GLES.setCapabilities(null);
-
-		glfwFreeCallbacks(m_window);
-		glfwTerminate();
-		
 	}
 
 	@Override
@@ -2582,21 +2600,22 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					e.printStackTrace();
 				}
 			} else {*/
+				//System.out.println("Render");
 				render(m_egl, m_gles);
+				//System.out.println("Rendered");
 
 				glfwSwapBuffers(m_window);
 				
 				try {
-					Thread.sleep(200);
+					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 //			}
 		}
-
+        glfwHideWindow(m_window);
 		GLES.setCapabilities(null);
-
 		glfwFreeCallbacks(m_window);
 		glfwTerminate();
 	}

@@ -104,6 +104,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		camera_selector = new JComboBox<String>();
 		camera_selector.setBounds(10, 216, 423, 30);
 		getContentPane().add(camera_selector);
+		camera_selector.addActionListener(this);
 		
 		JButton btnBluetoothRescan = new JButton("Bluetooth Rescan");
 		btnBluetoothRescan.setBounds(20, 258, 160, 23);
@@ -287,27 +288,15 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			camera_selector.addItem(webcam.getName());
 		}
 		camera_selector.setSelectedItem(0);
-		if(m_webcams.size()>0)
+		if(m_webcams.size()==0)
 		{
-			Dimension l_res[] = new Dimension[] {new Dimension(1280, 720)};
-			m_camera = m_webcams.get(0);
-			m_camera.setCustomViewSizes(l_res);
-			m_camera.setViewSize(new Dimension(1280,720));
-			try
-			{
-				m_camera.open();
-			} catch(Exception e)
-			{
-				System.exit(1);
-			}
-		}
-		else
 			m_camera = null;
+		}
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
+		//System.out.println("action :"+e);
 		if(e.getActionCommand()=="Bluetooth Rescan")
 		{
 			Bluetooth_Rescan();
@@ -330,13 +319,22 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
 			return;
 		} else
-		if(e.equals(this.camera_selector))
+		if(e.getSource().equals(this.camera_selector))
 		{
 			if(m_camera!=null)
 				m_camera.close();
-			System.out.println("Selecting webcam");
 			m_camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
-			m_camera.isOpen();
+			Dimension l_res[] = new Dimension[] {new Dimension(1280, 720)};
+			m_camera.setCustomViewSizes(l_res);
+			m_camera.setViewSize(new Dimension(1280,720));
+			try
+			{
+				m_camera.open();
+			}
+			catch(Exception e1)
+			{
+				m_camera = null;
+			}
 		} else
 		if(e.getActionCommand()=="Calibration")
 		{
