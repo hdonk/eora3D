@@ -106,7 +106,7 @@ class RGBPoint
 
 class PointCloudObject {
 	int m_point_vbo;
-	int m_point_ibo;
+//	int m_point_ibo;
 	float m_scalefactor = 1.0f;
 	ArrayList<RGBPoint> m_points;
 	boolean m_refresh = false;
@@ -120,8 +120,15 @@ class PointCloudObject {
 	public void clear()
 	{
 		m_points = new ArrayList<RGBPoint>();
-		m_point_vbo = -1;
+/*		m_point_vbo = -1;
 		m_point_ibo = -1;
+        if(m_intbuffer != null)
+        {
+        	glBindBuffer(GL_ARRAY_BUFFER, 0);
+        	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        	glDeleteBuffers(m_intbuffer);
+        	m_intbuffer = null;
+        }*/
 	}
 	
 	boolean GLok(String message)
@@ -137,84 +144,97 @@ class PointCloudObject {
 
 	public void draw()
 	{
-		if(m_refresh)
+		synchronized(this)
 		{
-			int l_vertexcount = m_points.size();
-	        // Number of bytes we need per vertex.
-	        int l_vertexsize = 3*4 + 4*4;
-
-	        System.out.println("Refreshing points");
-	        if(m_intbuffer != null)
-	        {
-	        	glDeleteBuffers(m_intbuffer);
-	        }
-	        m_intbuffer = BufferUtils.createIntBuffer(2);
-	        glGenBuffers(m_intbuffer);
-	        m_point_vbo = m_intbuffer.get(0);
-	        m_point_ibo = m_intbuffer.get(1);
-	        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
-	        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
-	        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
-	                GLES32.GL_WRITE_ONLY, null).asFloatBuffer();
-	        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
-	        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
-	        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
-	                GLES32.GL_WRITE_ONLY, null).asIntBuffer();
-
-	        for(int i=0; i<m_points.size(); ++i)
-	        {
-	        	RGBPoint l_pt = m_points.get(i);
-	        	float x = (float)l_pt.m_x;
-	        	float y = (float)l_pt.m_y;
-	        	float z = (float)l_pt.m_z;
-	        	float r = (float)l_pt.m_r/255.0f;
-	        	float g = (float)l_pt.m_g/255.0f;
-	        	float b = (float)l_pt.m_b/255.0f;
-                vertexBuffer.put((float) x);
-                vertexBuffer.put((float) y);
-                vertexBuffer.put((float) z);
-                vertexBuffer.put((float) r);
-                vertexBuffer.put((float) g);
-                vertexBuffer.put((float) b);
-                vertexBuffer.put((float) 1.0f);
-	        }
-		            
-	        // Tell openGL that we filled the buffers.
-	        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
-	        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
-
-	        m_refresh = false;
-	        System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
-	        System.gc();
+			if(m_refresh)
+			{
+				int l_vertexcount = m_points.size();
+		        // Number of bytes we need per vertex.
+		        int l_vertexsize = 3*4 + 4*4;
+	
+		        System.out.println("Refreshing points");
+		        if(m_intbuffer != null)
+		        {
+		        	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		        	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		        	glDeleteBuffers(m_intbuffer);
+		        }
+		        m_intbuffer = BufferUtils.createIntBuffer(1);
+		        glGenBuffers(m_intbuffer);
+		        GLok("glGenBuffers");
+		        m_point_vbo = m_intbuffer.get(0);
+	//	        m_point_ibo = m_intbuffer.get(1);
+		        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
+		        GLok("glBindBuffer");
+		        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
+		        GLok("glBufferData");
+		        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
+		                GLES32.GL_WRITE_ONLY, null).asFloatBuffer();
+	/*	        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+		        GLok("glBindBuffer");
+		        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
+		        GLok("glBufferData");
+		        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
+		                GLES32.GL_WRITE_ONLY, null).asIntBuffer();*/
+	
+		        for(int i=0; i<m_points.size(); ++i)
+		        {
+		        	RGBPoint l_pt = m_points.get(i);
+		        	float x = (float)l_pt.m_x;
+		        	float y = (float)l_pt.m_y;
+		        	float z = (float)l_pt.m_z;
+		        	float r = (float)l_pt.m_r/255.0f;
+		        	float g = (float)l_pt.m_g/255.0f;
+		        	float b = (float)l_pt.m_b/255.0f;
+	                vertexBuffer.put((float) x);
+	                vertexBuffer.put((float) y);
+	                vertexBuffer.put((float) z);
+	                vertexBuffer.put((float) r);
+	                vertexBuffer.put((float) g);
+	                vertexBuffer.put((float) b);
+	                vertexBuffer.put((float) 1.0f);
+		        }
+			            
+		        // Tell openGL that we filled the buffers.
+		        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
+		        //OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
+	
+		        m_refresh = false;
+		        System.out.println("Refreshed points "+m_point_vbo/*+" "+m_point_ibo*/);
+		        System.gc();
+			}
+			System.out.println("Displaying "+m_points.size()+" points "+m_point_vbo/*+" "+m_point_ibo*/);
+			glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
+			if(!GLok("Setting glBindBuffer)")) return;
+	//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+	//		if(!GLok("Setting glBindBuffer")) return;
+			glEnableVertexAttribArray(0);
+			if(!GLok("Setting glEnableVertexAttribArray (vertex)")) return;
+			glEnableVertexAttribArray(1);
+			if(!GLok("Setting glEnableVertexAttribArray (color)")) return;
+			
+			int l_vertexstride = 3 * 4 + 4 * 4;
+			glVertexAttribPointer(0, 3, GL_FLOAT, false, l_vertexstride, 0);
+			if(!GLok("Setting glVertexAttribPointer (vertex)")) return;
+			glVertexAttribPointer(1, 4, GL_FLOAT, false, l_vertexstride, 3*4);
+			if(!GLok("Setting glVertexAttribPointer (color)")) return;
+			glBindVertexArray(0);
+			if(!GLok("Setting glBindVertexArray")) return;
+			
+			
+			glDrawElements(GL_POINTS, m_points.size(), GL_UNSIGNED_INT, 0);
+			if(!GLok("glDrawElements")) return;
 		}
-		System.out.println("Displaying "+m_points.size()+" points");
-		glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
-		if(!GLok("Setting glBindBuffer)")) return;
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
-		if(!GLok("Setting glBindBuffer")) return;
-		glEnableVertexAttribArray(0);
-		if(!GLok("Setting glEnableVertexAttribArray (vertex)")) return;
-		glEnableVertexAttribArray(1);
-		if(!GLok("Setting glEnableVertexAttribArray (color)")) return;
-		
-		int l_vertexstride = 3 * 4 + 4 * 4;
-		glVertexAttribPointer(0, 3, GL_FLOAT, false, l_vertexstride, 0);
-		if(!GLok("Setting glVertexAttribPointer (vertex)")) return;
-		glVertexAttribPointer(1, 4, GL_FLOAT, false, l_vertexstride, 3*4);
-		if(!GLok("Setting glVertexAttribPointer (color)")) return;
-		glBindVertexArray(0);
-		if(!GLok("Setting glBindVertexArray")) return;
-		
-		
-		glDrawElements(GL_POINTS, m_points.size(), GL_UNSIGNED_INT, 0);
-		if(!GLok("glDrawElements")) return;
 	}
 
 	public void addPoint(int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
 	{
-		RGBPoint l_point = new RGBPoint(a_x, a_y, a_z, a_r, a_g, a_b);
-		this.m_points.add(l_point);
-		m_refresh = true;
+		synchronized(this)
+		{
+			RGBPoint l_point = new RGBPoint(a_x, a_y, a_z, a_r, a_g, a_b);
+			this.m_points.add(l_point);
+			m_refresh = true;
+		}
 	}
 }
 
@@ -1293,6 +1313,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		modelM.identity();
 		modelM.translate(0.0f, 0.0f, -500.0f).rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize())
+		.rotate(q.rotateZ((float) Math.toRadians(m_rot)).normalize())
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
 
 		/* .rotate(q.rotateZ((float) Math.toRadians(rot)).normalize()) */;
@@ -1346,11 +1367,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-//		m_rot += delta * 10f;
+		m_rot += delta * 10f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
-//		System.out.println("Rot: "+m_rot);
+		System.out.println("Rot: "+m_rot);
 		lastTime = thisTime;
 	}
 
@@ -2124,6 +2145,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	void Detect()
 	{
+		m_pco.clear();
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
