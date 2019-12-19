@@ -27,10 +27,10 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public int sm_calibration_vertical_offset = 0;
 	
-	public int sm_calibration_tl_motorpos_1 = 0;
-	public int sm_calibration_tr_motorpos_1 = 0;
-	public int sm_calibration_tl_motorpos_2 = 0;
-	public int sm_calibration_tr_motorpos_2 = 0;
+	public int sm_calibration_tl_motorpos_1 = 3413;
+	public int sm_calibration_tr_motorpos_1 = 3915;
+	public int sm_calibration_tl_motorpos_2 = 2100;
+	public int sm_calibration_tr_motorpos_2 = 2244;
 	
 	public int sm_calibration_v_offset = 0;
 
