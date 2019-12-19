@@ -106,7 +106,7 @@ class RGBPoint
 
 class PointCloudObject {
 	int m_point_vbo;
-//	int m_point_ibo;
+	int m_point_ibo;
 	float m_scalefactor = 1.0f;
 	ArrayList<RGBPoint> m_points;
 	boolean m_refresh = false;
@@ -129,6 +129,13 @@ class PointCloudObject {
         	glDeleteBuffers(m_intbuffer);
         	m_intbuffer = null;
         }*/
+	}
+
+	public void glclear()
+	{
+    	glBindBuffer(GL_ARRAY_BUFFER, 0);
+    	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    	if(m_intbuffer!=null) glDeleteBuffers(m_intbuffer);
 	}
 	
 	boolean GLok(String message)
@@ -156,26 +163,26 @@ class PointCloudObject {
 		        if(m_intbuffer != null)
 		        {
 		        	glBindBuffer(GL_ARRAY_BUFFER, 0);
-		        	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		        	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		        	glDeleteBuffers(m_intbuffer);
 		        }
-		        m_intbuffer = BufferUtils.createIntBuffer(1);
+		        m_intbuffer = BufferUtils.createIntBuffer(2);
 		        glGenBuffers(m_intbuffer);
 		        GLok("glGenBuffers");
 		        m_point_vbo = m_intbuffer.get(0);
-	//	        m_point_ibo = m_intbuffer.get(1);
+		        m_point_ibo = m_intbuffer.get(1);
 		        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
 		        GLok("glBindBuffer");
 		        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
 		        GLok("glBufferData");
 		        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
 		                GLES32.GL_WRITE_ONLY, null).asFloatBuffer();
-	/*	        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+		        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
 		        GLok("glBindBuffer");
 		        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
 		        GLok("glBufferData");
 		        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
-		                GLES32.GL_WRITE_ONLY, null).asIntBuffer();*/
+		                GLES32.GL_WRITE_ONLY, null).asIntBuffer();
 	
 		        for(int i=0; i<m_points.size(); ++i)
 		        {
@@ -193,21 +200,23 @@ class PointCloudObject {
 	                vertexBuffer.put((float) g);
 	                vertexBuffer.put((float) b);
 	                vertexBuffer.put((float) 1.0f);
+	                indexBuffer.put(i);
 		        }
 			            
 		        // Tell openGL that we filled the buffers.
 		        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
-		        //OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
+		        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
 	
 		        m_refresh = false;
-		        System.out.println("Refreshed points "+m_point_vbo/*+" "+m_point_ibo*/);
+		        System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
 		        System.gc();
 			}
-			System.out.println("Displaying "+m_points.size()+" points "+m_point_vbo/*+" "+m_point_ibo*/);
+			if(m_points.size()==0) return;
+			//System.out.println("Displaying "+m_points.size()+" points "+m_point_vbo+" "+m_point_ibo);
 			glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
 			if(!GLok("Setting glBindBuffer)")) return;
-	//		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
-	//		if(!GLok("Setting glBindBuffer")) return;
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+			if(!GLok("Setting glBindBuffer")) return;
 			glEnableVertexAttribArray(0);
 			if(!GLok("Setting glEnableVertexAttribArray (vertex)")) return;
 			glEnableVertexAttribArray(1);
@@ -276,6 +285,14 @@ class CalibrationData
 	public int detection_box = 20;
 	public int circle_center_threshold = 5;
 	public int circle_radius_threshold = 3;
+	
+	public Point cal_square_bl;
+	public Point cal_square_br;
+	public Point cal_square_tl;
+	public Point cal_square_tr;
+	
+	public int m_minz = 0;
+	public int m_maxz = 0;
 	
 	void calculate()
 	{
@@ -348,6 +365,67 @@ class CalibrationData
 			pos_2_br.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
 			pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
 		}
+	}
+	
+	void calculateBaseCoords()
+	{//cal_square_bl
+		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double beta = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double alpha_prime = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double beta_prime = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		
+		double x, y;
+		
+		cal_square_bl = new Point();
+		cal_square_br = new Point();
+		cal_square_tl = new Point();
+		cal_square_tr = new Point();
+		
+		x = (((double)pos_1_board.width)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
+		cal_square_bl.x = (int)x;
+		y = x*Math.tan(Math.toRadians(beta));
+		cal_square_bl.y = (int)y;
+		cal_square_br.y = (int)y;
+		cal_square_br.x = cal_square_bl.x + pos_1_board.width;
+		
+		x = (((double)pos_2_board.width)*Math.tan(Math.toRadians(alpha_prime)))/(Math.tan(Math.toRadians(beta_prime))-Math.tan(Math.toRadians(alpha_prime)));
+		cal_square_tl.x = (int)x;
+		y = x*Math.tan(Math.toRadians(beta_prime));
+		cal_square_tl.y = (int)y;
+		cal_square_tr.y = (int)y;
+		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;
+	}
+	
+	int getZoffset(int a_steps, int screen_x)
+	{
+		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double theta = (l_to_camera_steps - a_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		
+		double x_pos = (double)cal_square_bl.x + (double)screen_x;
+		
+		double tan_theta = Math.tan(Math.toRadians(theta));
+		double tan_alpha = Math.tan(Math.toRadians(alpha));
+		
+		double delta = x_pos*tan_theta -  x_pos*tan_alpha;
+
+//		if(delta<0f)
+		{
+			System.out.println("Delta:" + delta);
+		}
+		int z = (int)(delta + (double)cal_square_bl.y)+500;
+		if(z<m_minz)
+		{
+			m_minz = z;
+			System.out.println("Min Z: "+m_minz);
+		}
+		if(z>m_maxz)
+		{
+			m_maxz = z;
+			System.out.println("Max Z: "+m_maxz);
+		}
+		return z;
 	}
 }
 
@@ -845,6 +923,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	
 	long lastTime = 0;
 	private Thread m_detect_thread = null;
+	private JLabel lblPointSize;
+	private JLabel lblScale;
+	private JScrollBar sbPointSize;
+	private JScrollBar sbScale;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -926,7 +1008,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		getContentPane().add(lblCompareimg);
 		
 		sbHeightOffset = new JScrollBar();
-		sbHeightOffset.setMaximum(0);
+		sbHeightOffset.setMaximum(8);
 		sbHeightOffset.setOrientation(JScrollBar.HORIZONTAL);
 		sbHeightOffset.setBounds(571, 754, 221, 17);
 		getContentPane().add(sbHeightOffset);
@@ -1051,6 +1133,32 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		calibrationPositionGroup.add(radioButton_1);
 		
 		radioButton.setSelected(true);
+		
+		lblPointSize = new JLabel("Point size");
+		lblPointSize.setBounds(706, 891, 70, 15);
+		getContentPane().add(lblPointSize);
+		
+		lblScale = new JLabel("Scale");
+		lblScale.setBounds(927, 891, 70, 15);
+		getContentPane().add(lblScale);
+		
+		sbPointSize = new JScrollBar();
+		sbPointSize.setBlockIncrement(10);
+		sbPointSize.setUnitIncrement(10);
+		sbPointSize.setMinimum(10);
+		sbPointSize.setValue(10);
+		sbPointSize.setMaximum(80);
+		sbPointSize.setOrientation(JScrollBar.HORIZONTAL);
+		sbPointSize.setBounds(782, 886, 129, 17);
+		getContentPane().add(sbPointSize);
+		
+		sbScale = new JScrollBar();
+		sbScale.setValue(10);
+		sbScale.setOrientation(JScrollBar.HORIZONTAL);
+		sbScale.setMinimum(10);
+		sbScale.setMaximum(40);
+		sbScale.setBounds(976, 886, 129, 17);
+		getContentPane().add(sbScale);
 
 		m_camera = a_camera;
 		
@@ -1278,15 +1386,18 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Quaternionf q1 = new Quaternionf();
 		projectM
 //				.setOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f)
-				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 1000.0f);
+				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 6000.0f);
+		viewM.identity();
 //		viewM
-//				.lookAt(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos-2.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-		viewM.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos);
+//				.lookAt(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos+2000.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+		viewM
+		.lookAt((m_rot-180.0f)*10.0f, 0.0f, 2000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+/*		viewM.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos);
 		viewM.rotate(q.rotateZ((float) Math.toRadians(m_pcd.z_rot)).normalize())
 				.rotate(q0.rotateY((float) Math.toRadians(m_pcd.y_rot)).normalize())
-				.rotate(q1.rotateX((float) Math.toRadians(m_pcd.x_rot)).normalize());
+				.rotate(q1.rotateX((float) Math.toRadians(m_pcd.x_rot)).normalize());*/
 		modelM.identity();
-		modelM.translate(0.0f, 0.0f, -500.0f);
+		modelM.translate(0.0f, 0.0f, 100.0f);
 		// System.out.println("Z "+(-2f+rot/120.0f));
 
 		glUseProgram(m_main_program);
@@ -1312,8 +1423,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			return;
 
 		modelM.identity();
-		modelM.translate(0.0f, 0.0f, -500.0f).rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize())
-		.rotate(q.rotateZ((float) Math.toRadians(m_rot)).normalize())
+		//modelM.translate(0.0f, 0.0f, m_rot);
+//		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
+		//.rotate(q.rotateZ((float) Math.toRadians(m_rot)).normalize())
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
 
 		/* .rotate(q.rotateZ((float) Math.toRadians(rot)).normalize()) */;
@@ -1353,8 +1465,14 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			return;
 		scaleLoc = glGetUniformLocation(l_program, "scale");
 		GLok("Retrieving scale uniform location");
-		glUniform1f(scaleLoc, 1.0f); // m_scalefactor 
+		//System.out.println("Scale to "+((float)sbScale.getValue()/10.0f));
+		glUniform1f(scaleLoc, ((float)sbScale.getValue()/10.0f)); // m_scalefactor 
 		GLok("Set scale uniform");
+		int pointsizeLoc = glGetUniformLocation(l_program, "pointsize");
+		GLok("Retrieving pointsize uniform location");
+		//System.out.println("Point size to "+sbPointSize.getValue()/10);
+		glUniform1f(pointsizeLoc, (float)sbPointSize.getValue()/10.0f); // m_scalefactor 
+		GLok("Set pointsize uniform");
 
 		glBindAttribLocation(l_program, 0, "vertex");
 		errorCheckValue = glGetError();
@@ -1371,6 +1489,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
+		//m_rot = 176.0f;
 		System.out.println("Rot: "+m_rot);
 		lastTime = thisTime;
 	}
@@ -1392,9 +1511,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		image.m_cal_data = m_cal_data;
 		
 		sbHeightOffset.removeAdjustmentListener(this);
-		sbHeightOffset.setMinimum(-m_cal_data.v_offset_minmax);
+		sbHeightOffset.setMinimum(1);
 		sbHeightOffset.setMaximum(m_cal_data.v_offset_minmax);
-		sbHeightOffset.setValue(m_cal_data.v_offset);
+		sbHeightOffset.setValue(1);
 		sbHeightOffset.addAdjustmentListener(this);
 
 	}
@@ -1545,13 +1664,17 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		} else
 		if(e.getActionCommand()=="Detect")
 		{
-			if(m_thread == null)
-			{
-				m_thread = new Thread(this);
-				m_thread.start();
-			}
 			if(m_detect_thread == null)
 			{
+				Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1 = Integer.parseInt(txtTopleftmotorpos.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1 = Integer.parseInt(txtToprightmotorpos.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2 = Integer.parseInt(txtTopleftmotorpos_2.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2 = Integer.parseInt(txtToprightmotorpos_2.getText());
+				if(m_thread == null)
+				{
+					m_thread = new Thread(this);
+					m_thread.start();
+				}
 				Runnable l_runnable = () -> {
 					Detect();
 				};
@@ -2145,7 +2268,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	void Detect()
 	{
+		int l_points = 0;
 		m_pco.clear();
+		m_cal_data.calculateBaseCoords();
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
@@ -2187,15 +2312,25 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			for( int i=0; i<l_baseimage.getHeight(); ++i)
 			{
 				if(l_x_points[i]>=0)
-					m_pco.addPoint(l_x_points[i], i, 0/* to calculate */,
+				{
+					++l_points;
+					System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
+					m_pco.addPoint(l_x_points[i]/50-l_baseimage.getWidth(),
+							l_baseimage.getHeight()-i-1-l_baseimage.getHeight()/2,
+							m_cal_data.getZoffset(l_pos, l_x_points[i])/50,
 							(l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16,
 							(l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8,
 							(l_baseimage.getRGB(l_x_points[i], i) & 0x00)
 							);
+				}
 			}
 			
 			System.out.println("Complete "+l_infile.toString());
 		}
+		System.out.println("Found "+l_points+" points");
+		System.out.println("Min Z: "+m_cal_data.m_minz);
+		System.out.println("Max Z: "+m_cal_data.m_maxz);
+
 		m_detect_thread = null;
 	}
 	
@@ -2453,8 +2588,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		System.out.println("Run");
 		float scale = java.awt.Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
 		System.out.println("Res: " + java.awt.Toolkit.getDefaultToolkit().getScreenResolution());
-		displayW = 600;
-		displayH = 800;
+		displayW = 1800;
+		displayH = 1600;
 		/*
 		 * try (MemoryStack stack = stackPush()) { IntBuffer peError =
 		 * stack.mallocInt(1);
@@ -2636,6 +2771,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				}
 //			}
 		}
+		m_pco.glclear();
         glfwHideWindow(m_window);
 		GLES.setCapabilities(null);
 		glfwFreeCallbacks(m_window);
