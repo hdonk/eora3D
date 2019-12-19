@@ -8,7 +8,7 @@ import java.util.concurrent.locks.*;
 import java.util.concurrent.TimeUnit;
 
 class ValueNotification implements BluetoothNotification<byte[]> {
-	String m_lock;
+	Object m_lock;
 	boolean complete = true;
 	
 	ValueNotification()
