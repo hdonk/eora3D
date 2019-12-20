@@ -425,6 +425,7 @@ class CalibrationData
 			m_maxz = z;
 			System.out.println("Max Z: "+m_maxz);
 		}
+		System.out.println("Z: "+z);
 		return z;
 	}
 }
@@ -1331,14 +1332,14 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		// Create a simple quad
 		int vbo = glGenBuffers();
 		int ibo = glGenBuffers();
-		float[] vertices = { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // Color
-				100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // Color
+		float[] vertices = { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+				100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+				
+				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 200.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // Color
-				0.0f, 200.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // Color
-
-				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // Color
-				0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f, // Color
+				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 				0 };
 		int[] indices = { 0, 1, 2, 3, 4, 5 };
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -1385,19 +1386,19 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Quaternionf q0 = new Quaternionf();
 		Quaternionf q1 = new Quaternionf();
 		projectM
-//				.setOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f)
-				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 6000.0f);
+				.setOrtho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -500.0f, 15000.0f);
+//				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 6000.0f);
 		viewM.identity();
 //		viewM
 //				.lookAt(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos+2000.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		viewM
-		.lookAt((m_rot-180.0f)*10.0f, 0.0f, 2000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		.lookAt(0.0f, 500.0f, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 /*		viewM.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos);
 		viewM.rotate(q.rotateZ((float) Math.toRadians(m_pcd.z_rot)).normalize())
 				.rotate(q0.rotateY((float) Math.toRadians(m_pcd.y_rot)).normalize())
 				.rotate(q1.rotateX((float) Math.toRadians(m_pcd.x_rot)).normalize());*/
 		modelM.identity();
-		modelM.translate(0.0f, 0.0f, 100.0f);
+		modelM.translate(0.0f, 0.0f, 0.0f);
 		// System.out.println("Z "+(-2f+rot/120.0f));
 
 		glUseProgram(m_main_program);
@@ -1424,7 +1425,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		modelM.identity();
 		//modelM.translate(0.0f, 0.0f, m_rot);
-//		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
+		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
 		//.rotate(q.rotateZ((float) Math.toRadians(m_rot)).normalize())
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
 
@@ -1485,13 +1486,14 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		m_rot += delta * 10f;
-		if (m_rot > 360.0f) {
+		m_rot += delta * 1f;
+		if (m_rot > 5.0f) {
 			m_rot = 0.0f;
 		}
 		//m_rot = 176.0f;
 		System.out.println("Rot: "+m_rot);
 		lastTime = thisTime;
+
 	}
 
 
@@ -2314,10 +2316,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				if(l_x_points[i]>=0)
 				{
 					++l_points;
-					System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
-					m_pco.addPoint(l_x_points[i]/50-l_baseimage.getWidth(),
-							l_baseimage.getHeight()-i-1-l_baseimage.getHeight()/2,
-							m_cal_data.getZoffset(l_pos, l_x_points[i])/50,
+					//System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
+					m_pco.addPoint(l_x_points[i]-1000,
+							(l_baseimage.getHeight()-i)-1-500,
+							m_cal_data.getZoffset(l_pos, l_x_points[i]),
 							(l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16,
 							(l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8,
 							(l_baseimage.getRGB(l_x_points[i], i) & 0x00)
@@ -2763,12 +2765,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 				glfwSwapBuffers(m_window);
 				
-				try {
-					Thread.sleep(50);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 //			}
 		}
 		m_pco.glclear();
