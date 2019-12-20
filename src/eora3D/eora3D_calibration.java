@@ -400,6 +400,35 @@ class CalibrationData
 	int getZoffset(int a_steps, int screen_x)
 	{
 		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+		double beta = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double beta_prime = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double omega = (l_to_camera_steps - a_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		
+		double x_pos = (double)cal_square_bl.x + (double)screen_x;
+		double C = (double)cal_square_bl.x;
+		
+		double E = C + ((double)pos_1_board.width) * ( 0.5f + (cal_pos_2_per/(cal_pos_1_per*2)));
+		
+		double theta = (beta_prime - omega) / (beta_prime-beta);
+		
+		int z = (int)(E + (x_pos-C)* (cal_pos_2_per/cal_pos_1_per) * theta );
+		if(z<m_minz)
+		{
+			m_minz = z;
+			System.out.println("Min Z: "+m_minz);
+		}
+		if(z>m_maxz)
+		{
+			m_maxz = z;
+			System.out.println("Max Z: "+m_maxz);
+		}
+		System.out.println("Z: "+z);
+		return z;
+	}
+
+	int getZoffset2(int a_steps, int screen_x)
+	{
+		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
 		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
 		double theta = (l_to_camera_steps - a_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
 		
@@ -1332,16 +1361,16 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		// Create a simple quad
 		int vbo = glGenBuffers();
 		int ibo = glGenBuffers();
-		float[] vertices = { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
-				100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+		float[] vertices = { 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, // Red X
+				250.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
 				
-				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-				0.0f, 200.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,// Green Y
+				0.0f, 500.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
 
-				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-				0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+				0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, // Blue Z
+				0.0f, 0.0f, 250.0f, 0.0f, 0.0f, 1.0f, 0.0f,
 				0 };
-		int[] indices = { 0, 1, 2, 3, 4, 5 };
+		int[] indices = { 1, 0, 2, 3, 4, 5 };
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) BufferUtils.createFloatBuffer(vertices.length).put(vertices).flip(),
 				GL_STATIC_DRAW);
@@ -1386,19 +1415,20 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Quaternionf q0 = new Quaternionf();
 		Quaternionf q1 = new Quaternionf();
 		projectM
-				.setOrtho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -500.0f, 15000.0f);
+				.setOrtho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -30000.0f, 30000.0f);
 //				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 6000.0f);
 		viewM.identity();
 //		viewM
 //				.lookAt(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos+2000.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 		viewM
-		.lookAt(0.0f, 500.0f, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		.lookAt(0.0f, 10.0f, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 /*		viewM.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos);
 		viewM.rotate(q.rotateZ((float) Math.toRadians(m_pcd.z_rot)).normalize())
 				.rotate(q0.rotateY((float) Math.toRadians(m_pcd.y_rot)).normalize())
 				.rotate(q1.rotateX((float) Math.toRadians(m_pcd.x_rot)).normalize());*/
 		modelM.identity();
-		modelM.translate(0.0f, 0.0f, 0.0f);
+		modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
+		//modelM.translate(0.0f, 0.0f, 0.0f);
 		// System.out.println("Z "+(-2f+rot/120.0f));
 
 		glUseProgram(m_main_program);
@@ -1424,9 +1454,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			return;
 
 		modelM.identity();
-		//modelM.translate(0.0f, 0.0f, m_rot);
-		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
-		//.rotate(q.rotateZ((float) Math.toRadians(m_rot)).normalize())
+		modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
+		modelM.translate(0.0f, 0.0f, -2000.0f);
+//		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
+		//modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
 
 		/* .rotate(q.rotateZ((float) Math.toRadians(rot)).normalize()) */;
@@ -1486,8 +1517,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		m_rot += delta * 1f;
-		if (m_rot > 5.0f) {
+		m_rot += delta * 10f;
+		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
 		//m_rot = 176.0f;
