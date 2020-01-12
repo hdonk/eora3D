@@ -3,14 +3,14 @@ package eora3D;
 import javax.swing.JDialog;
 
 import com.github.sarxos.webcam.Webcam;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
 import java.awt.event.AdjustmentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
 import java.awt.image.RescaleOp;
@@ -101,6 +101,16 @@ class RGBPoint
 		m_r = a_r;
 		m_g = a_g;
 		m_b = a_b;
+	}
+	
+	public RGBPoint(int a_x, int a_y, int a_z)
+	{
+		m_x = a_x;
+		m_y = a_y;
+		m_z = a_z;
+		m_r = 0;
+		m_g = 0;
+		m_b = 0;
 	}
 }
 
@@ -245,6 +255,14 @@ class PointCloudObject {
 			m_refresh = true;
 		}
 	}
+	public void addPoint(RGBPoint a_point)
+	{
+		synchronized(this)
+		{
+			this.m_points.add(a_point);
+			m_refresh = true;
+		}
+	}
 }
 
 class CalibrationData
@@ -294,77 +312,97 @@ class CalibrationData
 	public int m_minz = 0;
 	public int m_maxz = 0;
 	
+	public double focal_length_pix = 0.0f;
+	
+	public int m_laser_to_camera_sep_pix = 0;
+	
 	void calculate()
 	{
+		double target_h;
+		double target_w;
 		if(capture_w > capture_h) // landscape
 		{
-			double target_h = ((double)capture_h * cal_pos_1_per);
-			double target_w = (target_h/board_h)*board_w;
-			pos_1_board = new Rectangle();
-			pos_1_board.height = (int)target_h;
-			v_offset_minmax = (capture_h - (int)target_h)/2;
-			pos_1_board.width = (int)target_w;
-			pos_1_board.x = (capture_w-pos_1_board.width)/2;
-			pos_1_board.y = (capture_h-pos_1_board.height)/2 + v_offset;
-			
-			pos_1_tl = new Rectangle();
-			pos_1_tl.width = (int)(((target_w/board_w)*spot_r))*2;
-			pos_1_tl.height = (int)(((target_h/board_h)*spot_r))*2;
-			pos_1_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_1_tl.width;
-			pos_1_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_1_tl.height + v_offset;
-
-			pos_1_tr = new Rectangle();
-			pos_1_tr.width = pos_1_tl.width;
-			pos_1_tr.height = pos_1_tl.height;
-			pos_1_tr.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
-			pos_1_tr.y = pos_1_tl.y;
-
-			pos_1_bl = new Rectangle();
-			pos_1_bl.width = pos_1_tl.width;
-			pos_1_bl.height = pos_1_tl.height;
-			pos_1_bl.x = pos_1_tl.x;
-			pos_1_bl.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
-
-			pos_1_br = new Rectangle();
-			pos_1_br.width = pos_1_tl.width;
-			pos_1_br.height = pos_1_tl.height;
-			pos_1_br.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
-			pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
-
-		
-			target_h = ((double)capture_h * cal_pos_2_per);
+			// use the height as the limit
+			target_h = ((double)capture_h * cal_pos_1_per);
 			target_w = (target_h/board_h)*board_w;
-			v_offset_2 = (int)(((double)v_offset) * (cal_pos_2_per/cal_pos_1_per));
-			pos_2_board = new Rectangle();
-			pos_2_board.height = (int)target_h;
-			pos_2_board.width = (int)target_w;
-			pos_2_board.x = (capture_w-pos_2_board.width)/2;
-			pos_2_board.y = (capture_h-pos_2_board.height)/2 + v_offset_2;
-			
-			pos_2_tl = new Rectangle();
-			pos_2_tl.width = (int)(((target_w/board_w)*spot_r))*2;
-			pos_2_tl.height = (int)(((target_h/board_h)*spot_r))*2;
-			pos_2_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_2_tl.width;
-			pos_2_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_2_tl.height + v_offset_2;
-
-			pos_2_tr = new Rectangle();
-			pos_2_tr.width = pos_2_tl.width;
-			pos_2_tr.height = pos_2_tl.height;
-			pos_2_tr.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
-			pos_2_tr.y = pos_2_tl.y;
-
-			pos_2_bl = new Rectangle();
-			pos_2_bl.width = pos_2_tl.width;
-			pos_2_bl.height = pos_2_tl.height;
-			pos_2_bl.x = pos_2_tl.x;
-			pos_2_bl.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
-
-			pos_2_br = new Rectangle();
-			pos_2_br.width = pos_2_tl.width;
-			pos_2_br.height = pos_2_tl.height;
-			pos_2_br.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
-			pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
 		}
+		else // portrait
+		{
+			// Use the width as the limit
+			target_w = ((double)capture_w * cal_pos_1_per);
+			target_h = (target_w/board_w)*board_h;
+		}
+		pos_1_board = new Rectangle();
+		pos_1_board.height = (int)target_h;
+		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+		{
+			v_offset_minmax = (capture_w - (int)target_w)/2;
+		}
+		else
+		{
+			v_offset_minmax = (capture_h - (int)target_h)/2;
+		}
+		pos_1_board.width = (int)target_w;
+		pos_1_board.x = (capture_w-pos_1_board.width)/2;
+		pos_1_board.y = (capture_h-pos_1_board.height)/2 + v_offset;
+		
+		pos_1_tl = new Rectangle();
+		pos_1_tl.width = (int)(((target_w/board_w)*spot_r))*2;
+		pos_1_tl.height = (int)(((target_h/board_h)*spot_r))*2;
+		pos_1_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_1_tl.width;
+		pos_1_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_1_tl.height + v_offset;
+
+		pos_1_tr = new Rectangle();
+		pos_1_tr.width = pos_1_tl.width;
+		pos_1_tr.height = pos_1_tl.height;
+		pos_1_tr.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
+		pos_1_tr.y = pos_1_tl.y;
+
+		pos_1_bl = new Rectangle();
+		pos_1_bl.width = pos_1_tl.width;
+		pos_1_bl.height = pos_1_tl.height;
+		pos_1_bl.x = pos_1_tl.x;
+		pos_1_bl.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
+
+		pos_1_br = new Rectangle();
+		pos_1_br.width = pos_1_tl.width;
+		pos_1_br.height = pos_1_tl.height;
+		pos_1_br.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
+		pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
+
+	
+		target_h = ((double)capture_h * cal_pos_2_per);
+		target_w = (target_h/board_h)*board_w;
+		v_offset_2 = (int)(((double)v_offset) * (cal_pos_2_per/cal_pos_1_per));
+		pos_2_board = new Rectangle();
+		pos_2_board.height = (int)target_h;
+		pos_2_board.width = (int)target_w;
+		pos_2_board.x = (capture_w-pos_2_board.width)/2;
+		pos_2_board.y = (capture_h-pos_2_board.height)/2 + v_offset_2;
+		
+		pos_2_tl = new Rectangle();
+		pos_2_tl.width = (int)(((target_w/board_w)*spot_r))*2;
+		pos_2_tl.height = (int)(((target_h/board_h)*spot_r))*2;
+		pos_2_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_2_tl.width;
+		pos_2_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_2_tl.height + v_offset_2;
+
+		pos_2_tr = new Rectangle();
+		pos_2_tr.width = pos_2_tl.width;
+		pos_2_tr.height = pos_2_tl.height;
+		pos_2_tr.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
+		pos_2_tr.y = pos_2_tl.y;
+
+		pos_2_bl = new Rectangle();
+		pos_2_bl.width = pos_2_tl.width;
+		pos_2_bl.height = pos_2_tl.height;
+		pos_2_bl.x = pos_2_tl.x;
+		pos_2_bl.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
+
+		pos_2_br = new Rectangle();
+		pos_2_br.width = pos_2_tl.width;
+		pos_2_br.height = pos_2_tl.height;
+		pos_2_br.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
+		pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
 	}
 	
 	void calculateBaseCoords()
@@ -395,9 +433,49 @@ class CalibrationData
 		cal_square_tl.y = (int)y;
 		cal_square_tr.y = (int)y;
 		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;
+		
+		// Calculate focal length
+		double d_mm = spot_sep_w;
+		double h_pix = pos_1_board.width;
+		double H_mm = spot_sep_w;
+
+		focal_length_pix = (d_mm*h_pix)/H_mm;
+		//focal_length_pix *= 1.1f;
+		System.out.println("Focal length in pixels: "+focal_length_pix);
+		
+		// Camera center to laser center separation
+		m_laser_to_camera_sep_pix = cal_square_bl.x + pos_1_board.width/2;
+		//m_laser_to_camera_sep_pix *= 1.2f;
+		System.out.println("Camera laser sep pixels: "+m_laser_to_camera_sep_pix);
 	}
 	
-	int getZoffset(int a_steps, int screen_x)
+	RGBPoint getPointOffset(int a_angle_steps, int screen_x, int screen_y)
+	{
+		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+//		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		double C = (l_to_camera_steps - a_angle_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+		
+		double x_pos = (double)screen_x - ((double)capture_w/2.0f) ;
+		
+		double alpha = Math.toDegrees(Math.atan(x_pos/focal_length_pix));
+		double A = 90.0f + alpha;
+		double B = 180.0f - A - C;
+		double b = m_laser_to_camera_sep_pix;
+		
+		double c = (b*Math.sin(Math.toRadians(C))) / (Math.sin(Math.toRadians(B)));
+		
+		double z = c * Math.sin(Math.toRadians(A));
+		double x = c * Math.cos(Math.toRadians(A));
+		
+		double y = z * (screen_y-capture_h/2.0f)/focal_length_pix;
+		
+		System.out.println("In: angle: "+a_angle_steps+" x: "+screen_x+" y: "+screen_y+" Out: x: "+x+"y: "+y+" z: "+z);
+		
+		RGBPoint l_point = new RGBPoint((int)x, (int)y, (int)z);
+		return l_point;
+	}
+	
+	int getZoffset2(int a_steps, int screen_x)
 	{
 		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
 		double beta = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
@@ -423,10 +501,10 @@ class CalibrationData
 			System.out.println("Max Z: "+m_maxz);
 		}
 		System.out.println("Z: "+z);
-		return z;
+		return z*4;
 	}
 
-	int getZoffset2(int a_steps, int screen_x)
+	int getZoffset(int a_steps, int screen_x)
 	{
 		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
 		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
@@ -957,6 +1035,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private JLabel lblScale;
 	private JScrollBar sbPointSize;
 	private JScrollBar sbScale;
+	private JTextField tfScanStartAngle;
+	private JTextField tfScanEndAngle;
+	private JTextField tfScanStepSize;
 
 	eora3D_calibration(Webcam a_camera)
 	{
@@ -1185,10 +1266,40 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		sbScale = new JScrollBar();
 		sbScale.setValue(10);
 		sbScale.setOrientation(JScrollBar.HORIZONTAL);
-		sbScale.setMinimum(10);
+		sbScale.setMinimum(1);
 		sbScale.setMaximum(40);
 		sbScale.setBounds(976, 886, 129, 17);
 		getContentPane().add(sbScale);
+
+		JLabel lblScanStartAngle = new JLabel("Scan Start Angle");
+		lblScanStartAngle.setBounds(12, 960, 143, 15);
+		getContentPane().add(lblScanStartAngle);
+		
+		tfScanStartAngle = new JTextField();
+		tfScanStartAngle.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle);
+		tfScanStartAngle.setBounds(143, 958, 47, 19);
+		getContentPane().add(tfScanStartAngle);
+		tfScanStartAngle.setColumns(10);
+		
+		JLabel lblScanEndAngle = new JLabel("Scan End Angle");
+		lblScanEndAngle.setBounds(207, 960, 117, 15);
+		getContentPane().add(lblScanEndAngle);
+		
+		tfScanEndAngle = new JTextField();
+		tfScanEndAngle.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle);
+		tfScanEndAngle.setBounds(342, 958, 47, 19);
+		getContentPane().add(tfScanEndAngle);
+		tfScanEndAngle.setColumns(10);
+		
+		JLabel lblScanStepSize = new JLabel("Scan Step Size");
+		lblScanStepSize.setBounds(407, 960, 117, 15);
+		getContentPane().add(lblScanStepSize);
+		
+		tfScanStepSize = new JTextField();
+		tfScanStepSize.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_step_size);
+		tfScanStepSize.setBounds(542, 958, 47, 19);
+		getContentPane().add(tfScanStepSize);
+		tfScanStepSize.setColumns(10);
 
 		m_camera = a_camera;
 		
@@ -1536,19 +1647,40 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			m_cal_data.v_offset = Eora3D_MainWindow.m_e3d_config.sm_calibration_vertical_offset;
 		}
 		
-		m_cal_data.capture_w = (int)m_camera.getViewSize().getWidth();
-		m_cal_data.capture_h = (int)m_camera.getViewSize().getHeight();
+		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+		{
+			m_cal_data.capture_h = (int)m_camera.getViewSize().getWidth();
+			m_cal_data.capture_w = (int)m_camera.getViewSize().getHeight();
+		}
+		else
+		{
+			m_cal_data.capture_w = (int)m_camera.getViewSize().getWidth();
+			m_cal_data.capture_h = (int)m_camera.getViewSize().getHeight();
+		}
 		
 		m_cal_data.calculate();
 		
 		image.m_cal_data = m_cal_data;
 		
 		sbHeightOffset.removeAdjustmentListener(this);
-		sbHeightOffset.setMinimum(1);
+		sbHeightOffset.setMinimum(-m_cal_data.v_offset_minmax);
 		sbHeightOffset.setMaximum(m_cal_data.v_offset_minmax);
-		sbHeightOffset.setValue(1);
+		System.out.println("Set minmax "+m_cal_data.v_offset_minmax);
+		//sbHeightOffset.setValue(1);
 		sbHeightOffset.addAdjustmentListener(this);
 
+	}
+	
+	BufferedImage rotate(BufferedImage a_image)
+	{
+		BufferedImage l_rot_image = new BufferedImage(a_image.getHeight(), a_image.getWidth(), BufferedImage.TYPE_INT_ARGB);
+		Graphics2D l_g2d = (Graphics2D) l_rot_image.getGraphics();
+		AffineTransform l_backup = l_g2d.getTransform();
+		AffineTransform l_at = AffineTransform.getRotateInstance(Math.PI/2.0f, a_image.getHeight()/2, a_image.getHeight()/2);
+		l_g2d.setTransform(l_at);
+		l_g2d.drawImage(a_image, 0, 0, null);
+		l_g2d.setTransform(l_backup);
+		return l_rot_image;		
 	}
 
 	@Override
@@ -1557,6 +1689,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		{
 			BufferedImage l_image = m_camera.getImage();
 			l_image.flush();
+			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			{
+				l_image = rotate(l_image);
+			}
 			
 //			image.circles=null;
 			
@@ -1691,9 +1827,12 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		} else
 		if(e.getActionCommand()=="Scan")
 		{
-			captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset,
-					Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90,
-					Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg/2);
+			Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle = Integer.parseInt(tfScanStartAngle.getText());
+			Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle = Integer.parseInt(tfScanEndAngle.getText());
+			Eora3D_MainWindow.m_e3d_config.sm_scan_step_size = Integer.parseInt(tfScanStepSize.getText());
+			captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle,
+					Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle,
+					Eora3D_MainWindow.m_e3d_config.sm_scan_step_size);
 		} else
 		if(e.getActionCommand()=="Detect")
 		{
@@ -1757,6 +1896,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			l_goodenough = 0;
 			capturedImage = m_camera.getImage();
 			capturedImage.flush();
+			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			{
+				capturedImage = rotate(capturedImage);
+			}
 			image.m_image = capturedImage;
 			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics g = image.m_overlay.getGraphics();
@@ -1927,6 +2070,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 			BufferedImage l_base_image = m_camera.getImage();
 			l_base_image.flush();
+			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			{
+				l_base_image = rotate(l_base_image);
+			}
 
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
 			for(int corner=0; corner<2; ++corner)
@@ -1961,7 +2108,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
-	
+					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					{
+						l_image = rotate(l_image);
+					}
+
 					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
 					if(l_found_offset!=-1)
@@ -1992,6 +2143,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
+					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					{
+						l_image = rotate(l_image);
+					}
 	
 					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
@@ -2030,6 +2185,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			l_goodenough = 0;
 			capturedImage = m_camera.getImage();
 			capturedImage.flush();
+			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			{
+				capturedImage = rotate(capturedImage);
+			}
 			image.m_image = capturedImage;
 			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics g = image.m_overlay.getGraphics();
@@ -2201,6 +2360,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 			BufferedImage l_base_image = m_camera.getImage();
 			l_base_image.flush();
+			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			{
+				l_base_image = rotate(l_base_image);
+			}
 
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
 			for(int corner=0; corner<2; ++corner)
@@ -2235,7 +2398,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
-	
+					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					{
+						l_image = rotate(l_image);
+					}
+
 					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
 					if(l_found_offset!=-1)
@@ -2267,6 +2434,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
+					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					{
+						l_image = rotate(l_image);
+					}
 	
 					int l_found_offset = findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
@@ -2346,15 +2517,14 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			{
 				if(l_x_points[i]>=0)
 				{
-					++l_points;
+					RGBPoint l_point = m_cal_data.getPointOffset(l_pos, l_x_points[i], (l_baseimage.getHeight()-i)-1);
+					l_point.m_r = (l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16;
+					l_point.m_g = (l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8;
+					l_point.m_b = l_baseimage.getRGB(l_x_points[i], i) & 0x00;
+					System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 					//System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
-					m_pco.addPoint(l_x_points[i]-1000,
-							(l_baseimage.getHeight()-i)-1-500,
-							m_cal_data.getZoffset(l_pos, l_x_points[i]),
-							(l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16,
-							(l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8,
-							(l_baseimage.getRGB(l_x_points[i], i) & 0x00)
-							);
+					m_pco.addPoint(l_point);
+					++l_points;
 				}
 			}
 			
@@ -2518,6 +2688,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
 		BufferedImage l_image = m_camera.getImage();
 		l_image.flush();
+		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+		{
+			l_image = rotate(l_image);
+		}
 
 		try {
 			ImageIO.write(l_image, "png", l_outfile);
@@ -2537,6 +2711,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			}
 			l_image = m_camera.getImage();
 			l_image.flush();
+			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			{
+				l_image = rotate(l_image);
+			}
 
 			try {
 				ImageIO.write(l_image, "png", l_outfile);
@@ -2583,6 +2761,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Eora3D_MainWindow.m_e3d_config.sm_circle_min_rad = Integer.parseInt(this.txtMinRad.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_circle_max_rad = Integer.parseInt(this.txtMaxRad.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_calibration_v_offset = sbHeightOffset.getValue();
+		Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle = Integer.parseInt(tfScanStartAngle.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle = Integer.parseInt(tfScanEndAngle.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_scan_step_size = Integer.parseInt(tfScanStepSize.getText());
 	}
 
 	@Override
@@ -2621,8 +2802,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		System.out.println("Run");
 		float scale = java.awt.Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
 		System.out.println("Res: " + java.awt.Toolkit.getDefaultToolkit().getScreenResolution());
-		displayW = 1800;
-		displayH = 1600;
+		displayW = 1000;
+		displayH = 680;
 		/*
 		 * try (MemoryStack stack = stackPush()) { IntBuffer peError =
 		 * stack.mallocInt(1);

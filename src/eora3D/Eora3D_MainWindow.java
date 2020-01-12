@@ -268,6 +268,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			}
 			catch(Exception e1)
 			{
+				e1.printStackTrace();
 				m_camera = null;
 			}
 		} else
