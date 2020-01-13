@@ -13,7 +13,6 @@ import java.awt.event.WindowListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
-import java.awt.image.RescaleOp;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +23,6 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -46,7 +44,6 @@ import org.lwjgl.BufferUtils;
 
 import org.lwjgl.opengles.*;
 import org.lwjgl.opengles.GLES.*;
-import static org.lwjgl.opengles.GLES30.glBindVertexArray;
 //import org.lwjgl.opengles.GLES32.*;
 import org.lwjgl.opengles.OESMapbuffer.*;
 
@@ -72,768 +69,6 @@ import java.awt.*;
 import javax.swing.JScrollBar;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
-
-class PointCloudData
-{
-	float x_pos = 0.0f;
-	float y_pos = 0.0f;
-	float z_pos = 0.0f;
-
-	float x_rot = 0.0f;
-	float y_rot = 0.0f;
-	float z_rot = 0.0f;
-};
-
-class RGBPoint
-{
-	public int m_x;
-	public int m_y;
-	public int m_z;
-	public int m_r;
-	public int m_g;
-	public int m_b;
-	
-	public RGBPoint(int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
-	{
-		m_x = a_x;
-		m_y = a_y;
-		m_z = a_z;
-		m_r = a_r;
-		m_g = a_g;
-		m_b = a_b;
-	}
-	
-	public RGBPoint(int a_x, int a_y, int a_z)
-	{
-		m_x = a_x;
-		m_y = a_y;
-		m_z = a_z;
-		m_r = 0;
-		m_g = 0;
-		m_b = 0;
-	}
-}
-
-class PointCloudObject {
-	int m_point_vbo;
-	int m_point_ibo;
-	float m_scalefactor = 1.0f;
-	ArrayList<RGBPoint> m_points;
-	boolean m_refresh = false;
-	private IntBuffer m_intbuffer;
-	
-	public PointCloudObject()
-	{
-		clear();
-	}
-	
-	public void clear()
-	{
-		m_points = new ArrayList<RGBPoint>();
-/*		m_point_vbo = -1;
-		m_point_ibo = -1;
-        if(m_intbuffer != null)
-        {
-        	glBindBuffer(GL_ARRAY_BUFFER, 0);
-        	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        	glDeleteBuffers(m_intbuffer);
-        	m_intbuffer = null;
-        }*/
-	}
-
-	public void glclear()
-	{
-    	glBindBuffer(GL_ARRAY_BUFFER, 0);
-    	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    	if(m_intbuffer!=null) glDeleteBuffers(m_intbuffer);
-	}
-	
-	boolean GLok(String message)
-	{
-		int errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error "+errorCheckValue+" "+message);
-			Thread.dumpStack();
-			return false;
-		}
-		return true;
-	}
-
-	public void draw()
-	{
-		synchronized(this)
-		{
-			if(m_refresh)
-			{
-				int l_vertexcount = m_points.size();
-		        // Number of bytes we need per vertex.
-		        int l_vertexsize = 3*4 + 4*4;
-	
-		        System.out.println("Refreshing points");
-		        if(m_intbuffer != null)
-		        {
-		        	glBindBuffer(GL_ARRAY_BUFFER, 0);
-		        	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		        	glDeleteBuffers(m_intbuffer);
-		        }
-		        m_intbuffer = BufferUtils.createIntBuffer(2);
-		        glGenBuffers(m_intbuffer);
-		        GLok("glGenBuffers");
-		        m_point_vbo = m_intbuffer.get(0);
-		        m_point_ibo = m_intbuffer.get(1);
-		        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
-		        GLok("glBindBuffer");
-		        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
-		        GLok("glBufferData");
-		        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
-		                GLES32.GL_WRITE_ONLY, null).asFloatBuffer();
-		        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
-		        GLok("glBindBuffer");
-		        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
-		        GLok("glBufferData");
-		        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
-		                GLES32.GL_WRITE_ONLY, null).asIntBuffer();
-	
-		        for(int i=0; i<m_points.size(); ++i)
-		        {
-		        	RGBPoint l_pt = m_points.get(i);
-		        	float x = (float)l_pt.m_x;
-		        	float y = (float)l_pt.m_y;
-		        	float z = (float)l_pt.m_z;
-		        	float r = (float)l_pt.m_r/255.0f;
-		        	float g = (float)l_pt.m_g/255.0f;
-		        	float b = (float)l_pt.m_b/255.0f;
-	                vertexBuffer.put((float) x);
-	                vertexBuffer.put((float) y);
-	                vertexBuffer.put((float) z);
-	                vertexBuffer.put((float) r);
-	                vertexBuffer.put((float) g);
-	                vertexBuffer.put((float) b);
-	                vertexBuffer.put((float) 1.0f);
-	                indexBuffer.put(i);
-		        }
-			            
-		        // Tell openGL that we filled the buffers.
-		        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
-		        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
-	
-		        m_refresh = false;
-		        System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
-		        System.gc();
-			}
-			if(m_points.size()==0) return;
-			//System.out.println("Displaying "+m_points.size()+" points "+m_point_vbo+" "+m_point_ibo);
-			glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
-			if(!GLok("Setting glBindBuffer)")) return;
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
-			if(!GLok("Setting glBindBuffer")) return;
-			glEnableVertexAttribArray(0);
-			if(!GLok("Setting glEnableVertexAttribArray (vertex)")) return;
-			glEnableVertexAttribArray(1);
-			if(!GLok("Setting glEnableVertexAttribArray (color)")) return;
-			
-			int l_vertexstride = 3 * 4 + 4 * 4;
-			glVertexAttribPointer(0, 3, GL_FLOAT, false, l_vertexstride, 0);
-			if(!GLok("Setting glVertexAttribPointer (vertex)")) return;
-			glVertexAttribPointer(1, 4, GL_FLOAT, false, l_vertexstride, 3*4);
-			if(!GLok("Setting glVertexAttribPointer (color)")) return;
-			glBindVertexArray(0);
-			if(!GLok("Setting glBindVertexArray")) return;
-			
-			
-			glDrawElements(GL_POINTS, m_points.size(), GL_UNSIGNED_INT, 0);
-			if(!GLok("glDrawElements")) return;
-		}
-	}
-
-	public void addPoint(int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
-	{
-		synchronized(this)
-		{
-			RGBPoint l_point = new RGBPoint(a_x, a_y, a_z, a_r, a_g, a_b);
-			this.m_points.add(l_point);
-			m_refresh = true;
-		}
-	}
-	public void addPoint(RGBPoint a_point)
-	{
-		synchronized(this)
-		{
-			this.m_points.add(a_point);
-			m_refresh = true;
-		}
-	}
-}
-
-class CalibrationData
-{
-	// mm
-	public double board_w = 160.0f;
-	public double board_h = 220.0f;
-	public double spot_r = 2.0f;
-	public double spot_sep_w = 130.0f;
-	public double spot_sep_h = 191.0f;
-	
-	// Calculation inputs
-	// pixels
-	public int capture_w = 1280;
-	public int capture_h = 720;
-	public int v_offset = 0;
-	public int v_offset_2 = 0;
-	
-	private double cal_pos_1_per = 0.90f;
-	private double cal_pos_2_per = 0.70f;
-	
-	// Calculation outputs
-	public Rectangle pos_1_tl;
-	public Rectangle pos_1_tr;
-	public Rectangle pos_1_bl;
-	public Rectangle pos_1_br;
-
-	public Rectangle pos_2_tl;
-	public Rectangle pos_2_tr;
-	public Rectangle pos_2_bl;
-	public Rectangle pos_2_br;
-	
-	public Rectangle pos_1_board;
-	public Rectangle pos_2_board;
-	
-	public int v_offset_minmax = 0;
-
-	public int detection_box = 20;
-	public int circle_center_threshold = 5;
-	public int circle_radius_threshold = 3;
-	
-	public Point cal_square_bl;
-	public Point cal_square_br;
-	public Point cal_square_tl;
-	public Point cal_square_tr;
-	
-	public int m_minz = 0;
-	public int m_maxz = 0;
-	
-	public double focal_length_pix = 0.0f;
-	
-	public int m_laser_to_camera_sep_pix = 0;
-	
-	void calculate()
-	{
-		double target_h;
-		double target_w;
-		if(capture_w > capture_h) // landscape
-		{
-			// use the height as the limit
-			target_h = ((double)capture_h * cal_pos_1_per);
-			target_w = (target_h/board_h)*board_w;
-		}
-		else // portrait
-		{
-			// Use the width as the limit
-			target_w = ((double)capture_w * cal_pos_1_per);
-			target_h = (target_w/board_w)*board_h;
-		}
-		pos_1_board = new Rectangle();
-		pos_1_board.height = (int)target_h;
-		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
-		{
-			v_offset_minmax = (capture_w - (int)target_w)/2;
-		}
-		else
-		{
-			v_offset_minmax = (capture_h - (int)target_h)/2;
-		}
-		pos_1_board.width = (int)target_w;
-		pos_1_board.x = (capture_w-pos_1_board.width)/2;
-		pos_1_board.y = (capture_h-pos_1_board.height)/2 + v_offset;
-		
-		pos_1_tl = new Rectangle();
-		pos_1_tl.width = (int)(((target_w/board_w)*spot_r))*2;
-		pos_1_tl.height = (int)(((target_h/board_h)*spot_r))*2;
-		pos_1_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_1_tl.width;
-		pos_1_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_1_tl.height + v_offset;
-
-		pos_1_tr = new Rectangle();
-		pos_1_tr.width = pos_1_tl.width;
-		pos_1_tr.height = pos_1_tl.height;
-		pos_1_tr.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
-		pos_1_tr.y = pos_1_tl.y;
-
-		pos_1_bl = new Rectangle();
-		pos_1_bl.width = pos_1_tl.width;
-		pos_1_bl.height = pos_1_tl.height;
-		pos_1_bl.x = pos_1_tl.x;
-		pos_1_bl.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
-
-		pos_1_br = new Rectangle();
-		pos_1_br.width = pos_1_tl.width;
-		pos_1_br.height = pos_1_tl.height;
-		pos_1_br.x = (int)(capture_w - pos_1_tl.x) - pos_1_tl.width*2;
-		pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
-
-	
-		target_h = ((double)capture_h * cal_pos_2_per);
-		target_w = (target_h/board_h)*board_w;
-		v_offset_2 = (int)(((double)v_offset) * (cal_pos_2_per/cal_pos_1_per));
-		pos_2_board = new Rectangle();
-		pos_2_board.height = (int)target_h;
-		pos_2_board.width = (int)target_w;
-		pos_2_board.x = (capture_w-pos_2_board.width)/2;
-		pos_2_board.y = (capture_h-pos_2_board.height)/2 + v_offset_2;
-		
-		pos_2_tl = new Rectangle();
-		pos_2_tl.width = (int)(((target_w/board_w)*spot_r))*2;
-		pos_2_tl.height = (int)(((target_h/board_h)*spot_r))*2;
-		pos_2_tl.x = (int)(capture_w -((target_w/board_w)*spot_sep_w))/2 - pos_2_tl.width;
-		pos_2_tl.y = (int)(capture_h -((target_h/board_h)*spot_sep_h))/2 - pos_2_tl.height + v_offset_2;
-
-		pos_2_tr = new Rectangle();
-		pos_2_tr.width = pos_2_tl.width;
-		pos_2_tr.height = pos_2_tl.height;
-		pos_2_tr.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
-		pos_2_tr.y = pos_2_tl.y;
-
-		pos_2_bl = new Rectangle();
-		pos_2_bl.width = pos_2_tl.width;
-		pos_2_bl.height = pos_2_tl.height;
-		pos_2_bl.x = pos_2_tl.x;
-		pos_2_bl.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
-
-		pos_2_br = new Rectangle();
-		pos_2_br.width = pos_2_tl.width;
-		pos_2_br.height = pos_2_tl.height;
-		pos_2_br.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
-		pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
-	}
-	
-	void calculateBaseCoords()
-	{//cal_square_bl
-		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
-		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double beta = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double alpha_prime = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double beta_prime = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		
-		double x, y;
-		
-		cal_square_bl = new Point();
-		cal_square_br = new Point();
-		cal_square_tl = new Point();
-		cal_square_tr = new Point();
-		
-		x = (((double)pos_1_board.width)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
-		cal_square_bl.x = (int)x;
-		y = x*Math.tan(Math.toRadians(beta));
-		cal_square_bl.y = (int)y;
-		cal_square_br.y = (int)y;
-		cal_square_br.x = cal_square_bl.x + pos_1_board.width;
-		
-		x = (((double)pos_2_board.width)*Math.tan(Math.toRadians(alpha_prime)))/(Math.tan(Math.toRadians(beta_prime))-Math.tan(Math.toRadians(alpha_prime)));
-		cal_square_tl.x = (int)x;
-		y = x*Math.tan(Math.toRadians(beta_prime));
-		cal_square_tl.y = (int)y;
-		cal_square_tr.y = (int)y;
-		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;
-		
-		// Calculate focal length
-		double d_mm = spot_sep_w;
-		double h_pix = pos_1_board.width;
-		double H_mm = spot_sep_w;
-
-		focal_length_pix = (d_mm*h_pix)/H_mm;
-		//focal_length_pix *= 1.1f;
-		System.out.println("Focal length in pixels: "+focal_length_pix);
-		
-		// Camera center to laser center separation
-		m_laser_to_camera_sep_pix = cal_square_bl.x + pos_1_board.width/2;
-		//m_laser_to_camera_sep_pix *= 1.2f;
-		System.out.println("Camera laser sep pixels: "+m_laser_to_camera_sep_pix);
-	}
-	
-	RGBPoint getPointOffset(int a_angle_steps, int screen_x, int screen_y)
-	{
-		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
-//		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double C = (l_to_camera_steps - a_angle_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		
-		double x_pos = (double)screen_x - ((double)capture_w/2.0f) ;
-		
-		double alpha = Math.toDegrees(Math.atan(x_pos/focal_length_pix));
-		double A = 90.0f + alpha;
-		double B = 180.0f - A - C;
-		double b = m_laser_to_camera_sep_pix;
-		
-		double c = (b*Math.sin(Math.toRadians(C))) / (Math.sin(Math.toRadians(B)));
-		
-		double z = c * Math.sin(Math.toRadians(A));
-		double x = c * Math.cos(Math.toRadians(A));
-		
-		double y = z * (screen_y-capture_h/2.0f)/focal_length_pix;
-		
-		System.out.println("In: angle: "+a_angle_steps+" x: "+screen_x+" y: "+screen_y+" Out: x: "+x+"y: "+y+" z: "+z);
-		
-		RGBPoint l_point = new RGBPoint((int)x, (int)y, (int)z);
-		return l_point;
-	}
-	
-	int getZoffset2(int a_steps, int screen_x)
-	{
-		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
-		double beta = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double beta_prime = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double omega = (l_to_camera_steps - a_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		
-		double x_pos = (double)cal_square_bl.x + (double)screen_x;
-		double C = (double)cal_square_bl.x;
-		
-		double E = C + ((double)pos_1_board.width) * ( 0.5f + (cal_pos_2_per/(cal_pos_1_per*2)));
-		
-		double theta = (beta_prime - omega) / (beta_prime-beta);
-		
-		int z = (int)(E + (x_pos-C)* (cal_pos_2_per/cal_pos_1_per) * theta );
-		if(z<m_minz)
-		{
-			m_minz = z;
-			System.out.println("Min Z: "+m_minz);
-		}
-		if(z>m_maxz)
-		{
-			m_maxz = z;
-			System.out.println("Max Z: "+m_maxz);
-		}
-		System.out.println("Z: "+z);
-		return z*4;
-	}
-
-	int getZoffset(int a_steps, int screen_x)
-	{
-		double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
-		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		double theta = (l_to_camera_steps - a_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
-		
-		double x_pos = (double)cal_square_bl.x + (double)screen_x;
-		
-		double tan_theta = Math.tan(Math.toRadians(theta));
-		double tan_alpha = Math.tan(Math.toRadians(alpha));
-		
-		double delta = x_pos*tan_theta -  x_pos*tan_alpha;
-
-//		if(delta<0f)
-		{
-			System.out.println("Delta:" + delta);
-		}
-		int z = (int)(delta + (double)cal_square_bl.y)+500;
-		if(z<m_minz)
-		{
-			m_minz = z;
-			System.out.println("Min Z: "+m_minz);
-		}
-		if(z>m_maxz)
-		{
-			m_maxz = z;
-			System.out.println("Max Z: "+m_maxz);
-		}
-		System.out.println("Z: "+z);
-		return z;
-	}
-}
-
-class CircleDetection {
-    private BufferedImage grey;
-    private int[][] sobelX;
-    private int[][] sobelY;
-    private double[][] sobelTotal;
-    public int threshold = 280;
-	public int[][][] A;
-	
-	int minr = 10;
-	int maxr = 40;
-	
-	BufferedImage displayimage = null;
-	public int minHits = 200;
-	
-	Rectangle searcharea = null;
-	private BufferedImage totalCircles = null;
-
-    void detect(BufferedImage image, Rectangle a_searcharea) throws Exception{
-
-    	searcharea = a_searcharea;
-    	
-        //runs the required processes for circle detection, ie sobel edge detection
-        toGrayScale(image);
-        edgeDetection();
-
-        //creates and outputs images for the sobel sweep in x and y direction, and the combined sobel output
-/*        BufferedImage img = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        for(int i = 0; i< grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight(); j++){
-                img.setRGB(i, j, sobelX[i][j]);
-            }
-        }
-        displayimage = img;*/
-
-
-/*        BufferedImage ing = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        for(int i = 0; i< grey.getWidth(); i++){
-            for(int j = 0; j<grey.getHeight(); j++){
-                ing.setRGB(i, j, sobelY[i][j]);
-            }
-        }*/
-
-        BufferedImage total = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
-        double max = 0;
-        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
-            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
-                if(sobelTotal[i][j]>max){
-                    max = sobelTotal[i][j];
-                }
-            }
-        }
-        //displayimage = total;
-      for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
-            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
-                //maps every pixel to a grayscale value between 0 and 255 from between 0 and the max value in sobelTotal
-                int rgb = new Color((int)map(sobelTotal[i][j], 0,max,0,255),
-                        (int)map(sobelTotal[i][j], 0,max,0,255),
-                        (int)map(sobelTotal[i][j], 0,max,0,255), 255).getRGB();
-                total.setRGB(i,j,rgb);
-            }
-        }
-        total = changeBrightness(20.0f, total);
-        //displayimage = total;
-        
-        //outputs an image showing every pixel that is above the threshold
-        BufferedImage totalColour = new BufferedImage(grey.getWidth(), grey.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        for(int i = 0; i < grey.getWidth(); i++) {
-        	for(int j = 0; j < grey.getHeight(); j++) {
-        		Color c1 = new Color(0,255,0);
-        		if(sobelTotal[i][j] > threshold) {
-        			totalColour.setRGB(i, j, c1.getRGB());
-        		}
-        	}
-        }
-        //displayimage = totalColour;
-        
-        //circleDetection(total);
-    }
-
-    //maps the given value between startCoord1 and endCoord1 to a value between startCoord2 and endCoord2
-    private double map(double valueCoord1,
-                             double startCoord1, double endCoord1,
-                             double startCoord2, double endCoord2) {
-
-
-        double ratio = (endCoord2 - startCoord2) / (endCoord1 - startCoord1);
-        return ratio * (valueCoord1 - startCoord1) + startCoord2;
-    }
-
-    //converts given image into a grayscale image
-    private void toGrayScale(BufferedImage img) throws Exception{
-        grey = new BufferedImage(img.getWidth(), img.getHeight(), img.TYPE_BYTE_GRAY);
-        grey.getGraphics().drawImage(img, 0 , 0, null);
-    }
-
-    //runs all the functions required to complete edge detection
-    private void edgeDetection(){
-        calcSobelX();
-        calcSobelY();
-        combineSobel();
-    }
-
-    //performs the horizontal sobel sweep, sets up the matrix using a 3x3 array and runs through
-    //every pixel to calculate the sobel result
-    private void calcSobelX(){
-        sobelX = new int[grey.getWidth()][grey.getHeight()];
-        int[][] base = new int[3][3];
-        base[0][0] = -1;
-        base[1][0] = -2;
-        base[2][0] = -1;
-        base[0][1] = 0;
-        base[1][1] = 0;
-        base[2][1] = 0;
-        base[0][2] = 1;
-        base[1][2] = 2;
-        base[2][2] = 1;
-
-
-        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
-            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
-                sobelX[i][j] = getSobelResult(i,j,base);
-            }
-        }
-    }
-
-    //performs the vertical sobel sweep, sets up the matrix using a 3x3 array and runs through
-    //every pixel to calculate the sobel result
-    private void calcSobelY(){
-        sobelY = new int[grey.getWidth()][grey.getHeight()];
-        int[][] base = new int[3][3];
-        base[0][0] = -1;
-        base[0][1] = -2;
-        base[0][2] = -1;
-        base[1][0] = 0;
-        base[1][1] = 0;
-        base[1][2] = 0;
-        base[2][0] = 1;
-        base[2][1] = 2;
-        base[2][2] = 1;
-
-
-        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
-            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
-                sobelY[i][j] = getSobelResult(i,j,base);
-            }
-        }
-    }
-
-    //a series of if statements to account for any edge cases to ensure no errors, calculates
-    //the sobel result for any pixel and kernel
-    private int getSobelResult(int x, int y, int[][] base){
-        int result = 0;
-        if(x==0 && y ==0){
-            for(int i = 0; i <= 1; i++){
-                for(int j = 0; j <= 1; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else if(x==0 && y==grey.getHeight()-1){
-            for(int i = 0; i <= 1; i++){
-                for(int j = -1; j <= 0; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else if(x==0 && y !=0){
-            for (int i = 0; i <= 1; i++) {
-                for (int j = -1; j <= 1; j++) {
-                    result += new Color(grey.getRGB(x + i, y + j)).getRed()* base[j + 1][i + 1];
-                }
-            }
-
-        }else if(x==grey.getWidth()-1 && y ==0){
-            for(int i = -1; i <= 0; i++){
-                for(int j = 0; j <= 1; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else if(x!=0 && y ==0){
-            for(int i = -1; i <= 1; i++){
-                for(int j = 0; j <= 1; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else if(x==grey.getWidth()-1 && y==grey.getHeight()-1){
-            for(int i = -1; i <= 0; i++){
-                for(int j = -1; j <= 0; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else if(x==grey.getWidth()-1 && y!=grey.getHeight()-1){
-            for(int i = -1; i <= 0; i++){
-                for(int j = -1; j <= 1; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else if(x!=grey.getWidth()-1 && y==grey.getHeight()-1){
-            for(int i = -1; i <= 1; i++){
-                for(int j = -1; j <= 0; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }else{
-            for(int i = -1; i <= 1; i++){
-                for(int j = -1; j <= 1; j++){
-                    result += new Color(grey.getRGB(x+i,y+j)).getRed()*base[j+1][i+1];
-                }
-            }
-        }
-
-        return result;
-    }
-
-    //performs the algorithm to combine the horizontal sweep and vertical sweep
-    private void combineSobel(){
-        sobelTotal = new double[grey.getWidth()][grey.getHeight()];
-        for(int i = searcharea.x; i< searcharea.x+searcharea.width; i++){
-            for(int j = searcharea.y; j<searcharea.y+searcharea.height; j++){
-                sobelTotal[i][j] = Math.round(Math.sqrt(Math.pow((double)sobelX[i][j],2) + Math.pow((double)sobelY[i][j],2)));
-            }
-        }
-    }
-
-    void initTotalCircles(BufferedImage image)
-    {
-    	totalCircles = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-    	
-    }
-    
-    Rectangle findFirstCircle(BufferedImage image) throws Exception 
-    {
-        int radius = maxr;
-        A = new int[image.getWidth()][image.getHeight()][radius];
-
-        for (int rad = 0; rad < radius; rad++) {
-            for (int x = searcharea.x; x < searcharea.x+searcharea.width; x++) {
-                for (int y = searcharea.y; y < searcharea.y+searcharea.height; y++) {
-                    //if the given pixel is above the threshold, a circle will be drawn at radius rad around it and if it
-                    //is a valid coordinate it will be accumulated in the A array and plotted in the pointSpace image
-                    if (sobelTotal[x][y] > threshold) {
-                        for (int t = 0; t <= 360; t++) {
-                            Integer a = (int) Math.floor(x - rad * Math.cos(t * Math.PI / 180));
-                            Integer b = (int) Math.floor(y - rad * Math.sin(t * Math.PI / 180));
-                            if (!((0 > a || a > image.getWidth() - 1) || (0 > b || b > image.getHeight() - 1))) {
-                                if (!(a.equals(x) && b.equals(y))) {
-                                   A[a][b][rad] += 1;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Graphics2D g = null;
-        if(totalCircles != null)
-        {
-        	displayimage = totalCircles;
-        	g = totalCircles.createGraphics();
-        	g.setColor(Color.RED);
-        }
-
-//        System.out.println("Looking for potential centers");
-        for (int x = searcharea.x; x < searcharea.x+searcharea.width; x++) {
-            for (int y = searcharea.y; y < searcharea.y+searcharea.height; y++) {
-                for (int r = minr; r < maxr; r++) {
-                    if (A[x][y][r] > minHits) {
-                        double a =  x - r * Math.cos(0 * Math.PI / 180);
-                        double b =  y - r * Math.sin(90 * Math.PI / 180);
-                      if(g != null) g.drawOval((int)a,(int)b,2*r,2*r);
-//                        System.out.println("A "+A[x][y][r]+ "("+x+","+y+") r="+r);
-                        return new Rectangle(x, y, r, r);
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    //changes the brightness of an image by the factor given
-    private static BufferedImage changeBrightness(float brightenFactor, BufferedImage image){
-        RescaleOp op = new RescaleOp(brightenFactor, 0, null);
-        image = op.filter(image, image);
-        return image;
-    }
-}
-
-
-
-
-
-
-
-
-
-
-
-
 
 class PaintImage extends JPanel
 {
@@ -1024,7 +259,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private int m_point_program_col;
 	private int displayW;
 	private int displayH;
-	PointCloudData m_pcd = null;
+//	PointCloudData m_pcd = null;
 	PointCloudObject m_pco = null;
 	float m_rot = 0.0f;
 	private Thread m_thread = null;
@@ -1300,6 +535,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		tfScanStepSize.setBounds(542, 958, 47, 19);
 		getContentPane().add(tfScanStepSize);
 		tfScanStepSize.setColumns(10);
+		
+		JButton btnExportPoints = new JButton("Export points");
+		btnExportPoints.setBounds(1114, 886, 129, 25);
+		getContentPane().add(btnExportPoints);
+		btnExportPoints.addActionListener(this);
 
 		m_camera = a_camera;
 		
@@ -1309,7 +549,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		setModal(true);
 
-		m_pcd = new PointCloudData();
+//		m_pcd = new PointCloudData();
 		m_pco = new PointCloudObject();
 		
 }
@@ -1628,12 +868,12 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		m_rot += delta * 10f;
+		m_rot += delta * 20f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
 		//m_rot = 176.0f;
-		System.out.println("Rot: "+m_rot);
+//		System.out.println("Rot: "+m_rot);
 		lastTime = thisTime;
 
 	}
@@ -1881,6 +1121,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		if(e.getSource().equals(radioButton_1))
 		{
 			if(radioButton_1.isSelected()) image.pos = 2;
+		} else
+		if(e.getActionCommand()=="Export points")
+		{
+			m_pco.save("test.ply");
 		}
 	}
 
@@ -2472,7 +1716,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	void Detect()
 	{
-		int l_points = 0;
 		m_pco.clear();
 		m_cal_data.calculateBaseCoords();
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
@@ -2507,30 +1750,50 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				return;
 			}
 			
-			int l_x_points[];
 			image.m_image = l_baseimage;
-			image.m_overlay = analyzeImage(l_baseimage, l_inimage);
-			l_x_points = analyzeImagetoArray(l_baseimage, l_inimage);
-			image.repaint();
+//			image.m_overlay = analyzeImage(l_baseimage, l_inimage);
 			
-			for( int i=0; i<l_baseimage.getHeight(); ++i)
+			Thread l_threads[] = new Thread[Eora3D_MainWindow.m_e3d_config.sm_threads];
+			for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
 			{
-				if(l_x_points[i]>=0)
-				{
-					RGBPoint l_point = m_cal_data.getPointOffset(l_pos, l_x_points[i], (l_baseimage.getHeight()-i)-1);
-					l_point.m_r = (l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16;
-					l_point.m_g = (l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8;
-					l_point.m_b = l_baseimage.getRGB(l_x_points[i], i) & 0x00;
-					System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
-					//System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
-					m_pco.addPoint(l_point);
-					++l_points;
+				final int l_lambda_thread = l_thread;
+				final int l_lambda_pos = l_pos;
+				Runnable l_task = () -> { 
+					int l_x_points[];
+					// TBC correctify this!
+					int l_range_start = (l_baseimage.getHeight()/8)*l_lambda_thread;
+					int l_range_end = (l_baseimage.getHeight()/8)*(l_lambda_thread+1);
+					l_x_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
+					for( int i=l_range_start; i<l_range_end; ++i)
+					{
+						if(l_x_points[i]>=0)
+						{
+							RGB3DPoint l_point = m_cal_data.getPointOffset(l_lambda_pos, l_x_points[i], (l_baseimage.getHeight()-i)-1);
+							l_point.m_r = (l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16;
+							l_point.m_g = (l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8;
+							l_point.m_b = l_baseimage.getRGB(l_x_points[i], i) & 0x00;
+		//					System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
+							//System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
+							m_pco.addPoint(l_point);
+						}
+					}
+				};
+				l_threads[l_thread] = new Thread(l_task);
+				l_threads[l_thread].start();
+			}
+			for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
+			{
+				try {
+					l_threads[l_thread].join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
-			
+			image.repaint();
 			System.out.println("Complete "+l_infile.toString());
 		}
-		System.out.println("Found "+l_points+" points");
+//		System.out.println("Found "+l_points+" points");
 		System.out.println("Min Z: "+m_cal_data.m_minz);
 		System.out.println("Max Z: "+m_cal_data.m_maxz);
 
@@ -2599,12 +1862,12 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		return a_out;
 	}
 	
-	int[] analyzeImagetoArray(BufferedImage a_base, BufferedImage a_in)
+	int[] analyzeImagetoArray(BufferedImage a_base, BufferedImage a_in, int a_start, int a_end)
 	{
 		int[] a_out = new int[a_in.getHeight()];
 		int x, y;
 
-		for(y = 0; y< a_in.getHeight(); ++y)
+		for(y = a_start; y < a_end; ++y)
 		{
 			for(x = a_in.getWidth()-1; x>=0; --x)
 			{
@@ -2862,6 +2125,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			});
 			glfwSetWindowPosCallback(m_window, (windowHnd, xpos, ypos) -> {
 				System.out.println("Moved by system to " + xpos + "," + ypos);
+			});
+			glfwSetWindowSizeCallback(m_window, (windowHnd, width, height) -> {
+				System.out.println("Resized to " + width+ "," + height);
+				displayW = width;
+				displayH = height;
 			});
 
 			// EGL capabilities

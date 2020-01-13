@@ -39,5 +39,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_scan_start_angle = 1800;
 	public int sm_scan_end_angle = 9000;
 	public int sm_scan_step_size = 80;
+	
+	public int sm_threads = 8;
 }
 
