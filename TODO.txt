@@ -4,3 +4,4 @@
 - Calibration: Improve laser/spot intersect detection
 - Scan: Add camera lens center to laser pivot point offset
 - Scan: Turntable scan
+- OS: Windows BLE support
