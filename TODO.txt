@@ -2,6 +2,7 @@
 - UI: Make UI user friendly
 - Docs: Explain how to use the software
 - Calibration: Improve laser/spot intersect detection
+- Scan: Add pixel -> mm transform
 - Scan: Add camera lens center to laser pivot point offset
 - Scan: Turntable scan
 - OS: Windows BLE support
