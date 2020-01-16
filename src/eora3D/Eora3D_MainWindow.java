@@ -29,6 +29,7 @@ import com.github.sarxos.webcam.Webcam;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import javax.swing.JMenu;
 
 class extensionFileFilter extends javax.swing.filechooser.FileFilter {
@@ -59,7 +60,7 @@ class extensionFileFilter extends javax.swing.filechooser.FileFilter {
 public class Eora3D_MainWindow extends JDialog implements ActionListener, WindowListener {
 	static public eora3D_bluetooth m_e3D_bluetooth;
 	private JLabel laser_selector;
-	private BluetoothDevice laser = null;
+	private BluetoothDevice m_laser = null;
 	private JLabel turntable_selector;
 	private BluetoothDevice turntable = null;
 	private JComboBox<String> camera_selector;
@@ -76,87 +77,76 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		getContentPane().setLayout(null);
 		
-		JLabel lblEoradLaserTurret = new JLabel("Eora3D Laser Turret");
+		JLabel lblEoradLaserTurret = new JLabel("Laser");
 		lblEoradLaserTurret.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		lblEoradLaserTurret.setBounds(10, 11, 170, 30);
+		lblEoradLaserTurret.setBounds(10, 11, 81, 30);
 		getContentPane().add(lblEoradLaserTurret);
 		
 		laser_selector = new JLabel();
 		laser_selector.setText("Not found");
-		laser_selector.setBounds(10, 52, 423, 30);
+		laser_selector.setBounds(94, 12, 181, 30);
 		getContentPane().add(laser_selector);
 		
-		JLabel lblEoradTurntable = new JLabel("Eora3D Turntable");
+		JLabel lblEoradTurntable = new JLabel("Turntable");
 		lblEoradTurntable.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		lblEoradTurntable.setBounds(10, 93, 249, 30);
+		lblEoradTurntable.setBounds(10, 53, 81, 30);
 		getContentPane().add(lblEoradTurntable);
 		
 		turntable_selector = new JLabel();
 		turntable_selector.setText("Not found");
-		turntable_selector.setBounds(10, 134, 423, 30);
+		turntable_selector.setBounds(94, 54, 181, 30);
 		getContentPane().add(turntable_selector);
 		
 		JLabel lblCamera = new JLabel("Camera");
 		lblCamera.setFont(new Font("Tahoma", Font.PLAIN, 16));
-		lblCamera.setBounds(10, 175, 249, 30);
+		lblCamera.setBounds(10, 95, 81, 30);
 		getContentPane().add(lblCamera);
 		
 		camera_selector = new JComboBox<String>();
-		camera_selector.setBounds(10, 216, 423, 30);
+		camera_selector.setBounds(94, 96, 181, 30);
 		getContentPane().add(camera_selector);
 		camera_selector.addActionListener(this);
 		
-		JButton btnBluetoothRescan = new JButton("Bluetooth Rescan");
-		btnBluetoothRescan.setBounds(20, 258, 160, 23);
+		JButton btnBluetoothRescan = new JButton("Detect");
+		btnBluetoothRescan.setBounds(202, 39, 88, 23);
 		getContentPane().add(btnBluetoothRescan);
 		btnBluetoothRescan.addActionListener(this);
 		
-		JButton btnCameraRescan = new JButton("Camera Rescan");
-		btnCameraRescan.setBounds(189, 258, 160, 23);
+		JButton btnCameraRescan = new JButton("Relist");
+		btnCameraRescan.setBounds(302, 100, 99, 23);
 		getContentPane().add(btnCameraRescan);
 		btnCameraRescan.addActionListener(this);
 		
-		JButton btndScanning = new JButton("3D Scanning");
-		btndScanning.setBounds(361, 258, 116, 23);
+		JButton btndScanning = new JButton("Scan");
+		btndScanning.setBounds(10, 222, 116, 23);
 		getContentPane().add(btndScanning);
 		btndScanning.addActionListener(this);
 		
-		JButton btnLasertest = new JButton("Laser test");
-		btnLasertest.setBounds(20, 292, 117, 25);
-		getContentPane().add(btnLasertest);
-		btnLasertest.addActionListener(this);
-		
-		JButton btnTurntableTest = new JButton("Turntable test");
-		btnTurntableTest.setBounds(149, 292, 153, 25);
-		getContentPane().add(btnTurntableTest);
-		btnTurntableTest.addActionListener(this);
-		
-		JButton btnCalibration = new JButton("Calibration");
-		btnCalibration.setBounds(316, 292, 117, 25);
+		JButton btnCalibration = new JButton("Calibrate");
+		btnCalibration.setBounds(302, 38, 99, 25);
 		getContentPane().add(btnCalibration);
 		btnCalibration.addActionListener(this);
 		
-		setSize(449+16, 320+64+32);
+		JButton btnGenerateModel = new JButton("Generate model");
+		btnGenerateModel.setBounds(10, 254, 181, 27);
+		getContentPane().add(btnGenerateModel);
+		
+		JButton btnSaveConfig = new JButton("Save config");
+		btnSaveConfig.setBounds(10, 293, 116, 27);
+		getContentPane().add(btnSaveConfig);
+		btnSaveConfig.addActionListener(this);
+		
+		JButton btnLoadConfig = new JButton("Load config");
+		btnLoadConfig.setBounds(10, 332, 116, 27);
+		getContentPane().add(btnLoadConfig);
+		btnLoadConfig.addActionListener(this);
+		
+		setSize(457, 473);
 		
 		addWindowListener(this);
 		
 		setTitle("Eora3D Scanner");
-		
-		JMenuBar menuBar = new JMenuBar();
-		setJMenuBar(menuBar);
-		
-		JMenu mnFile = new JMenu("File");
-		menuBar.add(mnFile);
-
-		JMenuItem mntmOpen = new JMenuItem("Open");
-		mntmOpen.addActionListener(this);
-		mnFile.add(mntmOpen);
-
-		JMenuItem mntmSaveAs = new JMenuItem("Save As");
-		mntmSaveAs.addActionListener(this);
-		
-		mnFile.add(mntmSaveAs);
-
+		UIManager.put("OptionPane.minimumSize",new Dimension(400,100)); 
 
 		
 		setVisible(true);
@@ -180,16 +170,16 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				if(device.getName().substring(0, 4).equals("E3DS"))
 				{
 					laser_selector.setText(device.getName());
-					laser = device;
-					if(!m_e3D_bluetooth.setLaser(laser))
+					m_laser = device;
+					if(!m_e3D_bluetooth.setLaser(m_laser))
 					{
 						System.out.println("Not connected to laser successfully");
 						laser_selector.setText("Not found");
-						laser = null;
+						m_laser = null;
 						return;
 					}
 			        System.out.print("Found laser: ");
-			        eora3D_bluetooth.printDevice(laser);
+			        eora3D_bluetooth.printDevice(m_laser);
 					break;
 				}
 			}
@@ -216,7 +206,9 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			m_camera=null;
 			System.gc();
 		}
+		camera_selector.removeActionListener(this);
 		camera_selector.removeAllItems();
+		camera_selector.addActionListener(this);
 		m_webcams = Webcam.getWebcams();
 		for(Webcam webcam : m_webcams)
 		{
@@ -232,26 +224,14 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		//System.out.println("action :"+e);
-		if(e.getActionCommand()=="Bluetooth Rescan")
+		if(e.getActionCommand()=="Detect")
 		{
 			Bluetooth_Rescan();
 			return;
 		} else
-		if(e.getActionCommand()=="Camera Rescan")
+		if(e.getActionCommand()=="Relist")
 		{
 			Camera_Rescan();
-			return;
-		} else
-		if(e.getActionCommand()=="Laser test")
-		{
-			if(m_e3D_bluetooth==null || laser==null) return;
-			new eora3D_laser_controller(m_e3D_bluetooth).setVisible(true);
-			return;
-		} else
-		if(e.getActionCommand()=="Turntable test")
-		{
-			if(m_e3D_bluetooth==null || turntable==null) return;
-			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
 			return;
 		} else
 		if(e.getSource().equals(this.camera_selector))
@@ -272,14 +252,44 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				m_camera = null;
 			}
 		} else
-		if(e.getActionCommand()=="Calibration")
+		if(e.getActionCommand()=="Calibrate")
 		{
 			System.out.println("Camera is "+m_camera);
-			if(m_camera==null) return;
+			if(m_camera==null)
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if(m_laser==null)
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			new eora3D_calibration(m_camera).setVisible(true);
 		}
 		else
-		if(e.getActionCommand()=="Open")
+		if(e.getActionCommand()=="Scan")
+		{
+			System.out.println("Camera is "+m_camera);
+			if(m_camera==null)
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Camera needed", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			if(m_laser==null)
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Laser needed", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			new eora3D_calibration(m_camera).setVisible(true);
+		}
+		else
+		if(e.getActionCommand()=="Generate model")
+		{
+			new eora3D_calibration(m_camera).setVisible(true);
+		}
+		else
+		if(e.getActionCommand()=="Load config")
 		{
 			JFileChooser l_fc;
 			l_fc = new JFileChooser(System.getProperty("user.home"));
@@ -315,7 +325,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 
 		}
 		else
-		if(e.getActionCommand()=="Save As")
+		if(e.getActionCommand()=="Save config")
 		{
 			JFileChooser l_fc;
 			l_fc = new JFileChooser(m_e3d_config.sm_config_file);
