@@ -1,7 +1,11 @@
 package eora3D;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.Serializable;
+
+import javax.swing.JDialog;
 
 class eora3D_configuration_version implements Serializable
 {
@@ -23,7 +27,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_laser_detection_threshold_r = 140;
 	public int sm_laser_detection_threshold_g = 140;
 	public int sm_laser_detection_threshold_b = 140;
-	public int sm_laser_detection_threshold_percent = 30;
+	public float sm_laser_detection_threshold_percent = 30;
 	public String sm_laser_detection_threshold_logic = "Or";
 	
 	public int sm_calibration_vertical_offset = 0;
@@ -42,5 +46,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_scan_step_size = 80;
 	
 	public int sm_threads = 8;
+	
+	public int sm_test_frame = 4216;
 }
 

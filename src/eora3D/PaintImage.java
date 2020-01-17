@@ -24,8 +24,8 @@ class PaintImage extends JPanel
   {
     if(m_image == null) return;
 	g.clearRect(0,  0,  getWidth(), getHeight());
-    g.drawImage(m_image, 0, 0, null);
-    if(m_overlay != null) g.drawImage(m_overlay, 0, 0, null);
+    g.drawImage(m_image, 0, 0, getSize().width, getSize().height, null);
+    if(m_overlay != null) g.drawImage(m_overlay, 0, 0, getSize().width, getSize().height, null);
     
     g.setColor(Color.blue);
     if(pos==1)
