@@ -68,10 +68,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	List<Webcam> m_webcams = null;
 	public Webcam m_camera = null;
 	static eora3D_configuration_data_v1 m_e3d_config;
+	public CalibrationData m_cal_data = null;
 	
 	public Eora3D_MainWindow()
 	{
 		m_e3d_config = new eora3D_configuration_data_v1();
+		m_cal_data = new CalibrationData();
 		
 		setResizable(false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -130,6 +132,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		JButton btnGenerateModel = new JButton("Generate model");
 		btnGenerateModel.setBounds(10, 254, 181, 27);
 		getContentPane().add(btnGenerateModel);
+		btnGenerateModel.addActionListener(this);
 		
 		JButton btnSaveConfig = new JButton("Save config");
 		btnSaveConfig.setBounds(10, 293, 116, 27);
@@ -265,7 +268,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			new eora3D_calibration(m_camera).setVisible(true);
+			new eora3D_calibration(this).setVisible(true);
 		}
 		else
 		if(e.getActionCommand()=="Scan")
@@ -281,12 +284,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Laser needed", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			new eora3D_calibration(m_camera).setVisible(true);
+			new eora3D_calibration(this).setVisible(true);
 		}
 		else
 		if(e.getActionCommand()=="Generate model")
 		{
-			new eora3D_calibration(m_camera).setVisible(true);
+			new ModelGenerator(this).setVisible(true);
 		}
 		else
 		if(e.getActionCommand()=="Load config")

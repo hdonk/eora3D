@@ -2,6 +2,7 @@ package eora3D;
 
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 
 class CalibrationData
 {
@@ -211,6 +212,39 @@ class CalibrationData
 		
 		RGB3DPoint l_point = new RGB3DPoint(capture_w-(int)x, (int)y, (int)z);
 		return l_point;
+	}
+	
+	int findLaserPoint(BufferedImage a_base, BufferedImage a_in, int a_y, int a_x_min, int a_x_max)
+	{
+		for(int x = a_x_max-1; x>=a_x_min; --x)
+		{
+			int argb = a_in.getRGB(x, a_y);
+			int r = (argb & 0xff0000) >> 16;
+        	int g = (argb & 0x00ff00) >> 8;
+    		int b = (argb & 0x0000ff);
+    		
+			int argb_base = a_base.getRGB(x, a_y);
+			int r_base = (argb_base & 0xff0000) >> 16;
+        	int g_base = (argb_base & 0x00ff00) >> 8;
+    		int b_base = (argb_base & 0x0000ff);
+    		
+    		r = Math.abs(r_base-r);
+    		g = Math.abs(g_base-g);
+    		b = Math.abs(b_base-b);
+
+    		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
+    		{
+        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
+        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
+        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+    		} else
+    		{
+        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
+        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
+        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+    		}
+		}
+		return -1;
 	}
 	
 }
