@@ -134,15 +134,10 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		getContentPane().add(btnGenerateModel);
 		btnGenerateModel.addActionListener(this);
 		
-		JButton btnSaveConfig = new JButton("Save config");
-		btnSaveConfig.setBounds(10, 293, 116, 27);
-		getContentPane().add(btnSaveConfig);
-		btnSaveConfig.addActionListener(this);
-		
-		JButton btnLoadConfig = new JButton("Load config");
-		btnLoadConfig.setBounds(10, 332, 116, 27);
-		getContentPane().add(btnLoadConfig);
-		btnLoadConfig.addActionListener(this);
+		JButton btnConfig = new JButton("Config");
+		btnConfig.setBounds(10, 293, 116, 27);
+		getContentPane().add(btnConfig);
+		btnConfig.addActionListener(this);
 		
 		setSize(457, 473);
 		
@@ -290,6 +285,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="Generate model")
 		{
 			new ModelGenerator(this).setVisible(true);
+		}
+		else
+		if(e.getActionCommand()=="Config")
+		{
+			eora3D_configuration_editor l_editor = new eora3D_configuration_editor();
+			l_editor.setVisible(true);
 		}
 		else
 		if(e.getActionCommand()=="Load config")

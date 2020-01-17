@@ -130,7 +130,7 @@ class PointCloudObject implements Runnable {
 		        // Number of bytes we need per vertex.
 		        int l_vertexsize = 3*4 + 4*4;
 	
-		        System.out.println("Refreshing points");
+		        //System.out.println("Refreshing points");
 		        if(m_intbuffer != null)
 		        {
 		        	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -179,7 +179,7 @@ class PointCloudObject implements Runnable {
 		        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
 	
 		        m_refresh = false;
-		        System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
+		        //System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
 		        System.gc();
 			}
 			if(m_points.size()==0) return;

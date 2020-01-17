@@ -220,9 +220,17 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		{
 			cbThresholdLogic.setSelectedIndex(0);
 		}
-		else
+		else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("And"))
 		{
 			cbThresholdLogic.setSelectedIndex(1);
+		}
+		else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("%"))
+		{
+			cbThresholdLogic.setSelectedIndex(2);
+		}
+		else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("Weighted %"))
+		{
+			cbThresholdLogic.setSelectedIndex(3);
 		}
 		cbThresholdLogic.addActionListener(this);
 		
