@@ -210,11 +210,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Export")
 		{
-			FileDialog l_fd;
-			l_fd = new FileDialog(this);
-			l_fd.setVisible(true);
-			
-/*
 			JFileChooser l_fc;
 			l_fc = new JFileChooser();
 			l_fc.setSelectedFile(new File("export.ply"));
@@ -229,8 +224,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				}
 				
 				m_pco.save(l_file);
-			}*/
-			m_pco.save(new File("export.ply"));
+			}
 		} else
 		if(ae.getActionCommand() == "Finish")
 		{
