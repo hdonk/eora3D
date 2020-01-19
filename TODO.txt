@@ -1,8 +1,9 @@
 - Files: Finish PLY export
 - UI: Make UI user friendly
-- Docs: Explain how to use the software
+- UI: Create/find Java native file chooser (OpenGL incompatible with JFileChooser issue)
 - Calibration: Improve laser/spot intersect detection
+- Scan: Turntable scan
+- Docs: Explain how to use the software
 - Scan: Add pixel -> mm transform
 - Scan: Add camera lens center to laser pivot point offset
-- Scan: Turntable scan
 - OS: Windows BLE support
