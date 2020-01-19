@@ -320,12 +320,74 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		}
 	}
 	
+	public void checkTextFieldIntRange(JTextField a_tf, int a_min, int a_max, int a_default)
+	{
+		int a_value = Integer.parseInt(a_tf.getText());
+		if(""+a_value != a_tf.getText())
+		{
+			a_tf.setText(""+a_default);
+			return;
+		}
+		if(a_value < a_min)
+		{
+			a_tf.setText(""+a_min);
+			return;
+		}
+		if(a_value > a_max)
+		{
+			a_tf.setText(""+a_max);
+			return;
+		}
+	}
+	
+	public void checkTextFieldFloatRange(JTextField a_tf, float a_min, float a_max, float a_default)
+	{
+		float a_value = Float.parseFloat(a_tf.getText());
+		if(""+a_value != a_tf.getText())
+		{
+			a_tf.setText(""+a_default);
+			return;
+		}
+		if(a_value < a_min)
+		{
+			a_tf.setText(""+a_min);
+			return;
+		}
+		if(a_value > a_max)
+		{
+			a_tf.setText(""+a_max);
+			return;
+		}		
+	}
+	
+	public void verifyValueRanges()
+	{
+		eora3D_configuration_data_v1 l_default = new eora3D_configuration_data_v1();  
+		checkTextFieldIntRange(tfLaser0pointoffset, 0, 9000, l_default.sm_laser_0_offset);
+		checkTextFieldIntRange(tfLaserstepsperdegree, 1, 180, l_default.sm_laser_steps_per_deg);
+		checkTextFieldIntRange(tfCircleminradius, 1, 10, l_default.sm_circle_min_rad);
+		checkTextFieldIntRange(tfCirclemaxradius, 2, 11, l_default.sm_circle_max_rad);
+		checkTextFieldIntRange(tfBoardverticaloffset, -200, +200, l_default.sm_calibration_v_offset);
+		checkTextFieldIntRange(tfDetectionangleleft, 0, 9000, l_default.sm_calibration_tl_motorpos_1);
+		checkTextFieldIntRange(tfDetectionangleright, 0, 9000, l_default.sm_calibration_tr_motorpos_1);
+		checkTextFieldIntRange(tfRedthreshold, 1, 255, l_default.sm_laser_detection_threshold_r);
+		checkTextFieldIntRange(tfGreenthreshold, 1, 255, l_default.sm_laser_detection_threshold_g);
+		checkTextFieldIntRange(tfBluethreshold, 1, 255, l_default.sm_laser_detection_threshold_b);
+		checkTextFieldFloatRange(tfPercentagethreshold, 0.1f, 100.0f, l_default.sm_laser_detection_threshold_percent);
+		checkTextFieldIntRange(tfStartposition, 0, 9000, l_default.sm_scan_start_angle);
+		checkTextFieldIntRange(tfEndposition, 1, 9000, l_default.sm_scan_end_angle);
+		checkTextFieldIntRange(tfStepsize, 1, 180, l_default.sm_scan_step_size);
+		checkTextFieldIntRange(tfThreads, 1, 64, l_default.sm_threads);
+		checkTextFieldIntRange(tfTestframe, 0, 9000, l_default.sm_test_frame);
+	}
+	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if(e.getActionCommand()=="Cancel")
 		{
 			setVisible(false);
+			return;
 		}
-
+		verifyValueRanges();
 	}
 }
