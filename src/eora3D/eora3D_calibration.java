@@ -377,7 +377,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			m_cal_data.v_offset = Eora3D_MainWindow.m_e3d_config.sm_calibration_vertical_offset;
 		}
 		
-		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
 			m_cal_data.capture_h = (int)m_camera.getViewSize().getWidth();
 			m_cal_data.capture_w = (int)m_camera.getViewSize().getHeight();
@@ -401,12 +401,26 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	}
 	
-	BufferedImage rotate(BufferedImage a_image)
+	BufferedImage rotate(BufferedImage a_image, int a_angle)
 	{
-		BufferedImage l_rot_image = new BufferedImage(a_image.getHeight(), a_image.getWidth(), BufferedImage.TYPE_INT_ARGB);
+		BufferedImage l_rot_image;
+		int r_x = 0, r_y = 0;
+		double angle = Math.toRadians(a_angle);
+		if(a_angle==90 || a_angle==270)
+		{
+			l_rot_image = new BufferedImage(a_image.getHeight(), a_image.getWidth(), BufferedImage.TYPE_INT_ARGB);
+			r_x = a_image.getHeight()/2;
+			r_y = a_image.getHeight()/2;
+		}
+		else
+		{
+			l_rot_image = new BufferedImage(a_image.getWidth(), a_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			r_x = a_image.getWidth()/2;
+			r_y = a_image.getWidth()/2;
+		}
 		Graphics2D l_g2d = (Graphics2D) l_rot_image.getGraphics();
 		AffineTransform l_backup = l_g2d.getTransform();
-		AffineTransform l_at = AffineTransform.getRotateInstance(Math.PI/2.0f, a_image.getHeight()/2, a_image.getHeight()/2);
+		AffineTransform l_at = AffineTransform.getRotateInstance(angle, r_x, r_y);
 		l_g2d.setTransform(l_at);
 		l_g2d.drawImage(a_image, 0, 0, null);
 		l_g2d.setTransform(l_backup);
@@ -419,9 +433,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		{
 			BufferedImage l_image = m_camera.getImage();
 			l_image.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
-				l_image = rotate(l_image);
+				l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 			
 //			image.circles=null;
@@ -630,9 +644,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			l_goodenough = 0;
 			capturedImage = m_camera.getImage();
 			capturedImage.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
-				capturedImage = rotate(capturedImage);
+				capturedImage = rotate(capturedImage, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 			image.m_image = capturedImage;
 			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -804,9 +818,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 			BufferedImage l_base_image = m_camera.getImage();
 			l_base_image.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
-				l_base_image = rotate(l_base_image);
+				l_base_image = rotate(l_base_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
@@ -842,9 +856,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
-					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 					{
-						l_image = rotate(l_image);
+						l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 					}
 
 					int l_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
@@ -877,9 +891,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
-					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 					{
-						l_image = rotate(l_image);
+						l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 					}
 	
 					int l_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
@@ -919,9 +933,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			l_goodenough = 0;
 			capturedImage = m_camera.getImage();
 			capturedImage.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
-				capturedImage = rotate(capturedImage);
+				capturedImage = rotate(capturedImage, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 			image.m_image = capturedImage;
 			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -1094,9 +1108,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 			BufferedImage l_base_image = m_camera.getImage();
 			l_base_image.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
-				l_base_image = rotate(l_base_image);
+				l_base_image = rotate(l_base_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
@@ -1132,9 +1146,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
-					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 					{
-						l_image = rotate(l_image);
+						l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 					}
 
 					int l_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
@@ -1168,9 +1182,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 //					System.out.println("Moved to base step "+l_pos);
 					BufferedImage l_image = m_camera.getImage();
 					l_image.flush();
-					if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+					if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 					{
-						l_image = rotate(l_image);
+						l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 					}
 	
 					int l_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
@@ -1220,9 +1234,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
 		BufferedImage l_image = m_camera.getImage();
 		l_image.flush();
-		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 		{
-			l_image = rotate(l_image);
+			l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 		}
 
 		try {
@@ -1243,9 +1257,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			}
 			l_image = m_camera.getImage();
 			l_image.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
-				l_image = rotate(l_image);
+				l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 
 			try {

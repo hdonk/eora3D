@@ -73,7 +73,7 @@ class CalibrationData
 		}
 		pos_1_board = new Rectangle();
 		pos_1_board.height = (int)target_h;
-		if(Eora3D_MainWindow.m_e3d_config.sm_rotate_camera)
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
 			v_offset_minmax = (capture_w - (int)target_w)/2;
 		}
