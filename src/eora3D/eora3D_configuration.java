@@ -23,7 +23,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_circle_min_rad = 3;
 	public int sm_circle_max_rad = 10;
 	
-	public int sm_circle_detection_threshold = 280;
+	//public int sm_circle_detection_threshold = 280;
 	public int sm_laser_detection_threshold_r = 140;
 	public int sm_laser_detection_threshold_g = 140;
 	public int sm_laser_detection_threshold_b = 140;
@@ -39,7 +39,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public int sm_calibration_v_offset = 0;
 
-	public boolean sm_rotate_camera = true;
+	public int sm_camera_rotation = 90;
 	
 	public int sm_scan_start_angle = 1800;
 	public int sm_scan_end_angle = 9000;
