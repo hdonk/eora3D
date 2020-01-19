@@ -56,6 +56,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfLaser0pointoffset.setBounds(6, 37, 122, 27);
 		panel.add(tfLaser0pointoffset);
 		tfLaser0pointoffset.setColumns(10);
+		tfLaser0pointoffset.addActionListener(this);
 		
 		JLabel lblLaserStepsPer = new JLabel("Laser steps per degree");
 		lblLaserStepsPer.setBounds(6, 65, 147, 15);
@@ -65,6 +66,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfLaserstepsperdegree.setBounds(6, 86, 122, 27);
 		panel.add(tfLaserstepsperdegree);
 		tfLaserstepsperdegree.setColumns(10);
+		tfLaserstepsperdegree.addActionListener(this);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "Calibration", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -80,6 +82,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfCircleminradius.setBounds(6, 37, 122, 27);
 		panel_1.add(tfCircleminradius);
 		tfCircleminradius.setColumns(10);
+		tfCircleminradius.addActionListener(this);
 		
 		JLabel lblCircleMaxRadius = new JLabel("Circle Max Radius");
 		lblCircleMaxRadius.setBounds(6, 63, 113, 15);
@@ -89,6 +92,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfCirclemaxradius.setBounds(6, 80, 122, 27);
 		panel_1.add(tfCirclemaxradius);
 		tfCirclemaxradius.setColumns(10);
+		tfCirclemaxradius.addActionListener(this);
 		
 		JLabel lblBoardVerticalOffset = new JLabel("Board vertical offset");
 		lblBoardVerticalOffset.setBounds(6, 109, 138, 15);
@@ -98,6 +102,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfBoardverticaloffset.setBounds(6, 129, 122, 27);
 		panel_1.add(tfBoardverticaloffset);
 		tfBoardverticaloffset.setColumns(10);
+		tfBoardverticaloffset.addActionListener(this);
 		
 		JLabel lblDetectionAngleLeft = new JLabel("Detection angle left");
 		lblDetectionAngleLeft.setBounds(6, 160, 138, 15);
@@ -107,6 +112,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfDetectionangleleft.setBounds(6, 178, 122, 27);
 		panel_1.add(tfDetectionangleleft);
 		tfDetectionangleleft.setColumns(10);
+		tfDetectionangleleft.addActionListener(this);
 		
 		JLabel lblDetectionAngleRight = new JLabel("Detection angle right");
 		lblDetectionAngleRight.setBounds(6, 217, 155, 15);
@@ -116,6 +122,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfDetectionangleright.setBounds(6, 238, 122, 27);
 		panel_1.add(tfDetectionangleright);
 		tfDetectionangleright.setColumns(10);
+		tfDetectionangleright.addActionListener(this);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -131,6 +138,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfRedthreshold.setBounds(6, 92, 122, 27);
 		panel_2.add(tfRedthreshold);
 		tfRedthreshold.setColumns(10);
+		tfRedthreshold.addActionListener(this);
 		
 		JLabel lblGreenThreshold = new JLabel("Green threshold");
 		lblGreenThreshold.setBounds(6, 126, 122, 15);
@@ -140,6 +148,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfGreenthreshold.setBounds(6, 143, 122, 27);
 		panel_2.add(tfGreenthreshold);
 		tfGreenthreshold.setColumns(10);
+		tfGreenthreshold.addActionListener(this);
 		
 		JLabel lblAlgorithm = new JLabel("Algorithm");
 		lblAlgorithm.setBounds(6, 20, 60, 15);
@@ -161,6 +170,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfBluethreshold.setBounds(6, 195, 122, 27);
 		panel_2.add(tfBluethreshold);
 		tfBluethreshold.setColumns(10);
+		tfBluethreshold.addActionListener(this);
 		
 		JLabel lblPercentageThreshold = new JLabel("Percentage threshold");
 		lblPercentageThreshold.setBounds(140, 41, 149, 20);
@@ -170,6 +180,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfPercentagethreshold.setBounds(140, 67, 122, 27);
 		panel_2.add(tfPercentagethreshold);
 		tfPercentagethreshold.setColumns(10);
+		tfPercentagethreshold.addActionListener(this);
 		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBorder(new TitledBorder(null, "Camera", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -203,6 +214,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfStartposition.setBounds(6, 38, 122, 27);
 		panel_4.add(tfStartposition);
 		tfStartposition.setColumns(10);
+		tfStartposition.addActionListener(this);
 		
 		JLabel lblEndPosition = new JLabel("End position");
 		lblEndPosition.setBounds(6, 67, 96, 15);
@@ -212,6 +224,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfEndposition.setBounds(6, 85, 122, 27);
 		panel_4.add(tfEndposition);
 		tfEndposition.setColumns(10);
+		tfEndposition.addActionListener(this);
 		
 		JLabel lblStepSize = new JLabel("Step size");
 		lblStepSize.setBounds(6, 120, 84, 15);
@@ -221,6 +234,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfStepsize.setBounds(6, 134, 122, 27);
 		panel_4.add(tfStepsize);
 		tfStepsize.setColumns(10);
+		tfStepsize.addActionListener(this);
 		
 		JPanel panel_5 = new JPanel();
 		panel_5.setLayout(null);
@@ -236,6 +250,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfThreads.setBounds(6, 40, 122, 27);
 		panel_5.add(tfThreads);
 		tfThreads.setColumns(10);
+		tfThreads.addActionListener(this);
 		
 		JLabel lblTestFrame = new JLabel("Test frame");
 		lblTestFrame.setBounds(6, 67, 89, 15);
@@ -245,6 +260,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfTestframe.setBounds(6, 79, 122, 27);
 		panel_5.add(tfTestframe);
 		tfTestframe.setColumns(10);
+		tfTestframe.addActionListener(this);
 		
 		JButton btnCancel = new JButton("Cancel");
 		btnCancel.setBounds(6, 686, 100, 27);
@@ -322,8 +338,17 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	
 	public void checkTextFieldIntRange(JTextField a_tf, int a_min, int a_max, int a_default)
 	{
-		int a_value = Integer.parseInt(a_tf.getText());
-		if(""+a_value != a_tf.getText())
+		int a_value;
+		try
+		{
+			a_value = Integer.parseInt(a_tf.getText());
+		}
+		catch(Exception e)
+		{
+			a_tf.setText(""+a_default);
+			return;
+		}
+		if(!(""+a_value).equals(a_tf.getText()))
 		{
 			a_tf.setText(""+a_default);
 			return;
@@ -342,8 +367,17 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	
 	public void checkTextFieldFloatRange(JTextField a_tf, float a_min, float a_max, float a_default)
 	{
-		float a_value = Float.parseFloat(a_tf.getText());
-		if(""+a_value != a_tf.getText())
+		float a_value;
+		try
+		{
+			a_value = Float.parseFloat(a_tf.getText());
+		}
+		catch(Exception e)
+		{
+			a_tf.setText(""+a_default);
+			return;
+		}
+		if(!(""+a_value).equals(a_tf.getText()))
 		{
 			a_tf.setText(""+a_default);
 			return;
