@@ -48,5 +48,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_threads = 8;
 	
 	public int sm_test_frame = 4216;
+	
+	public int sm_turntable_step_size = 1;
 }
 

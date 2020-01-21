@@ -22,6 +22,7 @@ class PaintImage extends JPanel
 
   public void paintComponent(Graphics g)
   {
+//	System.out.println("PI "+m_image);
     if(m_image == null) return;
 	g.clearRect(0,  0,  getWidth(), getHeight());
     g.drawImage(m_image, 0, 0, getSize().width, getSize().height, null);
@@ -91,7 +92,7 @@ class PaintImage extends JPanel
 	    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
 	    		);
     }
-    else
+    else if(pos==2)
     {
 	    g.drawRect(
 	    		m_cal_data.pos_2_board.x,
@@ -154,6 +155,5 @@ class PaintImage extends JPanel
 	    		m_cal_data.pos_2_br.height+m_cal_data.detection_box
 	    		);
     }
-    repaint();
   }
 }

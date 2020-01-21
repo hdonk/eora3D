@@ -2,9 +2,16 @@ package eora3D;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import javax.swing.JTextField;
@@ -14,6 +21,8 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 
 public class eora3D_configuration_editor extends JDialog implements ActionListener {
+	Eora3D_MainWindow m_e3d = null;
+	
 	private JTextField tfLaser0pointoffset;
 	private JTextField tfLaserstepsperdegree;
 	private JTextField tfCircleminradius;
@@ -32,13 +41,15 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfTestframe;
 	private JComboBox cbAlgorithm;
 	private JComboBox cbCamerarotation;
+	private JTextField tfTurntableStepSize;
 
-	eora3D_configuration_editor()
+	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
 		super();
+		m_e3d = a_e3d;
 		setResizable(false);
 		setModal(true);
-		setSize(453, 749);
+		setSize(479, 847);
 		setTitle("Configuration");
 		getContentPane().setLayout(null);
 		
@@ -126,7 +137,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(6, 433, 335, 241);
+		panel_2.setBounds(6, 465, 335, 241);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -239,7 +250,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		JPanel panel_5 = new JPanel();
 		panel_5.setLayout(null);
 		panel_5.setBorder(new TitledBorder(null, "Model generation", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(59, 59, 59)));
-		panel_5.setBounds(181, 246, 163, 146);
+		panel_5.setBounds(181, 341, 163, 116);
 		getContentPane().add(panel_5);
 		
 		JLabel lblThreads = new JLabel("Threads");
@@ -263,23 +274,38 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfTestframe.addActionListener(this);
 		
 		JButton btnCancel = new JButton("Cancel");
-		btnCancel.setBounds(6, 686, 100, 27);
+		btnCancel.setBounds(6, 737, 100, 27);
 		getContentPane().add(btnCancel);
 		btnCancel.addActionListener(this);
 		
 		JButton btnApply = new JButton("Apply");
-		btnApply.setBounds(118, 686, 100, 27);
+		btnApply.setBounds(118, 737, 100, 27);
 		getContentPane().add(btnApply);
 		btnApply.addActionListener(this);
 		
 		JButton btnLoad = new JButton("Load");
-		btnLoad.setBounds(230, 686, 100, 27);
+		btnLoad.setBounds(230, 737, 100, 27);
 		getContentPane().add(btnLoad);
 		btnLoad.addActionListener(this);
 		
 		JButton btnSave = new JButton("Save");
-		btnSave.setBounds(342, 686, 100, 27);
+		btnSave.setBounds(342, 737, 100, 27);
 		getContentPane().add(btnSave);
+		
+		JPanel panel_6 = new JPanel();
+		panel_6.setBorder(new TitledBorder(null, "Turntable", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_6.setBounds(181, 251, 150, 88);
+		getContentPane().add(panel_6);
+		panel_6.setLayout(null);
+		
+		JLabel lblStepSize_1 = new JLabel("Step size");
+		lblStepSize_1.setBounds(6, 24, 70, 15);
+		panel_6.add(lblStepSize_1);
+		
+		tfTurntableStepSize = new JTextField();
+		tfTurntableStepSize.setBounds(6, 47, 114, 27);
+		panel_6.add(tfTurntableStepSize);
+		tfTurntableStepSize.setColumns(10);
 		btnSave.addActionListener(this);
 		
 		setFromConfig(Eora3D_MainWindow.m_e3d_config);
@@ -303,6 +329,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfStepsize.setText(""+a_cfg.sm_scan_step_size);
 		tfThreads.setText(""+a_cfg.sm_threads);
 		tfTestframe.setText(""+a_cfg.sm_test_frame);
+		tfTurntableStepSize.setText(""+a_cfg.sm_turntable_step_size);
 		if(a_cfg.sm_laser_detection_threshold_logic.equals("Or"))
 		{
 			cbAlgorithm.setSelectedIndex(0);
@@ -334,6 +361,39 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				cbCamerarotation.setSelectedIndex(3);
 				break;
 		}
+	}
+	
+	void setConfig(eora3D_configuration_data_v1 a_cfg)
+	{
+		a_cfg.sm_laser_0_offset = Integer.parseInt(tfLaser0pointoffset.getText());
+		a_cfg.sm_laser_steps_per_deg = Integer.parseInt(tfLaserstepsperdegree.getText());
+		a_cfg.sm_circle_min_rad = Integer.parseInt(tfCircleminradius.getText());
+		a_cfg.sm_circle_max_rad = Integer.parseInt(tfCirclemaxradius.getText());
+		a_cfg.sm_calibration_vertical_offset = Integer.parseInt(tfBoardverticaloffset.getText());
+		a_cfg.sm_calibration_tl_motorpos_1 = Integer.parseInt(tfDetectionangleleft.getText());
+		a_cfg.sm_calibration_tr_motorpos_1 = Integer.parseInt(tfDetectionangleright.getText());
+		a_cfg.sm_laser_detection_threshold_r = Integer.parseInt(tfRedthreshold.getText());
+		a_cfg.sm_laser_detection_threshold_g = Integer.parseInt(tfGreenthreshold.getText());
+		a_cfg.sm_laser_detection_threshold_b = Integer.parseInt(tfBluethreshold.getText());
+		a_cfg.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagethreshold.getText());
+		a_cfg.sm_scan_start_angle = Integer.parseInt(tfStartposition.getText());
+		a_cfg.sm_laser_detection_threshold_r = Integer.parseInt(tfEndposition.getText());
+		a_cfg.sm_scan_step_size = Integer.parseInt(tfStepsize.getText());
+		a_cfg.sm_threads = Integer.parseInt(tfThreads.getText());
+		a_cfg.sm_test_frame = Integer.parseInt(tfTestframe.getText());
+		a_cfg.sm_turntable_step_size = Integer.parseInt(tfTurntableStepSize.getText());
+		switch(cbAlgorithm.getSelectedIndex())
+		{
+			case 0:
+				a_cfg.sm_laser_detection_threshold_logic = "Or"; break;
+			case 1:
+				a_cfg.sm_laser_detection_threshold_logic = "And"; break;
+			case 2:
+				a_cfg.sm_laser_detection_threshold_logic = "%"; break;
+			case 3:
+				a_cfg.sm_laser_detection_threshold_logic = "Weighted %"; break;
+		}
+		a_cfg.sm_camera_rotation = cbCamerarotation.getSelectedIndex()*90;
 	}
 	
 	public void checkTextFieldIntRange(JTextField a_tf, int a_min, int a_max, int a_default)
@@ -413,15 +473,72 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		checkTextFieldIntRange(tfStepsize, 1, 180, l_default.sm_scan_step_size);
 		checkTextFieldIntRange(tfThreads, 1, 64, l_default.sm_threads);
 		checkTextFieldIntRange(tfTestframe, 0, 9000, l_default.sm_test_frame);
+		checkTextFieldIntRange(tfTurntableStepSize, 1, 180, l_default.sm_test_frame);
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		verifyValueRanges();
 		if(e.getActionCommand()=="Cancel")
 		{
 			setVisible(false);
 			return;
 		}
-		verifyValueRanges();
+		else
+		if(e.getActionCommand()=="Apply")
+		{
+			setConfig(m_e3d.m_e3d_config);
+			setVisible(false);
+			return;
+		}
+		else
+		if(e.getActionCommand()=="Load")
+		{
+			File l_file = new File(System.getProperty("user.home")+File.separator+"config.e3d");
+			try {
+				FileInputStream l_fis = new FileInputStream(l_file);
+				ObjectInputStream l_ois = new ObjectInputStream(l_fis);
+				eora3D_configuration_version l_e3d_config_ver = (eora3D_configuration_version) l_ois.readObject();
+				if(l_e3d_config_ver.sm_config_version!=1)
+				{
+					System.err.println("Unrecognised configuration file");
+					l_ois.close();
+					return;
+				}
+				m_e3d.m_e3d_config = (eora3D_configuration_data_v1) l_ois.readObject();
+				l_ois.close();
+				l_fis.close();
+				m_e3d.m_e3d_config.sm_config_file = l_file;
+				JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
+				System.out.println("Serialized data loaded from " + l_file);
+			} catch (Exception ioe) {
+				ioe.printStackTrace();
+				System.err.println("Failed to open " + l_file);
+				JOptionPane.showMessageDialog(getContentPane(), "Failed", "Load", JOptionPane.ERROR_MESSAGE);
+			}	
+		}
+		else
+		if(e.getActionCommand()=="Save")
+		{
+			File l_file = new File(System.getProperty("user.home")+File.separator+"config.e3d");
+			if(!l_file.toString().contains("."))
+			{
+				l_file = new File(l_file.toString()+".e3d");
+			}
+			m_e3d.m_e3d_config.sm_config_file = l_file;
+			try {
+				FileOutputStream l_fos = new FileOutputStream(l_file);
+				ObjectOutputStream l_oos = new ObjectOutputStream(l_fos);
+				l_oos.writeObject(new eora3D_configuration_version());
+				l_oos.writeObject(m_e3d.m_e3d_config);
+				l_oos.close();
+				l_fos.close();
+				JOptionPane.showMessageDialog(getContentPane(), "Ok", "Save", JOptionPane.INFORMATION_MESSAGE);
+				System.out.println("Serialized data is saved in " + l_file);
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+				JOptionPane.showMessageDialog(getContentPane(), "Failed", "Save", JOptionPane.ERROR_MESSAGE);
+			}
+		}
 	}
 }

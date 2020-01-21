@@ -164,6 +164,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		imagePanel.setBounds(148, 0, 397, 497);
 		getContentPane().add(imagePanel);
 		imagePanel.m_cal_data = m_e3d.m_cal_data;
+		imagePanel.pos = 0;
 		
 		JButton btnGenerate = new JButton("Generate");
 		btnGenerate.setBounds(642, 6, 100, 27);
@@ -351,6 +352,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					tfPercentagechange.setEnabled(true);
 					break;
 			}
+		}
+		else
+		if(ae.getActionCommand()=="Config")
+		{
+			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(m_e3d);
+			l_editor.setVisible(true);
 		}
 	}
 
