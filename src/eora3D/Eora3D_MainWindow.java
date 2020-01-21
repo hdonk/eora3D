@@ -274,12 +274,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Camera needed", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(m_laser==null)
+			/*if(m_laser==null)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Laser needed", JOptionPane.ERROR_MESSAGE);
 				return;
-			}
-			new eora3D_calibration(this).setVisible(true);
+			}*/
+			new eora3D_scan(this).setVisible(true);
 		}
 		else
 		if(e.getActionCommand()=="Generate model")
@@ -289,10 +289,10 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		else
 		if(e.getActionCommand()=="Config")
 		{
-			eora3D_configuration_editor l_editor = new eora3D_configuration_editor();
+			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(this);
 			l_editor.setVisible(true);
 		}
-		else
+/*		else
 		if(e.getActionCommand()=="Load config")
 		{
 			JFileChooser l_fc;
@@ -358,7 +358,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 					JOptionPane.showMessageDialog(getContentPane(), "Failed", "Save", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		}
+		}*/
 	}
 
 	@Override
