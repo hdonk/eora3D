@@ -180,6 +180,11 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			BufferedImage l_image = m_e3d.m_camera.getImage();
 			l_image.flush();
 			
+			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
+			{
+				l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
+			}
+			
 			imagePanel.m_image = l_image;
 			imagePanel.repaint();
 		}
@@ -203,7 +208,12 @@ public class eora3D_scan extends JDialog implements ActionListener {
 				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
 				BufferedImage l_image = m_e3d.m_camera.getImage();
 				l_image.flush();
-				
+
+				if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
+				{
+					l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
+				}
+
 				imagePanel.m_image = l_image;
 				imagePanel.repaint();
 
@@ -224,7 +234,12 @@ public class eora3D_scan extends JDialog implements ActionListener {
 				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
 				BufferedImage l_image = m_e3d.m_camera.getImage();
 				l_image.flush();
-				
+
+				if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
+				{
+					l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
+				}
+
 				imagePanel.m_image = l_image;
 				imagePanel.repaint();
 
@@ -244,7 +259,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 	    for (int i = 0; i < list.length; i++) {
 	      //file = new File(directory + list[i]);
 	      file = new File(directory, list[i]);
-	      //System.out.println(file + "  deleted : " + file.delete());
+	      System.out.println(file + "  deleted : " + file.delete());
 	    }
 	   }
 
