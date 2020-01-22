@@ -251,6 +251,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Export")
 		{
+			/*
 			JFileChooser l_fc;
 			l_fc = new JFileChooser();
 			l_fc.setSelectedFile(new File("export.ply"));
@@ -265,7 +266,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				}
 				
 				m_pco.save(l_file);
-			}
+			}*/
+			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export.ply");
+			m_pco.save(l_file);
+			
 		} else
 		if(ae.getActionCommand() == "Finish")
 		{
