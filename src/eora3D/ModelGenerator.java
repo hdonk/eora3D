@@ -398,7 +398,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				return;
 			}
 			if(!l_infile.exists()) continue;
-//			System.out.println("Analysing "+l_infile.toString());
+			System.out.println("Analysing "+l_infile.toString());
 			BufferedImage l_inimage, l_baseimage;
 
 			try {
@@ -453,7 +453,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			}
 			imagePanel.repaint();
 			if(m_stop_detection) return;
-//			System.out.println("Complete "+l_infile.toString());
+			System.out.println("Complete "+l_infile.toString());
 		}
 //		System.out.println("Found "+l_points+" points");
 		System.out.println("Min Z: "+m_e3d.m_cal_data.m_minz);
