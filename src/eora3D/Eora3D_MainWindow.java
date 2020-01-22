@@ -274,11 +274,11 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Camera needed", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			/*if(m_laser==null)
+			if(m_laser==null)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Laser needed", JOptionPane.ERROR_MESSAGE);
 				return;
-			}*/
+			}
 			new eora3D_scan(this).setVisible(true);
 		}
 		else
