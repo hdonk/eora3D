@@ -370,7 +370,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	@Override
 	public void windowClosing(WindowEvent e) {
 		System.out.println("Window closing");
-		m_e3D_bluetooth.cleanup();
+		if(m_e3D_bluetooth!=null) m_e3D_bluetooth.cleanup();
 		System.out.println("Window closing done");
 	}
 
