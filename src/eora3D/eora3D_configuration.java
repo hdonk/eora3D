@@ -39,6 +39,8 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public int sm_calibration_v_offset = 0;
 
+	public int sm_camera_res_w = 1280;
+	public int sm_camera_res_h = 720;
 	public int sm_camera_rotation = 90;
 	
 	public int sm_scan_start_angle = 1800;

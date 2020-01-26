@@ -92,7 +92,7 @@ class PaintImage extends JPanel
 	    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
 	    		);
     }
-    else if(pos==2)
+/*    else if(pos==2)
     {
 	    g.drawRect(
 	    		m_cal_data.pos_2_board.x,
@@ -154,6 +154,6 @@ class PaintImage extends JPanel
 	    		m_cal_data.pos_2_br.width+m_cal_data.detection_box,
 	    		m_cal_data.pos_2_br.height+m_cal_data.detection_box
 	    		);
-    }
+    }*/
   }
 }
