@@ -237,9 +237,9 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			if(m_camera!=null)
 				m_camera.close();
 			m_camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
-			Dimension l_res[] = new Dimension[] {new Dimension(1280, 720)};
+			Dimension l_res[] = new Dimension[] {new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h)};
 			m_camera.setCustomViewSizes(l_res);
-			m_camera.setViewSize(new Dimension(1280,720));
+			m_camera.setViewSize(new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h));
 			try
 			{
 				m_camera.open();
@@ -261,7 +261,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			if(m_laser==null)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
+				//return;
 			}
 			new eora3D_calibration(this).setVisible(true);
 		}

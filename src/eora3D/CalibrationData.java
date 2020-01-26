@@ -29,13 +29,13 @@ class CalibrationData
 	public Rectangle pos_1_bl;
 	public Rectangle pos_1_br;
 
-	public Rectangle pos_2_tl;
+/*	public Rectangle pos_2_tl;
 	public Rectangle pos_2_tr;
 	public Rectangle pos_2_bl;
-	public Rectangle pos_2_br;
+	public Rectangle pos_2_br;*/
 	
 	public Rectangle pos_1_board;
-	public Rectangle pos_2_board;
+//	public Rectangle pos_2_board;
 	
 	public int v_offset_minmax = 0;
 
@@ -45,8 +45,8 @@ class CalibrationData
 	
 	public Point cal_square_bl;
 	public Point cal_square_br;
-	public Point cal_square_tl;
-	public Point cal_square_tr;
+/*	public Point cal_square_tl;
+	public Point cal_square_tr;*/
 	
 	public int m_minz = 0;
 	public int m_maxz = 0;
@@ -110,7 +110,7 @@ class CalibrationData
 		pos_1_br.y = (int)(capture_h - pos_1_tl.y) - pos_1_tl.height*2 + v_offset*2;
 
 	
-		target_h = ((double)capture_h * cal_pos_2_per);
+/*		target_h = ((double)capture_h * cal_pos_2_per);
 		target_w = (target_h/board_h)*board_w;
 		v_offset_2 = (int)(((double)v_offset) * (cal_pos_2_per/cal_pos_1_per));
 		pos_2_board = new Rectangle();
@@ -141,7 +141,7 @@ class CalibrationData
 		pos_2_br.width = pos_2_tl.width;
 		pos_2_br.height = pos_2_tl.height;
 		pos_2_br.x = (int)(capture_w - pos_2_tl.x) - pos_2_tl.width*2;
-		pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;
+		pos_2_br.y = (int)(capture_h - pos_2_tl.y) - pos_2_tl.height*2 + v_offset_2*2;*/
 	}
 	
 	void calculateBaseCoords()
@@ -156,8 +156,8 @@ class CalibrationData
 		
 		cal_square_bl = new Point();
 		cal_square_br = new Point();
-		cal_square_tl = new Point();
-		cal_square_tr = new Point();
+/*		cal_square_tl = new Point();
+		cal_square_tr = new Point();*/
 		
 		x = (((double)pos_1_board.width)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
 		cal_square_bl.x = (int)x;
@@ -166,12 +166,12 @@ class CalibrationData
 		cal_square_br.y = (int)y;
 		cal_square_br.x = cal_square_bl.x + pos_1_board.width;
 		
-		x = (((double)pos_2_board.width)*Math.tan(Math.toRadians(alpha_prime)))/(Math.tan(Math.toRadians(beta_prime))-Math.tan(Math.toRadians(alpha_prime)));
+/*		x = (((double)pos_2_board.width)*Math.tan(Math.toRadians(alpha_prime)))/(Math.tan(Math.toRadians(beta_prime))-Math.tan(Math.toRadians(alpha_prime)));
 		cal_square_tl.x = (int)x;
 		y = x*Math.tan(Math.toRadians(beta_prime));
 		cal_square_tl.y = (int)y;
 		cal_square_tr.y = (int)y;
-		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;
+		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;*/
 		
 		// Calculate focal length
 		double d_mm = spot_sep_w;
@@ -228,20 +228,28 @@ class CalibrationData
         	int g_base = (argb_base & 0x00ff00) >> 8;
     		int b_base = (argb_base & 0x0000ff);
     		
-    		r = Math.abs(r_base-r);
-    		g = Math.abs(g_base-g);
-    		b = Math.abs(b_base-b);
+    		int rd = Math.abs(r_base-r);
+    		int gd = Math.abs(g_base-g);
+    		int bd = Math.abs(b_base-b);
 
     		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
     		{
-        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
-        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
-        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
-    		} else
+        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
+        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
+        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+    		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
     		{
-        		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
-        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
+        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
+        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
+    		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
+    		{
+    			float pc = ((float)rd/255.0f + (float)gd/255.0f + (float)bd/255.0f)*100.0f;
+        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return x;
+    		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
+    		{
+    			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
+        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return x;
     		}
 		}
 		return -1;
