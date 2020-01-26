@@ -529,7 +529,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				capturedImage = rotate(capturedImage, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 			image.m_image = capturedImage;
-			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			image.m_overlay = new BufferedImage(capturedImage.getWidth(), capturedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics g = image.m_overlay.getGraphics();
 			CircleDetection l_cd = new CircleDetection();
 			l_cd.threshold = Integer.parseInt(txtThreshold.getText());
@@ -617,6 +617,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				l_found[2] = l_cd.findFirstCircle(
 						capturedImage
 						);
+				if(l_found[2]!=null) System.out.println("Found 2");
 				if(l_found[2] != null &&
 						Math.abs(l_found[2].x-(m_cal_data.pos_1_bl.x+m_cal_data.pos_1_bl.width/2))<m_cal_data.circle_center_threshold &&
 						Math.abs(l_found[2].y-(m_cal_data.pos_1_bl.y+m_cal_data.pos_1_bl.height/2))<m_cal_data.circle_center_threshold &&
@@ -651,6 +652,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				l_found[3] = l_cd.findFirstCircle(
 						capturedImage
 						);
+				if(l_found[3]!=null) System.out.println("Found 3");
 				if(l_found[3] != null &&
 						Math.abs(l_found[3].x-(m_cal_data.pos_1_br.x+m_cal_data.pos_1_br.width/2))<m_cal_data.circle_center_threshold &&
 						Math.abs(l_found[3].y-(m_cal_data.pos_1_br.y+m_cal_data.pos_1_br.height/2))<m_cal_data.circle_center_threshold &&
@@ -679,6 +681,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			
+			image.m_overlay.flush();
 			image.repaint();
 		} while (!m_stop_for_cal);
 		m_stop_for_cal = false;
@@ -702,7 +706,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				capturedImage = rotate(capturedImage, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 			image.m_image = capturedImage;
-			image.m_overlay = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			image.m_overlay = new BufferedImage(capturedImage.getWidth(), capturedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			Graphics g = image.m_overlay.getGraphics();
 			CircleDetection l_cd = new CircleDetection();
 			l_cd.threshold = Integer.parseInt(txtThreshold.getText());
