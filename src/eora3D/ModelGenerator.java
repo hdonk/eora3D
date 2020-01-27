@@ -8,10 +8,15 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -42,6 +47,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	Thread m_detect_thread = null;
 	boolean m_stop_detection = false;
 	private JTextField tfTestframe;
+	
+	private DatagramSocket m_socket = null;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -233,6 +240,14 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d.m_cal_data.calculateBaseCoords();
 		
 		addWindowListener(this);
+		
+		// In linux, set up a udp socket to send the points to
+		try {
+			m_socket = new DatagramSocket();
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -368,6 +383,15 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	void Detect(int a_frame)
 	{
 		m_pco.clear();
+		try {
+		    byte[] buf = new byte[1];
+		    buf[0]=0;
+		    DatagramPacket l_packet = new DatagramPacket(buf, buf.length, InetAddress.getLoopbackAddress(), 7778);
+		    m_socket.send(l_packet);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(tfRedthreshold.getText());
@@ -436,6 +460,26 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 //							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
 							m_pco.addPoint(l_point);
+							// In linux, send the point off to the possible viewer
+							{
+								ByteArrayOutputStream out = new ByteArrayOutputStream();
+							    ObjectOutputStream os;
+								try {
+									os = new ObjectOutputStream(out);
+								    l_point.m_scale = m_pco.m_Scale;
+								    l_point.m_pointsize = m_pco.m_Pointsize;
+								    os.writeObject(l_point);
+								    byte[] buf = new byte[1];
+								    buf[0]=1;
+								    DatagramPacket l_packet = new DatagramPacket(buf, buf.length, InetAddress.getLoopbackAddress(), 7778);
+								    m_socket.send(l_packet);
+								    l_packet = new DatagramPacket(out.toByteArray(), out.toByteArray().length, InetAddress.getLoopbackAddress(), 7778);
+								    m_socket.send(l_packet);
+								} catch (IOException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+							}
 						}
 					}
 				};
@@ -605,7 +649,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(tfGreenthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(tfBluethreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagechange.getText());
-		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)cbDetectionmethod.getSelectedItem();		
+		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)cbDetectionmethod.getSelectedItem();
+		if(m_socket!=null) m_socket.close();
 	}
 
 	@Override

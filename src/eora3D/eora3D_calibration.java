@@ -509,14 +509,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			{
 				m_stop_calibration_thread = true;
 			}
-		} else
-		if(e.getSource().equals(radioButton))
-		{
-			if(radioButton.isSelected()) image.pos = 1;
-		} else
-		if(e.getSource().equals(radioButton_1))
-		{
-			if(radioButton_1.isSelected()) image.pos = 2;
 		}/* else
 		if(e.getActionCommand()=="Export points")
 		{
