@@ -797,7 +797,7 @@ class PointCloudObject implements Runnable {
 	public void Close()
 	{
 		if(m_finished) return;
-		glfwSetWindowShouldClose(m_window, true);
+		//glfwSetWindowShouldClose(m_window, true);
 	}
 
 }
