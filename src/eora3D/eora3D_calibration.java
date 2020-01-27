@@ -40,6 +40,8 @@ import java.awt.*;
 import javax.swing.JScrollBar;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
+import javax.swing.JPanel;
+import javax.swing.border.TitledBorder;
 
 public class eora3D_calibration extends JDialog implements ActionListener, AdjustmentListener, WindowListener {
 	Eora3D_MainWindow m_e3d;
@@ -62,15 +64,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private JTextField txtToprightmotorpos;
 	private JLabel lblTopRightMotor;
 	private JLabel lblTopLeftMotor;
-	private JLabel lblCalibrationPosition;
-	private JRadioButton radioButton;
-	private JRadioButton radioButton_1;
 
 	private Thread m_thread = null;
 	boolean m_stop_for_cal = false;
 	
 	long lastTime = 0;
 	private Thread m_detect_thread = null;
+	private JTextField textField;
 
 	eora3D_calibration(Eora3D_MainWindow a_e3d)
 	{
@@ -80,101 +80,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		getContentPane().setLayout(null);
 		
 		image = new PaintImage();
-		image.setBounds(12, 12, 1300, 732);
+		image.setBounds(382, 12, 698, 846);
 		getContentPane().add(image);
-		
-		JLabel lblResRatio = new JLabel("Threshold");
-		lblResRatio.setBounds(121, 756, 203, 15);
-		getContentPane().add(lblResRatio);
-		
-		txtThreshold = new JTextField();
-		txtThreshold.setText("280");
-		txtThreshold.setBounds(320, 754, 114, 19);
-		getContentPane().add(txtThreshold);
-		txtThreshold.setColumns(10);
-		
-		JLabel lblMinHits = new JLabel("Min Hits");
-		lblMinHits.setBounds(121, 811, 70, 15);
-		getContentPane().add(lblMinHits);
-		
-		JLabel lblMinRad = new JLabel("Min rad");
-		lblMinRad.setBounds(473, 784, 70, 15);
-		getContentPane().add(lblMinRad);
-		
-		JLabel lblMaxRad = new JLabel("Max rad");
-		lblMaxRad.setBounds(473, 811, 70, 15);
-		getContentPane().add(lblMaxRad);
-		
-		txtMinHits = new JTextField();
-		txtMinHits.setText("200");
-		txtMinHits.setBounds(320, 813, 114, 19);
-		getContentPane().add(txtMinHits);
-		
-		txtMinRad = new JTextField();
-		txtMinRad.setText(""+Eora3D_MainWindow.m_e3d_config.sm_circle_min_rad);
-		txtMinRad.setBounds(571, 782, 114, 19);
-		getContentPane().add(txtMinRad);
-		txtMinRad.setColumns(10);
-		
-		txtMaxRad = new JTextField();
-		txtMaxRad.setText(""+Eora3D_MainWindow.m_e3d_config.sm_circle_max_rad);
-		txtMaxRad.setBounds(571, 809, 114, 19);
-		getContentPane().add(txtMaxRad);
-		txtMaxRad.setColumns(10);
-		
-		sbHeightOffset = new JScrollBar();
-		sbHeightOffset.setMaximum(8);
-		sbHeightOffset.setOrientation(JScrollBar.HORIZONTAL);
-		sbHeightOffset.setBounds(571, 754, 221, 17);
-		getContentPane().add(sbHeightOffset);
-		sbHeightOffset.addAdjustmentListener(this);
-		
-		JLabel lblHeightOffset = new JLabel("Vertical offset");
-		lblHeightOffset.setBounds(462, 756, 102, 15);
-		getContentPane().add(lblHeightOffset);
-		
-		JLabel lblRedThreshold = new JLabel("Red threshold");
-		lblRedThreshold.setBounds(462, 838, 102, 15);
-		getContentPane().add(lblRedThreshold);
-		
-		JLabel lblGreenThreshold = new JLabel("Green threshold");
-		lblGreenThreshold.setBounds(447, 865, 117, 15);
-		getContentPane().add(lblGreenThreshold);
-		
-		JLabel lblBlueThreshold = new JLabel("Blue threshold");
-		lblBlueThreshold.setBounds(457, 891, 107, 15);
-		getContentPane().add(lblBlueThreshold);
-		
-		txtRedthreshold = new JTextField();
-		txtRedthreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r);
-		txtRedthreshold.setBounds(571, 836, 114, 19);
-		getContentPane().add(txtRedthreshold);
-		txtRedthreshold.setColumns(10);
-		txtRedthreshold.addActionListener(this);
-		
-		txtGreenthreshold = new JTextField();
-		txtGreenthreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g);
-		txtGreenthreshold.setBounds(571, 863, 114, 19);
-		getContentPane().add(txtGreenthreshold);
-		txtGreenthreshold.setColumns(10);
-		txtGreenthreshold.addActionListener(this);
-		
-		txtBluethreshold = new JTextField();
-		txtBluethreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b);
-		txtBluethreshold.setBounds(571, 889, 114, 19);
-		getContentPane().add(txtBluethreshold);
-		txtBluethreshold.setColumns(10);
-		txtBluethreshold.addActionListener(this);
-		
-		JLabel lblThresholdLogic = new JLabel("Threshold logic");
-		lblThresholdLogic.setBounds(202, 864, 110, 15);
-		getContentPane().add(lblThresholdLogic);
-		
-		cbThresholdLogic = new JComboBox<String>();
-		cbThresholdLogic.setBounds(320, 849, 64, 24);
-		getContentPane().add(cbThresholdLogic);
-		cbThresholdLogic.addItem("Or");
-		cbThresholdLogic.addItem("And");
 		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("Or"))
 		{
 			cbThresholdLogic.setSelectedIndex(0);
@@ -191,60 +98,166 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		{
 			cbThresholdLogic.setSelectedIndex(3);
 		}
-		cbThresholdLogic.addActionListener(this);
 		
 		JButton btnCalibrate = new JButton("Calibrate");
-		btnCalibrate.setBounds(214, 920, 281, 25);
+		btnCalibrate.setBounds(1126, 363, 281, 25);
 		getContentPane().add(btnCalibrate);
 		btnCalibrate.addActionListener(this);
 		
-		lblTopLeftMotor = new JLabel("Top left motor pos 1");
-		lblTopLeftMotor.setBounds(722, 784, 143, 15);
-		getContentPane().add(lblTopLeftMotor);
+		ButtonGroup calibrationPositionGroup = new ButtonGroup();
 		
-		lblTopRightMotor = new JLabel("Top right motor pos 1 ");
-		lblTopRightMotor.setBounds(713, 811, 152, 15);
-		getContentPane().add(lblTopRightMotor);
+		JButton btnConfig = new JButton("Config");
+		btnConfig.setBounds(24, 930, 117, 25);
+		getContentPane().add(btnConfig);
+		
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(null, "Circle detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.setBounds(24, 12, 327, 286);
+		getContentPane().add(panel);
+		panel.setLayout(null);
+		
+		JLabel lblResRatio = new JLabel("Threshold");
+		lblResRatio.setBounds(20, 19, 62, 15);
+		panel.add(lblResRatio);
+		
+		txtThreshold = new JTextField();
+		txtThreshold.setBounds(20, 33, 114, 19);
+		panel.add(txtThreshold);
+		txtThreshold.setText("280");
+		txtThreshold.setColumns(10);
+		
+		JLabel lblMinHits = new JLabel("Min Hits");
+		lblMinHits.setBounds(20, 64, 70, 15);
+		panel.add(lblMinHits);
+		
+		txtMinHits = new JTextField();
+		txtMinHits.setBounds(20, 80, 114, 19);
+		panel.add(txtMinHits);
+		txtMinHits.setText("200");
+		
+		JLabel lblHeightOffset = new JLabel("Vertical offset");
+		lblHeightOffset.setBounds(30, 205, 102, 15);
+		panel.add(lblHeightOffset);
+		
+		sbHeightOffset = new JScrollBar();
+		sbHeightOffset.setBounds(28, 232, 221, 17);
+		panel.add(sbHeightOffset);
+		sbHeightOffset.setMaximum(8);
+		sbHeightOffset.setOrientation(JScrollBar.HORIZONTAL);
+		
+		JLabel lblMinRad = new JLabel("Min rad");
+		lblMinRad.setBounds(20, 111, 70, 15);
+		panel.add(lblMinRad);
+		
+		txtMinRad = new JTextField();
+		txtMinRad.setBounds(20, 125, 114, 19);
+		panel.add(txtMinRad);
+		txtMinRad.setText(""+Eora3D_MainWindow.m_e3d_config.sm_circle_min_rad);
+		txtMinRad.setColumns(10);
+		
+		JLabel lblMaxRad = new JLabel("Max rad");
+		lblMaxRad.setBounds(20, 156, 70, 15);
+		panel.add(lblMaxRad);
+		
+		txtMaxRad = new JTextField();
+		txtMaxRad.setBounds(20, 174, 114, 19);
+		panel.add(txtMaxRad);
+		txtMaxRad.setText(""+Eora3D_MainWindow.m_e3d_config.sm_circle_max_rad);
+		txtMaxRad.setColumns(10);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(1092, 12, 339, 339);
+		getContentPane().add(panel_1);
+		panel_1.setLayout(null);
+		
+		JLabel lblThresholdLogic = new JLabel("Threshold logic");
+		lblThresholdLogic.setBounds(32, 27, 110, 15);
+		panel_1.add(lblThresholdLogic);
+		
+		cbThresholdLogic = new JComboBox<String>();
+		cbThresholdLogic.setBounds(32, 54, 64, 24);
+		panel_1.add(cbThresholdLogic);
+		
+		JLabel lblRedThreshold = new JLabel("Red threshold");
+		lblRedThreshold.setBounds(32, 95, 102, 15);
+		panel_1.add(lblRedThreshold);
+		
+		txtRedthreshold = new JTextField();
+		txtRedthreshold.setBounds(28, 110, 114, 19);
+		panel_1.add(txtRedthreshold);
+		txtRedthreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r);
+		txtRedthreshold.setColumns(10);
+		
+		JLabel lblGreenThreshold = new JLabel("Green threshold");
+		lblGreenThreshold.setBounds(32, 153, 117, 15);
+		panel_1.add(lblGreenThreshold);
+		
+		txtGreenthreshold = new JTextField();
+		txtGreenthreshold.setBounds(32, 170, 114, 19);
+		panel_1.add(txtGreenthreshold);
+		txtGreenthreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g);
+		txtGreenthreshold.setColumns(10);
+		
+		JLabel lblBlueThreshold = new JLabel("Blue threshold");
+		lblBlueThreshold.setBounds(32, 213, 107, 15);
+		panel_1.add(lblBlueThreshold);
+		
+		txtBluethreshold = new JTextField();
+		txtBluethreshold.setBounds(32, 228, 114, 19);
+		panel_1.add(txtBluethreshold);
+		txtBluethreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b);
+		txtBluethreshold.setColumns(10);
+		
+		JLabel lblPercentageThreshold = new JLabel("Percentage threshold");
+		lblPercentageThreshold.setBounds(32, 259, 182, 15);
+		panel_1.add(lblPercentageThreshold);
+		
+		textField = new JTextField();
+		textField.setBounds(32, 278, 122, 27);
+		panel_1.add(textField);
+		textField.setColumns(10);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBorder(new TitledBorder(null, "Detected positions", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_2.setBounds(1092, 400, 339, 190);
+		getContentPane().add(panel_2);
+		panel_2.setLayout(null);
+		
+		lblTopLeftMotor = new JLabel("Top left motor pos 1");
+		lblTopLeftMotor.setBounds(22, 28, 143, 15);
+		panel_2.add(lblTopLeftMotor);
 		
 		txtTopleftmotorpos = new JTextField();
+		txtTopleftmotorpos.setBounds(32, 55, 114, 19);
+		panel_2.add(txtTopleftmotorpos);
 		txtTopleftmotorpos.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1);
-		txtTopleftmotorpos.setBounds(883, 782, 114, 19);
-		getContentPane().add(txtTopleftmotorpos);
 		txtTopleftmotorpos.setColumns(10);
 		
+		lblTopRightMotor = new JLabel("Top right motor pos 1 ");
+		lblTopRightMotor.setBounds(13, 86, 152, 15);
+		panel_2.add(lblTopRightMotor);
+		
 		txtToprightmotorpos = new JTextField();
+		txtToprightmotorpos.setBounds(32, 113, 114, 19);
+		panel_2.add(txtToprightmotorpos);
 		txtToprightmotorpos.setText(""+Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1);
-		txtToprightmotorpos.setBounds(883, 809, 114, 19);
-		getContentPane().add(txtToprightmotorpos);
 		txtToprightmotorpos.setColumns(10);
 		
-		lblCalibrationPosition = new JLabel("Calibration position");
-		lblCalibrationPosition.setBounds(121, 784, 143, 15);
-		getContentPane().add(lblCalibrationPosition);
-		
-		ButtonGroup calibrationPositionGroup = new ButtonGroup();
-		radioButton = new JRadioButton("1");
-		radioButton.setBounds(278, 780, 33, 23);
-		getContentPane().add(radioButton);
-		radioButton.addActionListener(this);
-		calibrationPositionGroup.add(radioButton);
-		
-		radioButton_1 = new JRadioButton("2");
-		radioButton_1.setBounds(330, 780, 47, 23);
-		getContentPane().add(radioButton_1);
-		radioButton_1.addActionListener(this);
-		calibrationPositionGroup.add(radioButton_1);
-		
-		radioButton.setSelected(true);
-		
-		JButton btnExportPoints = new JButton("Export points");
-		btnExportPoints.setBounds(1114, 886, 129, 25);
-		getContentPane().add(btnExportPoints);
-		btnExportPoints.addActionListener(this);
+		JButton btnFinish = new JButton("Finish");
+		btnFinish.setBounds(1458, 930, 100, 27);
+		getContentPane().add(btnFinish);
+		txtBluethreshold.addActionListener(this);
+		txtGreenthreshold.addActionListener(this);
+		txtRedthreshold.addActionListener(this);
+		cbThresholdLogic.addItem("Or");
+		cbThresholdLogic.addItem("And");
+		cbThresholdLogic.addActionListener(this);
+		sbHeightOffset.addAdjustmentListener(this);
 
 		m_camera = m_e3d.m_camera;
 		
-		setSize(1300,1020);
+		setSize(1584,1034);
 		
 		setModal(true);
 		
@@ -1044,5 +1057,4 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		// TODO Auto-generated method stub
 		
 	}
-
 }

@@ -49,7 +49,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d = a_e3d;
 		setTitle("Generate Model");
 		getContentPane().setLayout(null);
-		setSize(792,675);
+		setSize(792+32,675+32);
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -228,7 +228,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_pco = new PointCloudObject();
 		m_pco.m_Pointsize = sbPointsize.getValue();
 		m_pco.m_Scale = sbScaling.getValue();
-		new Thread(m_pco).start();
+		//new Thread(m_pco).start();
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		
