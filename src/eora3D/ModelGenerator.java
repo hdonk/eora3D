@@ -14,8 +14,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
 
 import javax.swing.JDialog;
@@ -48,7 +48,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	boolean m_stop_detection = false;
 	private JTextField tfTestframe;
 	
-	private DatagramSocket m_socket = null;
+	private Socket m_socket = null;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -241,13 +241,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		addWindowListener(this);
 		
-		// In linux, set up a udp socket to send the points to
-		try {
-			m_socket = new DatagramSocket();
-		} catch (SocketException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -382,15 +375,30 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 
 	void Detect(int a_frame)
 	{
+	    ObjectOutputStream os = null;
 		m_pco.clear();
+		
 		try {
-		    byte[] buf = new byte[1];
-		    buf[0]=0;
-		    DatagramPacket l_packet = new DatagramPacket(buf, buf.length, InetAddress.getLoopbackAddress(), 7778);
-		    m_socket.send(l_packet);
-		} catch (IOException e) {
+			m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			m_socket = null;
+		}
+		if(m_socket!=null)
+		{
+			try {
+				PointCmd l_cmd = new PointCmd();
+				l_cmd.m_cmd = 0;
+				os = new ObjectOutputStream(m_socket.getOutputStream());
+				os.flush();
+				os.writeObject(l_cmd);
+				os.flush();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				m_socket = null;
+			}
 		}
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
@@ -419,6 +427,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			{
 				e.printStackTrace();
 				m_detect_thread=null;
+				try {
+					m_socket.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				m_socket = null;
 				return;
 			}
 			if(!l_infile.exists()) continue;
@@ -431,6 +446,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			} catch (IOException e1) {
 				e1.printStackTrace();
 				m_detect_thread=null;
+				try {
+					m_socket.close();
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				m_socket = null;
 				return;
 			}
 			
@@ -460,26 +482,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 //							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
 							m_pco.addPoint(l_point);
-							// In linux, send the point off to the possible viewer
-							{
-								ByteArrayOutputStream out = new ByteArrayOutputStream();
-							    ObjectOutputStream os;
-								try {
-									os = new ObjectOutputStream(out);
-								    l_point.m_scale = m_pco.m_Scale;
-								    l_point.m_pointsize = m_pco.m_Pointsize;
-								    os.writeObject(l_point);
-								    byte[] buf = new byte[1];
-								    buf[0]=1;
-								    DatagramPacket l_packet = new DatagramPacket(buf, buf.length, InetAddress.getLoopbackAddress(), 7778);
-								    m_socket.send(l_packet);
-								    l_packet = new DatagramPacket(out.toByteArray(), out.toByteArray().length, InetAddress.getLoopbackAddress(), 7778);
-								    m_socket.send(l_packet);
-								} catch (IOException e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-							}
 						}
 					}
 				};
@@ -496,13 +498,52 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				}
 			}
 			imagePanel.repaint();
-			if(m_stop_detection) return;
+			// In linux, send the point off to the possible viewer
+	        if(m_socket != null)
+	        {
+	        	for(int i=0; i<m_pco.m_points.size(); ++i)
+		        {
+		        	RGB3DPoint l_point = m_pco.m_points.get(i);
+		        	try {
+					    l_point.m_scale = m_pco.m_Scale;
+					    l_point.m_pointsize = m_pco.m_Pointsize;
+						PointCmd l_cmd = new PointCmd();
+						l_cmd.m_cmd = 1;
+						l_cmd.m_point = l_point;
+						os.writeObject(l_cmd);
+						os.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						return;
+					}
+				}
+	        }
+			if(m_stop_detection) {
+				try {
+					m_socket.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				return;
+			}
 			System.out.println("Complete "+l_infile.toString());
 		}
 //		System.out.println("Found "+l_points+" points");
 		System.out.println("Min Z: "+m_e3d.m_cal_data.m_minz);
 		System.out.println("Max Z: "+m_e3d.m_cal_data.m_maxz);
 		m_detect_thread=null;
+		if(m_socket != null)
+		{
+			try {
+				m_socket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		m_socket = null;
 
 	}
 	
@@ -650,7 +691,15 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(tfBluethreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagechange.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)cbDetectionmethod.getSelectedItem();
-		if(m_socket!=null) m_socket.close();
+		if(m_socket!=null)
+		{
+			try {
+				m_socket.close();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
 	}
 
 	@Override
