@@ -371,9 +371,9 @@ public class eora3D_bluetooth {
 //        System.out.println("Found the motor ipos characteristic");
         m_motorNotification.unsetcomplete();
         motorIPOS.writeValue(l_pos);
-        if(!m_motorNotification.waitforcomplete(10000))
+        if(!m_motorNotification.waitforcomplete(20000))
         {
-        	System.out.println("Motor move not completed in 10 seconds.");
+        	System.out.println("Motor move not completed in 20 seconds.");
         	return false;
         }
         return true;

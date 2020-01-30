@@ -500,7 +500,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(this.tfPercentageThreshold.getText());
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
+				m_stop_for_cal = true;
 				m_stop_calibration_thread = false;
 				Runnable l_runnable = () -> {
 					Calibrate();
@@ -868,8 +870,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			if(m_stop_calibration_thread)
 			{
 				m_calibration_thread = null;
+//				m_thread.start();
 				return;
 			}
+			System.out.println("found "+l_goodenough+" corners");
 		} while (l_goodenough < 4);
 		// Hunt for laser in detection circles
 		{
@@ -878,6 +882,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-2))
 			{
 				m_calibration_thread = null;
+				//m_thread.start();
 				return;
 			}
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
@@ -903,6 +908,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-1))
 				{
 					m_calibration_thread = null;
+					//m_thread.start();
 					return;
 				}
 				// Fast search
@@ -925,6 +931,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					{
 						l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 					}
+					image.m_image = l_image;
+					image.repaint();
 
 					int l_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
@@ -938,6 +946,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
 					m_calibration_thread = null;
+					//m_thread.start();
 					return;
 				}
 				// Slow search. We've seen the laser in line with the black dot. Now we search for a break in the laser line.
@@ -951,6 +960,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					{
 						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 						m_calibration_thread = null;
+						//m_thread.start();
 						return;
 					}
 //					System.out.println("Moved to base step "+l_pos);
@@ -960,6 +970,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					{
 						l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 					}
+					image.m_image = l_image;
+					image.repaint();
 	
 					int l_top_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
@@ -967,6 +979,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 							l_search_box.x+m_cal_data.detection_box/2);
 					int l_bot_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y+m_cal_data.detection_box/2, l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
+					System.out.println("top "+l_top_found_offset+"mid "+l_mid_found_offset+"bot "+l_bot_found_offset);
 					if(l_top_found_offset == -1 || l_bot_found_offset == -1)
 					{
 						System.out.println("Lost laser at top and bot");
@@ -994,6 +1007,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
 					m_calibration_thread = null;
+					//m_thread.start();
 					return;
 				}
 				l_corner_pos[corner] = l_pos_slow;
@@ -1009,6 +1023,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		image.pos = 1;
 		m_calibration_thread = null;
+		//m_thread.start();
 
 	}
 
@@ -1037,7 +1052,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(this.txtRedthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(this.txtGreenthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
-		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Integer.parseInt(this.tfPercentageThreshold.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(this.tfPercentageThreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
 		Eora3D_MainWindow.m_e3d_config.sm_calibration_vertical_offset = m_cal_data.v_offset;
 		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1 = Integer.parseInt(txtTopleftmotorpos.getText());
