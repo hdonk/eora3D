@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -520,50 +521,68 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		else
 		if(e.getActionCommand()=="Load")
 		{
-			File l_file = new File(System.getProperty("user.home")+File.separator+"config.e3d");
-			try {
-				FileInputStream l_fis = new FileInputStream(l_file);
-				ObjectInputStream l_ois = new ObjectInputStream(l_fis);
-				eora3D_configuration_version l_e3d_config_ver = (eora3D_configuration_version) l_ois.readObject();
-				if(l_e3d_config_ver.sm_config_version!=1)
-				{
-					System.err.println("Unrecognised configuration file");
+			JFileChooser l_fc;
+			l_fc = new JFileChooser(System.getProperty("user.home"));
+			l_fc.setFileFilter(new extensionFileFilter("e3d"));
+			l_fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			l_fc.setSelectedFile(m_e3d.m_e3d_config.sm_config_file);
+			int l_ret = l_fc.showOpenDialog(null);
+
+			if (l_ret == JFileChooser.APPROVE_OPTION) {
+				File l_file = l_fc.getSelectedFile();
+				try {
+					FileInputStream l_fis = new FileInputStream(l_file);
+					ObjectInputStream l_ois = new ObjectInputStream(l_fis);
+					eora3D_configuration_version l_e3d_config_ver = (eora3D_configuration_version) l_ois.readObject();
+					if(l_e3d_config_ver.sm_config_version!=1)
+					{
+						System.err.println("Unrecognised configuration file");
+						l_ois.close();
+						return;
+					}
+					m_e3d.m_e3d_config = (eora3D_configuration_data_v1) l_ois.readObject();
 					l_ois.close();
-					return;
+					l_fis.close();
+					m_e3d.m_e3d_config.sm_config_file = l_file;
+					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
+					System.out.println("Serialized data loaded from " + l_file);
+				} catch (Exception ioe) {
+					ioe.printStackTrace();
+					System.err.println("Failed to open " + l_file);
+					JOptionPane.showMessageDialog(getContentPane(), "Failed", "Load", JOptionPane.ERROR_MESSAGE);
 				}
-				m_e3d.m_e3d_config = (eora3D_configuration_data_v1) l_ois.readObject();
-				l_ois.close();
-				l_fis.close();
-				m_e3d.m_e3d_config.sm_config_file = l_file;
-				JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
-				System.out.println("Serialized data loaded from " + l_file);
-			} catch (Exception ioe) {
-				ioe.printStackTrace();
-				System.err.println("Failed to open " + l_file);
-				JOptionPane.showMessageDialog(getContentPane(), "Failed", "Load", JOptionPane.ERROR_MESSAGE);
-			}	
+			}
 		}
 		else
 		if(e.getActionCommand()=="Save")
 		{
-			File l_file = new File(System.getProperty("user.home")+File.separator+"config.e3d");
-			if(!l_file.toString().contains("."))
+			JFileChooser l_fc;
+			l_fc = new JFileChooser(m_e3d.m_e3d_config.sm_config_file);
+			l_fc.setFileFilter(new extensionFileFilter("e3d"));
+			l_fc.setSelectedFile(m_e3d.m_e3d_config.sm_config_file);
+			int l_ret = l_fc.showSaveDialog(this);
+
+			if (l_ret == JFileChooser.APPROVE_OPTION)
 			{
-				l_file = new File(l_file.toString()+".e3d");
-			}
-			m_e3d.m_e3d_config.sm_config_file = l_file;
-			try {
-				FileOutputStream l_fos = new FileOutputStream(l_file);
-				ObjectOutputStream l_oos = new ObjectOutputStream(l_fos);
-				l_oos.writeObject(new eora3D_configuration_version());
-				l_oos.writeObject(m_e3d.m_e3d_config);
-				l_oos.close();
-				l_fos.close();
-				JOptionPane.showMessageDialog(getContentPane(), "Ok", "Save", JOptionPane.INFORMATION_MESSAGE);
-				System.out.println("Serialized data is saved in " + l_file);
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-				JOptionPane.showMessageDialog(getContentPane(), "Failed", "Save", JOptionPane.ERROR_MESSAGE);
+				File l_file = l_fc.getSelectedFile();
+				if(!l_file.toString().contains("."))
+				{
+					l_file = new File(l_file.toString()+".e3d");
+				}
+				m_e3d.m_e3d_config.sm_config_file = l_file;
+				try {
+					FileOutputStream l_fos = new FileOutputStream(l_file);
+					ObjectOutputStream l_oos = new ObjectOutputStream(l_fos);
+					l_oos.writeObject(new eora3D_configuration_version());
+					l_oos.writeObject(m_e3d.m_e3d_config);
+					l_oos.close();
+					l_fos.close();
+					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Save", JOptionPane.INFORMATION_MESSAGE);
+					System.out.println("Serialized data is saved in " + l_file);
+				} catch (IOException ioe) {
+					ioe.printStackTrace();
+					JOptionPane.showMessageDialog(getContentPane(), "Failed", "Save", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 	}
