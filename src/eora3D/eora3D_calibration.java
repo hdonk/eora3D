@@ -333,166 +333,6 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getActionCommand()=="Capture")
-		{
-			BufferedImage l_image = m_camera.getImage();
-			l_image.flush();
-			if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
-			{
-				l_image = rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
-			}
-			
-//			image.circles=null;
-			
-			image.m_image = l_image;
-			image.m_overlay = null;
-			capturedImage = l_image;
-			image.repaint();
-		} else
-		if(e.getActionCommand()=="Circles")
-		{
-			if(capturedImage == null) return;
-			
-			CircleDetection l_cd = new CircleDetection();
-			l_cd.threshold = Integer.parseInt(txtThreshold.getText());
-			l_cd.minHits = Integer.parseInt(txtMinHits.getText());
-			l_cd.minr = Integer.parseInt(txtMinRad.getText());
-			l_cd.maxr = Integer.parseInt(txtMaxRad.getText());
-
-			try {
-				l_cd.initTotalCircles(capturedImage);
-//				System.out.println("Detecting circles");
-				if(image.pos==1)
-				{
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_1_tl.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_tl.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_tl.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_1_tl.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_1_tr.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_tr.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_tr.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_1_tr.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_1_bl.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_bl.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_bl.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_1_bl.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_1_br.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_br.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_1_br.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_1_br.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-				}
-/*				else
-				{
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_2_tl.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_tl.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_tl.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_2_tl.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_2_tr.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_tr.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_tr.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_2_tr.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_2_bl.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_bl.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_bl.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_2_bl.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-					l_cd.detect(capturedImage,
-							new Rectangle(
-						    		m_cal_data.pos_2_br.x-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_br.y-m_cal_data.detection_box/2,
-						    		m_cal_data.pos_2_br.width+m_cal_data.detection_box,
-						    		m_cal_data.pos_2_br.height+m_cal_data.detection_box
-									));
-					l_cd.findFirstCircle(
-							capturedImage
-							);
-				}*/
-//				System.out.println("Detection complete");
-			} catch (Exception e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			image.m_overlay = l_cd.displayimage;
-			image.repaint();
-/*
-			Mat input = new Mat(l_image.getHeight(), l_image.getWidth(), CvType.CV_8UC3);
-			byte data[] = ((DataBufferByte)l_image.getRaster().getDataBuffer()).getData();
-			input.put(0,  0,  data);
-			Mat grey = new Mat();
-			Imgproc.cvtColor(input,  grey,  Imgproc.COLOR_BGRA2GRAY);
-			image.circles = new Mat(10, 10, CvType.CV_64FC1);
-			System.out.println("Detecting circles");
-			Imgproc.HoughCircles(grey, image.circles, Imgproc.CV_HOUGH_GRADIENT,
-					Integer.parseInt(txtResratio.getText()),
-					Integer.parseInt(txtMinDist.getText()),
-					Integer.parseInt(txtParam.getText()),
-					Integer.parseInt(txtParam_1.getText()),
-					Integer.parseInt(txtMinRad.getText()),
-					Integer.parseInt(txtMaxRad.getText()));
-			System.out.println("Detection complete");
-*/
-		} else
-/*		if(e.getActionCommand()=="Detect")
-		{
-			if(m_detect_thread == null)
-			{
-				Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1 = Integer.parseInt(txtTopleftmotorpos.getText());
-				Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1 = Integer.parseInt(txtToprightmotorpos.getText());
-				Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_2 = Integer.parseInt(txtTopleftmotorpos_2.getText());
-				Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_2 = Integer.parseInt(txtToprightmotorpos_2.getText());
-				if(m_thread == null)
-				{
-					m_thread = new Thread(this);
-					m_thread.start();
-				}
-				Runnable l_runnable = () -> {
-					Detect();
-				};
-				m_detect_thread = new Thread(l_runnable);
-				m_detect_thread.start();
-			}
-		} else*/
 		if(e.getActionCommand()=="Calibrate")
 		{
 			if(m_calibration_thread == null)
@@ -514,11 +354,20 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			{
 				m_stop_calibration_thread = true;
 			}
-		}/* else
-		if(e.getActionCommand()=="Export points")
+		}
+		else
+		if(e.getActionCommand()=="Finish")
 		{
-			m_pco.save("test.ply");
-		}*/
+			m_stop_calibration_thread = true;
+			m_stop_for_cal = true;
+			setVisible(false);
+		}
+		else
+		if(e.getActionCommand()=="Config")
+		{
+			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(m_e3d);
+			l_editor.setVisible(true);
+		}
 	}
 
 	void CircleDetection()
@@ -950,6 +799,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					return;
 				}
 				// Slow search. We've seen the laser in line with the black dot. Now we search for a break in the laser line.
+				int l_notch_count = 0;
+				int l_top_found_offset = 0;
+				int l_mid_found_offset = 0;
+				int l_bot_found_offset = 0;
 				for(
 						l_pos_slow = l_pos - Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
 						l_pos_slow < Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
@@ -973,30 +826,37 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					image.m_image = l_image;
 					image.repaint();
 	
-					int l_top_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y , l_search_box.x-m_cal_data.detection_box/2,
+					l_top_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[corner].y , l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
-					int l_mid_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y-m_cal_data.detection_box/2, l_search_box.x-m_cal_data.detection_box/2,
+					l_mid_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[corner].y-m_cal_data.detection_box/2, l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
-					int l_bot_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[0].y+m_cal_data.detection_box/2, l_search_box.x-m_cal_data.detection_box/2,
+					l_bot_found_offset = m_e3d.m_cal_data.findLaserPoint(l_base_image, l_image, l_found[corner].y+m_cal_data.detection_box/2, l_search_box.x-m_cal_data.detection_box/2,
 							l_search_box.x+m_cal_data.detection_box/2);
 					System.out.println("top "+l_top_found_offset+"mid "+l_mid_found_offset+"bot "+l_bot_found_offset);
-					if(l_top_found_offset == -1 || l_bot_found_offset == -1)
+					if(l_top_found_offset == -1 && l_bot_found_offset == -1)
 					{
 						System.out.println("Lost laser at top and bot");
+						l_notch_count = 0;
 					}
 					if(l_top_found_offset != -1 && l_bot_found_offset != -1 && l_mid_found_offset == -1)
 					{
 						System.out.println("Notch alignment at top: "+l_top_found_offset+" mid: "+l_mid_found_offset+" bot: "+l_bot_found_offset);
-						System.out.println("Notch found. Stopping");
-						break;
+						++l_notch_count;
+						if(l_notch_count>=3)
+						{
+							System.out.println("Notch found. Stopping");
+							break;
+						}
 					}
 					if(l_top_found_offset != -1 && l_bot_found_offset == -1)
 					{
 						System.out.println("Lost laser at bot");
+						l_notch_count = 0;
 					}
 					if(l_top_found_offset != -1 && l_bot_found_offset == -1)
 					{
 						System.out.println("Lost laser at top");
+						l_notch_count = 0;
 					}
 					if(l_top_found_offset != -1 && l_bot_found_offset != -1 && Math.abs(l_top_found_offset-l_bot_found_offset)>=3)
 					{
@@ -1010,8 +870,19 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					//m_thread.start();
 					return;
 				}
-				l_corner_pos[corner] = l_pos_slow;
+				l_corner_pos[corner] = l_pos_slow-l_notch_count+1;
+				image.m_overlay = new BufferedImage(capturedImage.getWidth(), capturedImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				Graphics g = image.m_overlay.getGraphics();
+				g.setColor(Color.green);
+			    g.fillOval(
+			    		l_mid_found_offset-1,
+			    		l_found[0].y-1,
+			    		2,
+			    		2
+			    		);
 			}
+			image.m_overlay.flush();
+			image.repaint();
 			Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 		}
 		Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1 = l_corner_pos[0];
