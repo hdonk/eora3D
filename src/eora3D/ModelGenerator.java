@@ -390,6 +390,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(m_e3d);
 			l_editor.setVisible(true);
+			setFromConfig();
 		}
 	}
 
@@ -539,7 +540,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						e.printStackTrace();
 						return;
 					}
-		        	System.out.println("Sent "+i);
+		        	//System.out.println("Sent "+i);
 				}
     			try {
     				l_dos.writeInt(3);
@@ -785,6 +786,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					l_dos.writeInt(1);
 				    l_dos.writeFloat(m_pco.m_Scale);
 				    l_dos.writeFloat(m_pco.m_Pointsize);
+				    l_dos.flush();
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
