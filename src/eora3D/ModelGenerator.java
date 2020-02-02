@@ -12,11 +12,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -49,6 +51,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfTestframe;
 	
 	private Socket m_socket = null;
+	
+	ArrayList<RGB3DPoint> m_points;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -168,7 +172,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		btnLasered.addActionListener(this);
 		
 		imagePanel = new PaintImage();
-		imagePanel.setBounds(148, 0, 397, 497);
+		imagePanel.setBounds(156, 0, 460, 633);
 		getContentPane().add(imagePanel);
 		imagePanel.m_cal_data = m_e3d.m_cal_data;
 		imagePanel.pos = 0;
@@ -375,8 +379,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 
 	void Detect(int a_frame)
 	{
-	    ObjectOutputStream os = null;
-		m_pco.clear();
+	    ObjectOutputStream l_oos = null;
+	    ObjectInputStream l_ois = null;
+	    m_pco.clear();
 		
 		try {
 			m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
@@ -390,10 +395,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			try {
 				PointCmd l_cmd = new PointCmd();
 				l_cmd.m_cmd = 0;
-				os = new ObjectOutputStream(m_socket.getOutputStream());
-				os.flush();
-				os.writeObject(l_cmd);
-				os.flush();
+				l_oos = new ObjectOutputStream(m_socket.getOutputStream());
+				l_ois = new ObjectInputStream(m_socket.getInputStream());
+				l_oos.flush();
+				l_oos.writeObject(l_cmd);
+				l_oos.flush();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -420,6 +426,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				++l_pos)
 		{
 			File l_infile;
+		    m_points = new ArrayList<RGB3DPoint>();
 			try {
 				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+l_pos+".png");
 			}
@@ -482,6 +489,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 //							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
 							m_pco.addPoint(l_point);
+							synchronized(m_points)
+							{
+								m_points.add(l_point);
+							}
 						}
 					}
 				};
@@ -501,23 +512,37 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			// In linux, send the point off to the possible viewer
 	        if(m_socket != null)
 	        {
-	        	for(int i=0; i<m_pco.m_points.size(); ++i)
+				System.out.println("Sending points "+m_points.size());
+	        	for(int i=0; i<m_points.size(); ++i)
 		        {
-		        	RGB3DPoint l_point = m_pco.m_points.get(i);
+		        	RGB3DPoint l_point = m_points.get(i);
 		        	try {
 					    l_point.m_scale = m_pco.m_Scale;
 					    l_point.m_pointsize = m_pco.m_Pointsize;
 						PointCmd l_cmd = new PointCmd();
 						l_cmd.m_cmd = 1;
 						l_cmd.m_point = l_point;
-						os.writeObject(l_cmd);
-						os.flush();
+						l_oos.writeObject(l_cmd);
+						l_oos.flush();
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 						return;
 					}
+		        	System.out.println("Sent "+i);
 				}
+	    			try {
+	    				PointCmd l_cmd = new PointCmd();
+	    				l_cmd.m_cmd = 2;
+	    				l_oos.writeObject(l_cmd);
+	    				l_oos.flush();
+	    				l_cmd = (PointCmd) l_ois.readObject();
+	    			} catch (Exception e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    				m_socket = null;
+	    		}
+				System.out.println("Sent points");
 	        }
 			if(m_stop_detection) {
 				try {
@@ -529,6 +554,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				return;
 			}
 			System.out.println("Complete "+l_infile.toString());
+			System.gc();
 		}
 //		System.out.println("Found "+l_points+" points");
 		System.out.println("Min Z: "+m_e3d.m_cal_data.m_minz);
