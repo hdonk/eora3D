@@ -1,6 +1,7 @@
 package eora3D;
 
 import java.awt.FileDialog;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -410,8 +411,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		if(m_socket!=null)
 		{
 			try {
-				PointCmd l_cmd = new PointCmd();
-				l_cmd.m_cmd = 0;
 				l_dos = new DataOutputStream(m_socket.getOutputStream());
 				l_dis = new DataInputStream(m_socket.getInputStream());
 				l_dos.flush();
@@ -487,19 +486,18 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				final int l_lambda_thread = l_thread;
 				final int l_lambda_pos = l_pos;
 				Runnable l_task = () -> { 
-					int l_x_points[];
+					ArrayList<Point> l_points;
 					// TBC correctify this!
 					int l_range_start = (l_baseimage.getHeight()/8)*l_lambda_thread;
 					int l_range_end = (l_baseimage.getHeight()/8)*(l_lambda_thread+1);
-					l_x_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
-					for( int i=l_range_start; i<l_range_end; ++i)
+					l_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
+					for(Point l_found_point: l_points)
 					{
-						if(l_x_points[i]>=0)
 						{
-							RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_x_points[i], (l_baseimage.getHeight()-i)-1);
-							l_point.m_r = (l_baseimage.getRGB(l_x_points[i], i) & 0xff0000)>>16;
-							l_point.m_g = (l_baseimage.getRGB(l_x_points[i], i) & 0xff00)>>8;
-							l_point.m_b = l_baseimage.getRGB(l_x_points[i], i) & 0xff;
+							RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_found_point.x, (l_baseimage.getHeight()-l_found_point.y)-1);
+							l_point.m_r = (l_baseimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
+							l_point.m_g = (l_baseimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
+							l_point.m_b = l_baseimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
 							//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 //							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
@@ -653,14 +651,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		return a_out;
 	}
 	
-	int[] analyzeImagetoArray(BufferedImage a_base, BufferedImage a_in, int a_start, int a_end)
+	ArrayList<Point> analyzeImagetoArray(BufferedImage a_base, BufferedImage a_in, int a_start, int a_end)
 	{
-		int[] a_out = new int[a_in.getHeight()];
+		ArrayList<Point> a_out = new ArrayList<Point>();
 		int x, y;
 
 		for(y = a_start; y < a_end; ++y)
 		{
-			for(x = a_in.getWidth()-1; x>=0; --x)
+			int l_hits = Eora3D_MainWindow.m_e3d_config.sm_max_points_per_line;
+			boolean l_detect_end = false;
+			for(x = 0; x < a_in.getWidth(); ++x)
 			{
 				int argb = a_in.getRGB(x, y);
 				int r = (argb & 0xff0000) >> 16;
@@ -676,27 +676,38 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		int gd = Math.abs(g_base-g);
         		int bd = Math.abs(b_base-b);
 
+        		boolean l_found = false;
         		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) break;
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_found = true;
         		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) break;
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_found = true;
         		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
         		{
         			float pc = ((float)rd/255.0f + (float)gd/255.0f + (float)bd/255.0f)*100.0f;
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) break;
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_found = true;
         		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
         		{
         			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) break;
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_found = true;
+        		}
+        		if(!l_detect_end && l_found)
+        		{
+        			l_detect_end = true;
+        			a_out.add(new Point(x, y));
+        			--l_hits;
+        			if(l_hits == 0) break;
+        		}
+        		else if(l_detect_end && !l_found)
+        		{
+        			l_detect_end = false;
         		}
 			}
-			a_out[y] = x;
 		}
 		return a_out;
 	}
@@ -780,7 +791,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			if(m_socket!=null)
 			{
 				try {
-					PointCmd l_cmd = new PointCmd();
 					l_dos = new DataOutputStream(m_socket.getOutputStream());
 					l_dos.flush();
 					l_dos.writeInt(1);
