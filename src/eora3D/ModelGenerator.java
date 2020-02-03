@@ -560,7 +560,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				return;
 			}
 			System.out.println("Complete "+l_infile.toString());
-			System.gc();
+			//System.gc();
 		}
 //		System.out.println("Found "+l_points+" points");
 		System.out.println("Min Z: "+m_e3d.m_cal_data.m_minz);
@@ -586,6 +586,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 
 		for(y = 0; y< a_in.getHeight(); ++y)
 		{
+			boolean l_found = false;
 			for(x = a_in.getWidth()-1; x>=0; --x)
 			{
 				int argb = a_in.getRGB(x, y);
@@ -617,35 +618,43 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 //        		g = 255-g;
 //        		b = 255-b;
 
+        		int l_argb_out = 0;
         		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) argb = 0xff00ff00;
-	        		else argb = 0xff000000;
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_argb_out = 0xff00ff00;
+	        		else l_found = false;
+	        		//else argb = 0xff000000;
         		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) argb = 0xff00ff00;
-	        		else argb = 0xff000000;
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_argb_out = 0xff00ff00;
+	        		else l_found = false;
+	        		//else argb = 0xff000000;
         		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
         		{
         			float pc = ((float)rd/255.0f + (float)gd/255.0f + (float)bd/255.0f)*100.0f;
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) argb = 0xff00ff00;
-	        		else argb = 0xff000000;
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_argb_out = 0xff00ff00;
+	        		else l_found = false;
+	        		//else argb = 0xff000000;
         		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
         		{
         			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) argb = 0xff00ff00;
-	        		else argb = 0xff000000;
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_argb_out = 0xff00ff00;
+	        		else l_found = false;
+	        		//else argb = 0xff000000;
         		}
 //        		argb = (r << 16) | (g << 8) | (b);
 
 //				argb = 0x00ffffff - argb;				
 //				argb |= 0xff000000;
-				a_out.setRGB(x, y, argb);
-				if(argb == 0xff00ff00) break;
+				if(l_argb_out == 0xff00ff00) l_found = true;
+        		if(l_found)
+        		{
+        			a_out.setRGB(x, y, l_argb_out);
+        		}
 			}
 		}
 		return a_out;
