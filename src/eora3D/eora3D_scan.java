@@ -17,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.border.BevelBorder;
 import java.awt.Dimension;
+import javax.swing.JCheckBox;
 
 class ExtensionFilter implements FilenameFilter
 {
@@ -41,6 +42,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 	private JButton btnLaserTestEnd;
 	
 	private Thread m_scanning_thread = null;
+	private JCheckBox chckbxPauseToTurn;
 	
 	public eora3D_scan(Eora3D_MainWindow a_e3d) {
 		super();
@@ -70,7 +72,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		tfScanEndAngle.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle);
 		
 		JLabel lblScanStepSize = new JLabel("Scan steps size");
-		lblScanStepSize.setBounds(16, 138, 150, 15);
+		lblScanStepSize.setBounds(6, 138, 150, 15);
 		getContentPane().add(lblScanStepSize);
 		
 		tfScanStepSize = new JTextField();
@@ -129,6 +131,14 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		JButton btnSnapshot = new JButton("Snapshot");
 		btnSnapshot.setBounds(261, 1003, 100, 27);
 		getContentPane().add(btnSnapshot);
+		
+		JLabel lblPauseToTurn = new JLabel("");
+		lblPauseToTurn.setBounds(6, 203, 168, 15);
+		getContentPane().add(lblPauseToTurn);
+		
+		chckbxPauseToTurn = new JCheckBox("Pause to turn lights off");
+		chckbxPauseToTurn.setBounds(6, 200, 204, 23);
+		getContentPane().add(chckbxPauseToTurn);
 		btnSnapshot.addActionListener(this);
 
 		m_e3d = a_e3d;
@@ -277,8 +287,28 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			return;
 		}
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
-		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_colourmap.png");
 		BufferedImage l_image = m_e3d.m_camera.getImage();
+		l_image.flush();
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
+		{
+			l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
+		}
+
+		try {
+			ImageIO.write(l_image, "png", l_outfile);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			return;
+		}
+		
+		if(chckbxPauseToTurn.isSelected())
+		{
+			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights off", JOptionPane.INFORMATION_MESSAGE);
+		}
+		
+		l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+		l_image = m_e3d.m_camera.getImage();
 		l_image.flush();
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 		{
