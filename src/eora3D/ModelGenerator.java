@@ -557,7 +557,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 							//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 //							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
-							m_pco.addPoint(l_point);
+							if(Math.abs(l_point.m_x)<=10000 &&
+									Math.abs(l_point.m_y)<=10000 &&
+									Math.abs(l_point.m_z)<=10000)
+								m_pco.addPoint(l_point);
 							synchronized(m_points)
 							{
 								m_points.add(l_point);

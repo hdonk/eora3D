@@ -51,7 +51,8 @@ class CalibrationData
 	public int m_minz = 0;
 	public int m_maxz = 0;
 	
-	public double focal_length_pix = 0.0f;
+	public double focal_length_pix_x = 0.0f;
+	public double focal_length_pix_y = 0.0f;
 	
 	public int m_laser_to_camera_sep_pix = 0;
 	
@@ -177,13 +178,20 @@ class CalibrationData
 		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;*/
 		
 		// Calculate focal length
-		double d_mm = spot_sep_w;
+		x = (((double)spot_sep_w)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
+		y = x*Math.tan(Math.toRadians(beta));
+		double d_mm = y;
 		double h_pix = pos_1_board.width;
 		double H_mm = spot_sep_w;
+		focal_length_pix_x = (d_mm*h_pix)/H_mm;
 
-		focal_length_pix = (d_mm*h_pix)/H_mm;
+		d_mm = y;
+		h_pix = pos_1_board.height;
+		H_mm = spot_sep_h;
+		focal_length_pix_y = (d_mm*h_pix)/H_mm;
 		//focal_length_pix *= 1.1f;
-		System.out.println("Focal length in pixels: "+focal_length_pix);
+		System.out.println("X focal length in pixels: "+focal_length_pix_x);
+		System.out.println("Y focal length in pixels: "+focal_length_pix_y);
 		
 		// Camera center to laser center separation
 		m_laser_to_camera_sep_pix = cal_square_bl.x + pos_1_board.width/2;
@@ -199,7 +207,7 @@ class CalibrationData
 		
 		double x_pos = (double)screen_x - ((double)capture_w/2.0f) ;
 		
-		double alpha = Math.toDegrees(Math.atan(x_pos/focal_length_pix));
+		double alpha = Math.toDegrees(Math.atan(x_pos/focal_length_pix_x));
 		double A = 90.0f + alpha;
 		double B = 180.0f - A - C;
 		double b = m_laser_to_camera_sep_pix;
@@ -209,7 +217,7 @@ class CalibrationData
 		double z = c * Math.sin(Math.toRadians(A));
 		double x = c * Math.cos(Math.toRadians(A));
 		
-		double y = z * (screen_y-capture_h/2.0f)/focal_length_pix;
+		double y = z * (screen_y-capture_h/2.0f)/focal_length_pix_y;
 		
 		//System.out.println("In: angle: "+a_angle_steps+" x: "+screen_x+" y: "+screen_y+" Out: x: "+x+"y: "+y+" z: "+z);
 		
