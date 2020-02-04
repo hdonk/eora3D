@@ -329,7 +329,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			File l_infile;
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_base.png");
 			}
 			catch(Exception e)
 			{
@@ -356,7 +356,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			File l_infile;
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_colourmap.png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_colourmap.png");
 			}
 			catch(Exception e)
 			{
@@ -384,7 +384,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 			File l_infile;
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
 			}
 			catch(Exception e)
 			{
@@ -479,8 +479,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		putToConfig();
-		File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
-		File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_colourmap.png");
+		File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_base.png");
+		File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_colourmap.png");
 		int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
 		int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*45;
 		if(a_frame != -1)
@@ -495,7 +495,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			File l_infile;
 		    m_points = new ArrayList<RGB3DPoint>();
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+l_pos+".png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_pos+".png");
 			}
 			catch(Exception e)
 			{
