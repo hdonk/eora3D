@@ -63,11 +63,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d = a_e3d;
 		setTitle("Generate Model");
 		getContentPane().setLayout(null);
-		setSize(792+32,675+32);
+		setSize(824,792);
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel.setBounds(6, 0, 141, 594);
+		panel.setBounds(6, 0, 141, 646);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
@@ -143,14 +143,19 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel.add(lblTestFrame);
 		
 		JButton btnClear = new JButton("Base");
-		btnClear.setBounds(22, 531, 100, 27);
+		btnClear.setBounds(22, 560, 100, 27);
 		panel.add(btnClear);
 		btnClear.addActionListener(this);
 		
 		JButton btnLasered = new JButton("Lasered");
-		btnLasered.setBounds(22, 561, 100, 27);
+		btnLasered.setBounds(22, 590, 100, 27);
 		panel.add(btnLasered);
 		btnLasered.addActionListener(this);
+		
+		JButton btnColourmap = new JButton("Colourmap");
+		btnColourmap.setBounds(22, 531, 100, 27);
+		panel.add(btnColourmap);
+		btnColourmap.addActionListener(this);
 		
 		imagePanel = new PaintImage();
 		imagePanel.setBounds(156, 0, 460, 633);
@@ -213,7 +218,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		sbPointsize.addAdjustmentListener(this);
 		
 		JButton btnConfig = new JButton("Config");
-		btnConfig.setBounds(6, 606, 100, 27);
+		btnConfig.setBounds(6, 688, 100, 27);
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
 		
@@ -221,6 +226,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_pco.m_Pointsize = sbPointsize.getValue();
 		m_pco.m_Scale = sbScaling.getValue();
 		//new Thread(m_pco).start();
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
+		{
+			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+		}
+		else
+		{
+			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+		}
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		
@@ -337,6 +352,33 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			imagePanel.m_image = l_inimage;
 			imagePanel.repaint();
 		} else
+		if(ae.getActionCommand() == "Colourmap")
+		{
+			File l_infile;
+			try {
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_colourmap.png");
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				m_detect_thread=null;
+				return;
+			}
+			if(!l_infile.exists()) return;
+//				System.out.println("Analysing "+l_infile.toString());
+			BufferedImage l_inimage;
+
+			try {
+				l_inimage = ImageIO.read(l_infile);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				m_detect_thread=null;
+				return;
+			}
+			imagePanel.m_overlay = null;
+			imagePanel.m_image = l_inimage;
+			imagePanel.repaint();
+		} else
 		if(ae.getActionCommand() == "Lasered")
 		{
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
@@ -351,7 +393,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				return;
 			}
 			if(!l_infile.exists()) return;
-//			System.out.println("Analysing "+l_infile.toString());
+//				System.out.println("Analysing "+l_infile.toString());
 			BufferedImage l_inimage;
 
 			try {
@@ -405,7 +447,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//e.printStackTrace();
 			m_socket = null;
 		}
 		if(m_socket!=null)
@@ -424,10 +466,21 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				m_socket = null;
 			}
 		}
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
+		{
+			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+		}
+		else
+		{
+			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+		}
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		putToConfig();
 		File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+		File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_colourmap.png");
 		int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
 		int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*45;
 		if(a_frame != -1)
@@ -459,10 +512,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			}
 			if(!l_infile.exists()) continue;
 			System.out.println("Analysing "+l_infile.toString());
-			BufferedImage l_inimage, l_baseimage;
+			BufferedImage l_inimage, l_baseimage, l_colourmapimage;
 
 			try {
 				l_baseimage = ImageIO.read(l_basefile);
+				l_colourmapimage = ImageIO.read(l_colourmapfile);
 				l_inimage = ImageIO.read(l_infile);
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -495,9 +549,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					{
 						{
 							RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_found_point.x, (l_baseimage.getHeight()-l_found_point.y)-1);
-							l_point.m_r = (l_baseimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
-							l_point.m_g = (l_baseimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
-							l_point.m_b = l_baseimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
+							l_point.m_r = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
+							l_point.m_g = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
+							l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
+							l_point.m_x -= l_baseimage.getWidth();
+							l_point.m_x = -l_point.m_x;
 							//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 //							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
@@ -536,7 +592,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-						return;
+						m_socket = null;
 					}
 		        	//System.out.println("Sent "+i);
 				}

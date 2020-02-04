@@ -59,6 +59,7 @@ class CalibrationData
 	{
 		double target_h;
 		double target_w;
+		System.out.println("Capture W "+capture_w+" H "+capture_h);
 		if(capture_w > capture_h) // landscape
 		{
 			// use the height as the limit

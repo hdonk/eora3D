@@ -258,6 +258,7 @@ class PointCloudObject implements Runnable {
 			        dos.writeDouble(y);
 			        dos.writeDouble(z);
 		        dos.close();*/
+		        System.out.println("Exporting "+m_points.size());
 		        for(int i=0; i<m_points.size(); ++i) {
 		        	writer.write(m_points.get(i).m_x+"\n");
 		        	writer.write(m_points.get(i).m_y+"\n");

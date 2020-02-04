@@ -287,7 +287,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			return;
 		}
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
-		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_colourmap.png");
+		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_colourmap.png");
 		BufferedImage l_image = m_e3d.m_camera.getImage();
 		l_image.flush();
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
@@ -307,7 +307,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights off", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
-		l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_base.png");
+		l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_base.png");
 		l_image = m_e3d.m_camera.getImage();
 		l_image.flush();
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
@@ -324,7 +324,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
 		for(int l_pos = a_start; l_pos < a_end; l_pos += a_stepsize)
 		{
-			l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"calib_"+l_pos+".png");
+			l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_pos+".png");
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
 			{
 				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);

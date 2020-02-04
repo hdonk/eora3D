@@ -508,7 +508,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		checkTextFieldIntRange(tfRedthreshold, 1, 255, l_default.sm_laser_detection_threshold_r);
 		checkTextFieldIntRange(tfGreenthreshold, 1, 255, l_default.sm_laser_detection_threshold_g);
 		checkTextFieldIntRange(tfBluethreshold, 1, 255, l_default.sm_laser_detection_threshold_b);
-		checkTextFieldFloatRange(tfPercentagethreshold, 0.1f, 100.0f, l_default.sm_laser_detection_threshold_percent);
+		checkTextFieldFloatRange(tfPercentagethreshold, 0.1f, 200.0f, l_default.sm_laser_detection_threshold_percent);
 		checkTextFieldIntRange(tfMaxPointsPerLine, 1, 10, l_default.sm_max_points_per_line);
 		checkTextFieldIntRange(tfStartposition, 0, 9000, l_default.sm_scan_start_angle);
 		checkTextFieldIntRange(tfEndposition, 1, 9000, l_default.sm_scan_end_angle);

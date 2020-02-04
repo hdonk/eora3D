@@ -283,13 +283,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
-			m_cal_data.capture_h = (int)m_camera.getViewSize().getWidth();
-			m_cal_data.capture_w = (int)m_camera.getViewSize().getHeight();
+			m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
 		}
 		else
 		{
-			m_cal_data.capture_w = (int)m_camera.getViewSize().getWidth();
-			m_cal_data.capture_h = (int)m_camera.getViewSize().getHeight();
+			m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
 		}
 		
 		m_cal_data.calculate();
