@@ -361,7 +361,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfPercentagethreshold.setText(""+a_cfg.sm_laser_detection_threshold_percent);
 		tfMaxPointsPerLine.setText(""+a_cfg.sm_max_points_per_line);
 		tfStartposition.setText(""+a_cfg.sm_scan_start_angle);
-		tfEndposition.setText(""+a_cfg.sm_laser_detection_threshold_r);
+		tfEndposition.setText(""+a_cfg.sm_scan_end_angle);
 		tfStepsize.setText(""+a_cfg.sm_scan_step_size);
 		tfThreads.setText(""+a_cfg.sm_threads);
 		tfTestframe.setText(""+a_cfg.sm_test_frame);
@@ -416,7 +416,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagethreshold.getText());
 		a_cfg.sm_max_points_per_line = Integer.parseInt(tfMaxPointsPerLine.getText());
 		a_cfg.sm_scan_start_angle = Integer.parseInt(tfStartposition.getText());
-		a_cfg.sm_laser_detection_threshold_r = Integer.parseInt(tfEndposition.getText());
+		a_cfg.sm_scan_end_angle = Integer.parseInt(tfEndposition.getText());
 		a_cfg.sm_scan_step_size = Integer.parseInt(tfStepsize.getText());
 		a_cfg.sm_threads = Integer.parseInt(tfThreads.getText());
 		a_cfg.sm_test_frame = Integer.parseInt(tfTestframe.getText());
