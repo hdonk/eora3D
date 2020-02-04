@@ -469,6 +469,8 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	public void checkTextFieldFloatRange(JTextField a_tf, float a_min, float a_max, float a_default)
 	{
 		float a_value;
+		if(a_tf.getText().indexOf(".")==-1)
+			a_tf.setText(a_tf.getText()+".0");
 		try
 		{
 			a_value = Float.parseFloat(a_tf.getText());
