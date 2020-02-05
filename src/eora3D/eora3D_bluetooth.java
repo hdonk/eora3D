@@ -100,11 +100,9 @@ public class eora3D_bluetooth {
     public List<BluetoothDevice> devices = null;
     
     BluetoothDevice laser = null;
-    List<BluetoothGattService> laserServices = null;
-    BluetoothDevice turntable = null;
-    List<BluetoothGattService> turntableServices = null;
+    List<BluetoothGattService> laserServices = null;    
     private BluetoothGattCharacteristic m_motorMMODE = null;
-    
+	private ValueNotification m_motorNotification;
     String UUID_laser_service = "534c4153-4552-2053-4552-564943452020";
     String UUID_laser_status = "4c415345-5220-5354-4154-555320202020";
     String UUID_laser_motor_service = "534d4f54-4f52-2053-4552-564943452020";
@@ -116,6 +114,10 @@ public class eora3D_bluetooth {
     String UUID_laser_sled_service = "534c4544-2053-4552-5649-434520202020";
     String UUID_laser_led_type = "4c454420-5459-5045-2020-202020202020";
     
+    BluetoothDevice turntable = null;
+    List<BluetoothGattService> turntableServices = null;
+    private BluetoothGattCharacteristic m_tmotorMMODE = null;
+	private ValueNotification m_tmotorNotification;
     String UUID_turntable_tio_service = "54494f20-5345-5256-4943-452020202020";
     String UUID_turntable_io_input = "494f2049-4e50-5554-2020-202020202020";
     String UUID_turntable_io_output = "494f204f-5554-5055-5420-202020202020";
@@ -126,7 +128,6 @@ public class eora3D_bluetooth {
     String UUID_turntable_motor_smode = "4d4f544f-5220-534d-4f44-452020202020";
     String UUID_turntable_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
     String UUID_turntable_motor_accel = "4d4f544f-5220-4143-4345-4c2020202020";
-	private ValueNotification m_motorNotification;
     
 	
     public eora3D_bluetooth()
@@ -262,6 +263,8 @@ public class eora3D_bluetooth {
     	if(laserServices==null)
 		{
     		System.out.println("No laser services?");
+            laser.disconnect();
+            laser = null;
     		return false;
 		}
         m_motorMMODE = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_mmode);
@@ -281,7 +284,7 @@ public class eora3D_bluetooth {
         return true;
     }
     
-    void setTurntable(BluetoothDevice a_turntable)
+    boolean setTurntable(BluetoothDevice a_turntable)
     {
     	if(turntable != null)
     		turntable.disconnect();
@@ -289,7 +292,28 @@ public class eora3D_bluetooth {
     	if(turntable != null)
     		turntable.connect();
     	turntableServices = turntable.getServices();
-    	if(turntableServices==null) System.out.println("No turntable services?");
+    	if(turntableServices==null)
+		{
+    		System.out.println("No turntable services?");
+            turntable.disconnect();
+            turntable = null;
+    		return false;
+		}
+        m_tmotorMMODE = getTurntableCharacteristic(UUID_turntable_tmotor_service, UUID_turntable_motor_mmode);
+
+        if (m_tmotorMMODE==null)
+        {
+            System.err.println("Could not find the correct characteristic for turntable MMODE.");
+            turntableServices = null;
+            turntable.disconnect();
+            turntable = null;
+            return false;
+        }
+
+        m_tmotorNotification = new ValueNotification();
+        m_tmotorMMODE.enableValueNotifications(m_tmotorNotification);
+
+        return true;
     }
     
     void setLaserStatus(boolean on)
@@ -410,22 +434,34 @@ public class eora3D_bluetooth {
         motorSpeed.writeValue(l_speed);
 	}
 
-	public void setTurntableMotorPos(int a_pos) {
+	public boolean setTurntableMotorPos(int a_pos) {
     	byte[] l_pos = { (byte) (a_pos&0xff), (byte) ((a_pos&0xff00)>>8)};
 
-    	if(turntable == null) return;
+    	if(turntable == null) return false;
         BluetoothGattCharacteristic motorIPOS = getTurntableCharacteristic(UUID_turntable_tmotor_service,
         			UUID_turntable_motor_ipos);
 
         if (motorIPOS==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the motor ipos characteristic");
         motorIPOS.writeValue(l_pos);
-	}
+
+	
+	
+	
+        m_tmotorNotification.unsetcomplete();
+        motorIPOS.writeValue(l_pos);
+        if(!m_tmotorNotification.waitforcomplete(20000))
+        {
+        	System.out.println("Motor move not completed in 20 seconds.");
+        	return false;
+        }
+        return true;
+}
 
 	public void setTurntableMotorAccel(int a_accel) {
     	byte[] l_accel = { (byte) a_accel};

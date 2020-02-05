@@ -1,11 +1,11 @@
 - Files: Finish PLY export [DONE]
-- UI: Make UI user friendly
+- UI: Make UI user friendly [DONE]
 - UI: Create/find Java native file chooser (OpenGL incompatible with JFileChooser issue) [Not required? See below.]
-- UI: Only start GL on demand - due to file access crashing the app afterwards.
-- Calibration: Improve laser/spot intersect detection
-- Scan: Allow a separate colour snapshot, to allow in-dark scanning
-- Scan: Turntable scan
-- Docs: Explain how to use the software
+- UI: Only start GL on demand - due to file access crashing the app afterwards. [DONE as separate app]
+- Calibration: Improve laser/spot intersect detection [DONE]
+- Scan: Allow a separate colour snapshot, to allow in-dark scanning [DONE]
+- Scan: Turntable scan [In progress]
 - Scan: Add pixel -> mm transform
-- Scan: Add camera lens center to laser pivot point offset
 - OS: Windows BLE support
+- Docs: Explain how to use the software
+- Scan: Add camera lens center to laser pivot point offset
