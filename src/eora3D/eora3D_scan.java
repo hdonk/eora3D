@@ -202,8 +202,12 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			{
 				l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
-			
 			imagePanel.m_image = l_image;
+			imagePanel.m_overlay = new BufferedImage(l_image.getWidth(), l_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			for(int y=0; y<l_image.getHeight(); ++y)
+			{
+				imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xfff0000);
+			}
 			imagePanel.repaint();
 		}
 		else
