@@ -174,10 +174,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 						System.out.println("Not connected to laser successfully");
 						laser_selector.setText("Not found");
 						m_laser = null;
-						return;
 					}
-			        System.out.print("Found laser: ");
-			        eora3D_bluetooth.printDevice(m_laser);
+					else
+					{
+						System.out.print("Found laser: ");
+						eora3D_bluetooth.printDevice(m_laser);
+					}
 					break;
 				}
 			}
@@ -187,9 +189,17 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				{
 					turntable_selector.setText(device.getName());
 					turntable = device;
-					m_e3D_bluetooth.setTurntable(turntable);
-			        System.out.print("Found turntable: ");
-			        eora3D_bluetooth.printDevice(turntable);
+					if(!m_e3D_bluetooth.setTurntable(turntable))
+					{
+						System.out.println("Not connected to turntable successfully");
+						turntable_selector.setText("Not found");
+						m_laser = null;
+					}
+					else
+					{
+						System.out.print("Found turntable: ");
+						eora3D_bluetooth.printDevice(turntable);
+					}
 					break;
 				}
 			}

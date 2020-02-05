@@ -517,7 +517,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		checkTextFieldIntRange(tfStepsize, 1, 180, l_default.sm_scan_step_size);
 		checkTextFieldIntRange(tfThreads, 1, 64, l_default.sm_threads);
 		checkTextFieldIntRange(tfTestframe, 0, 9000, l_default.sm_test_frame);
-		checkTextFieldIntRange(tfTurntableStepSize, 1, 180, l_default.sm_test_frame);
+		checkTextFieldIntRange(tfTurntableStepSize, 1, 6480, l_default.sm_test_frame);
 	}
 	
 	@Override
