@@ -536,12 +536,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				m_socket = null;
 			}
 		}
-    	System.out.println("tt end "+l_tt_end);
     	
 		for(int l_tt_point = 0; l_tt_point < l_tt_end; ++l_tt_point)
 		{
 			final int l_tt_point_f = l_tt_point;
-			System.out.println("tt"+l_tt_point);
 			if(chckbxTurntableScan.isSelected()) l_tt="tt"+l_tt_point+"_";
 			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
 			File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
