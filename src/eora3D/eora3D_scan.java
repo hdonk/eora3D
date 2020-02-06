@@ -154,6 +154,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			Eora3D_MainWindow.m_e3d_config.sm_scan_step_size = Integer.parseInt(tfScanStepSize.getText());
 
 			Runnable l_runnable = () -> {
+				deleteFiles(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString(), ".png"); 
 				captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle,
 						Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle,
 						Eora3D_MainWindow.m_e3d_config.sm_scan_step_size, "");
@@ -169,7 +170,8 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle = Integer.parseInt(tfScanEndAngle.getText());
 			Eora3D_MainWindow.m_e3d_config.sm_scan_step_size = Integer.parseInt(tfScanStepSize.getText());
 			Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size = Integer.parseInt(tfTurntableStepSize.getText());
-			
+			deleteFiles(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString(), ".png"); 
+
 				Runnable l_runnable = () -> {
 					for(int i=0; i<Eora3D_MainWindow.m_e3d_config.sm_turntable_steps_per_rotation/Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size; ++i)
 					{
@@ -206,8 +208,9 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			imagePanel.m_overlay = new BufferedImage(l_image.getWidth(), l_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
 			for(int y=0; y<l_image.getHeight(); ++y)
 			{
-				imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xfff0000);
+				imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xffff0000);
 			}
+			imagePanel.m_overlay.flush();
 			imagePanel.repaint();
 		}
 		else
@@ -293,12 +296,15 @@ public class eora3D_scan extends JDialog implements ActionListener {
 			JOptionPane.showMessageDialog(this, "Failed", "Creating scanned image store", JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		deleteFiles(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString(), ".png"); 
 		if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(a_start-1))
 		{
 			return;
 		}
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+		if(chckbxPauseToTurn.isSelected())
+		{
+			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights ON", JOptionPane.INFORMATION_MESSAGE);
+		}
 		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan"+a_file_insert+"_colourmap.png");
 		BufferedImage l_image = m_e3d.m_camera.getImage();
 		l_image.flush();
@@ -316,7 +322,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		
 		if(chckbxPauseToTurn.isSelected())
 		{
-			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights off", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights OFF", JOptionPane.INFORMATION_MESSAGE);
 		}
 		
 		l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan"+a_file_insert+"_base.png");

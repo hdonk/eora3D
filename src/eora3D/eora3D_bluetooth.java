@@ -448,10 +448,6 @@ public class eora3D_bluetooth {
         }
 
         System.out.println("Found the motor ipos characteristic");
-        motorIPOS.writeValue(l_pos);
-
-	
-	
 	
         m_tmotorNotification.unsetcomplete();
         motorIPOS.writeValue(l_pos);
