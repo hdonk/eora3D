@@ -1,6 +1,7 @@
 package eora3D;
 
 import static org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER;
+
 import static org.lwjgl.opengles.GLES20.GL_ELEMENT_ARRAY_BUFFER;
 import static org.lwjgl.opengles.GLES20.GL_FLOAT;
 import static org.lwjgl.opengles.GLES20.GL_NO_ERROR;
@@ -64,6 +65,7 @@ import static org.lwjgl.opengles.GLES20.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
 
+import eora3D.RGB3DPoint;
 
 class PointCloudObject implements Runnable {
 	EGLCapabilities m_egl;
@@ -83,14 +85,20 @@ class PointCloudObject implements Runnable {
 
 	int m_point_vbo;
 	int m_point_ibo;
-	ArrayList<RGB3DPoint> m_points;
-	boolean m_refresh = false;
+	ArrayList<ArrayList<RGB3DPoint>> m_points;
+	public boolean m_refresh = false;
 	private IntBuffer m_intbuffer;
 
 	public float m_Pointsize;
 	public float m_Scale;
 
-	private boolean m_finished = false;
+	boolean m_finished = false;
+	
+	ArrayList<Integer> m_vertexcount = null;
+	ArrayList<Integer> m_vertexoffset = null;
+	private float m_tt_angle;
+	private int m_Zrotoff;
+	private int m_Xrotoff;
 	
 	public PointCloudObject()
 	{
@@ -99,7 +107,9 @@ class PointCloudObject implements Runnable {
 	
 	public void clear()
 	{
-		m_points = new ArrayList<RGB3DPoint>();
+		m_vertexcount = new ArrayList<Integer>();
+		m_vertexoffset = new ArrayList<Integer>();
+		m_points = new ArrayList<ArrayList<RGB3DPoint>>();
 /*		m_point_vbo = -1;
 		m_point_ibo = -1;
         if(m_intbuffer != null)
@@ -118,14 +128,25 @@ class PointCloudObject implements Runnable {
     	if(m_intbuffer!=null) glDeleteBuffers(m_intbuffer);
 	}
 	
-	public void draw()
+	public void update()
 	{
 		synchronized(this)
 		{
 //			System.out.println("Refresh: "+m_refresh);
 			if(m_refresh)
 			{
-				int l_vertexcount = m_points.size();
+				int l_tot_vertex = 0;
+				for(int i=0; i < m_points.size(); ++i)
+				{
+					m_vertexcount.set(i, Integer.valueOf(m_points.get(i).size()) );
+					m_vertexoffset.set(i, Integer.valueOf(l_tot_vertex) );
+					l_tot_vertex += m_vertexcount.get(i);
+				}
+				if(l_tot_vertex==0)
+				{
+					m_refresh = false;
+					return;
+				}
 //				System.out.println("Points: "+l_vertexcount);
 		        // Number of bytes we need per vertex.
 		        int l_vertexsize = 3*4 + 4*4;
@@ -144,20 +165,22 @@ class PointCloudObject implements Runnable {
 		        m_point_ibo = m_intbuffer.get(1);
 		        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
 		        GLok("glBindBuffer");
-		        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
+		        glBufferData(GL_ARRAY_BUFFER, l_tot_vertex*l_vertexsize, GL_STATIC_DRAW);
 		        GLok("glBufferData");
 		        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
 		                GLES32.GL_WRITE_ONLY, null).asFloatBuffer();
 		        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
 		        GLok("glBindBuffer");
-		        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
+		        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_tot_vertex*4, GL_STATIC_DRAW);
 		        GLok("glBufferData");
 		        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
 		                GLES32.GL_WRITE_ONLY, null).asIntBuffer();
-	
-		        for(int i=0; i<m_points.size(); ++i)
+		        
+		        int l_count = 0;
+		        for(int al=0; al<m_points.size(); ++al)
+		        	for(int j=0; j<m_points.get(al).size(); ++j)
 		        {
-		        	RGB3DPoint l_pt = m_points.get(i);
+		        	RGB3DPoint l_pt = m_points.get(al).get(j);
 		        	float x = (float)l_pt.m_x;
 		        	float y = (float)l_pt.m_y;
 		        	float z = (float)l_pt.m_z;
@@ -171,18 +194,25 @@ class PointCloudObject implements Runnable {
 	                vertexBuffer.put((float) g);
 	                vertexBuffer.put((float) b);
 	                vertexBuffer.put((float) 1.0f);
-	                indexBuffer.put(i);
+	                indexBuffer.put(l_count++);
 		        }
 			            
 		        // Tell openGL that we filled the buffers.
 		        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
 		        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
 	
-		        m_refresh = false;
 		        //System.out.println("Refreshed points "+m_point_vbo+" "+m_point_ibo);
 		        System.gc();
 			}
-			if(m_points.size()==0) return;
+	        m_refresh = false;
+		}
+	}
+	
+	public void draw(int a_list)
+	{
+		synchronized(this)
+		{
+			if(m_vertexcount.get(a_list)==0) return;
 			//System.out.println("Displaying "+m_points.size()+" points "+m_point_vbo+" "+m_point_ibo);
 			glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
 			if(!GLok("Setting glBindBuffer)")) return;
@@ -202,26 +232,38 @@ class PointCloudObject implements Runnable {
 			if(!GLok("Setting glBindVertexArray")) return;
 			
 			
-			glDrawElements(GL_POINTS, m_points.size(), GL_UNSIGNED_INT, 0);
+			glDrawElements(GL_POINTS, m_vertexcount.get(a_list), GL_UNSIGNED_INT, m_vertexoffset.get(a_list)*4);
 			if(!GLok("glDrawElements")) return;
 		}
 	}
 
-	public void addPoint(int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
+	public void addPoint(int a_list, int a_x, int a_y, int a_z, int a_r, int a_g, int a_b)
 	{
 		synchronized(this)
 		{
 			RGB3DPoint l_point = new RGB3DPoint(a_x, a_y, a_z, a_r, a_g, a_b);
-			this.m_points.add(l_point);
-			m_refresh = true;
+			if(m_points.size()<=a_list)
+			{
+				m_points.add(new ArrayList<RGB3DPoint>());
+				m_vertexcount.add(Integer.valueOf(0));
+				m_vertexoffset.add(Integer.valueOf(0));
+			}
+			this.m_points.get(a_list).add(l_point);
+			//m_refresh = true;
 		}
 	}
-	public void addPoint(RGB3DPoint a_point)
+	public void addPoint(int a_list, RGB3DPoint a_point)
 	{
 		synchronized(this)
 		{
-			this.m_points.add(a_point);
-			m_refresh = true;
+			if(m_points.size()<=a_list)
+			{
+				m_points.add(new ArrayList<RGB3DPoint>());
+				m_vertexcount.add(Integer.valueOf(0));
+				m_vertexoffset.add(Integer.valueOf(0));
+			}
+			this.m_points.get(a_list).add(a_point);
+			//m_refresh = true;
 		}
 	}
 
@@ -232,42 +274,45 @@ class PointCloudObject implements Runnable {
 			System.out.println("Starting");
 			try
 			{
-				FileOutputStream fos = new FileOutputStream(a_file);
-		        Writer writer= new OutputStreamWriter(fos, "UTF8");
-		        writer.write("ply\n");
-		        writer.write("format ");
-		        writer.write("ascii");
-		        writer.write(" 1.0\n");
-		        writer.write("comment ");
-		        writer.write("Java E3D tool");
-		        writer.write('\n');
-	
-		        writer.write("element vertex "+m_points.size()+"\n");
-		        writer.write("property double x\n");
-		        writer.write("property double y\n");
-		        writer.write("property double z\n");
-		        writer.write("property uint8 red\n");
-	    		writer.write("property uint8 green\n");
-				writer.write("property uint8 blue\n");
-	
-		        writer.write("end_header\n");
-		        writer.flush();
+		        for(int j=0; j<m_points.size(); ++j)
+		        {
+					FileOutputStream fos = new FileOutputStream(a_file+"_"+j+".ply");
+			        Writer writer= new OutputStreamWriter(fos, "UTF8");
+			        writer.write("ply\n");
+			        writer.write("format ");
+			        writer.write("ascii");
+			        writer.write(" 1.0\n");
+			        writer.write("comment ");
+			        writer.write("Java E3D tool");
+			        writer.write('\n');
+		
+			        writer.write("element vertex "+m_points.get(j).size()+"\n");
+			        writer.write("property double x\n");
+			        writer.write("property double y\n");
+			        writer.write("property double z\n");
+			        writer.write("property uint8 red\n");
+		    		writer.write("property uint8 green\n");
+					writer.write("property uint8 blue\n");
+		
+			        writer.write("end_header\n");
+			        writer.flush();
 		        
 		/*	        DataOutputStream dos=new DataOutputStream(fos);
 			        dos.writeDouble(x);
 			        dos.writeDouble(y);
 			        dos.writeDouble(z);
 		        dos.close();*/
-		        System.out.println("Exporting "+m_points.size());
-		        for(int i=0; i<m_points.size(); ++i) {
-		        	writer.write(m_points.get(i).m_x+"\n");
-		        	writer.write(m_points.get(i).m_y+"\n");
-		        	writer.write(m_points.get(i).m_z+"\n");
-		        	writer.write(m_points.get(i).m_r+"\n");
-		        	writer.write(m_points.get(i).m_g+"\n");
-		        	writer.write(m_points.get(i).m_b+"\n");
+			        for(int i=0; i<m_points.get(j).size(); ++i)
+			        {
+			        	writer.write(m_points.get(j).get(i).m_x+"\n");
+			        	writer.write(m_points.get(j).get(i).m_y+"\n");
+			        	writer.write(m_points.get(j).get(i).m_z+"\n");
+			        	writer.write(m_points.get(j).get(i).m_r+"\n");
+			        	writer.write(m_points.get(j).get(i).m_g+"\n");
+			        	writer.write(m_points.get(j).get(i).m_b+"\n");
+			        }
+			        writer.close();
 		        }
-		        writer.close();
 			} catch(Exception e)
 			{
 				e.printStackTrace();
@@ -345,8 +390,8 @@ class PointCloudObject implements Runnable {
 			Path currentRelativePath = Paths.get("");
 			String s = currentRelativePath.toAbsolutePath().toString();
 			System.out.println("Current relative path is: " + s);
-			vertexShader = readFileAsString("src/eora3D/" + vsn);
-			fragmentShader = readFileAsString("src/eora3D/" + fsn);
+			vertexShader = readFileAsString("src/pointCloudViewer/" + vsn);
+			fragmentShader = readFileAsString("src/pointCloudViewer/" + fsn);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return -1;
@@ -492,14 +537,13 @@ class PointCloudObject implements Runnable {
 		viewM.identity();
 //		viewM
 //				.lookAt(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos+2000.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		viewM
-		.lookAt(0.0f, 10.0f, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		viewM.lookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 /*		viewM.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos);
 		viewM.rotate(q.rotateZ((float) Math.toRadians(m_pcd.z_rot)).normalize())
 				.rotate(q0.rotateY((float) Math.toRadians(m_pcd.y_rot)).normalize())
 				.rotate(q1.rotateX((float) Math.toRadians(m_pcd.x_rot)).normalize());*/
 		modelM.identity();
-		modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
+		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
 		//modelM.translate(0.0f, 0.0f, 0.0f);
 		// System.out.println("Z "+(-2f+rot/120.0f));
 
@@ -510,7 +554,9 @@ class PointCloudObject implements Runnable {
 		if (!GLok(""))
 			return;
 		modelView.identity();
-		modelView.mul(projectM).mul(viewM).mul(modelM);
+		modelView.mul(projectM);
+		modelView.mul(viewM);
+		modelView.mul(modelM);
 //		modelView = projectM.mul(viewM).mul(modelM);
 		glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
 		if (!GLok(""))
@@ -525,9 +571,6 @@ class PointCloudObject implements Runnable {
 		if (!GLok(""))
 			return;
 
-		modelM.identity();
-		modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
-		modelM.translate(0.0f, 0.0f, -2000.0f);
 //		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
 		//modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
@@ -559,14 +602,6 @@ class PointCloudObject implements Runnable {
 			if (!GLok("Setting glBindAttribLocation"))
 				return;
 		//}
-		modelViewLoc = glGetUniformLocation(l_program, "modelView");
-		if (!GLok("Calling glGetUniformLocation"))
-			return;
-		modelView.identity();
-		modelView.mul(projectM).mul(viewM).mul(modelM);
-		glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
-		if (!GLok("Setting glUniformMatrix4fv"))
-			return;
 		scaleLoc = glGetUniformLocation(l_program, "scale");
 		GLok("Retrieving scale uniform location");
 		//System.out.println("Scale to "+((float)sbScale.getValue()/10.0f));
@@ -585,7 +620,30 @@ class PointCloudObject implements Runnable {
 			Thread.dumpStack();
 			return;
 		}
-		draw();
+		for(int i=0; i<m_points.size(); ++i)
+		{
+//			private int m_tt_angle;
+//			private int m_Zrotoff;
+//			private int m_Xrotoff;
+
+			
+			
+			modelM.identity();
+			modelM.translate(m_Xrotoff, 0.0f, m_Zrotoff);
+			modelM.rotate(q.rotateY((float) Math.toRadians(m_rot + i*m_tt_angle)).normalize());
+			//modelM.translate(0.0f, 0.0f, -2000.0f);
+			modelViewLoc = glGetUniformLocation(l_program, "modelView");
+			if (!GLok("Calling glGetUniformLocation"))
+				return;
+			modelView.identity();
+			modelView.mul(projectM);
+			modelView.mul(viewM);
+			modelView.mul(modelM);
+			glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
+			if (!GLok("Setting glUniformMatrix4fv"))
+				return;
+			draw(i);
+		}
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
@@ -780,6 +838,7 @@ class PointCloudObject implements Runnable {
 				}
 			} else {*/
 				//System.out.println("Render");
+				update();
 				render(m_egl, m_gles);
 				//System.out.println("Rendered");
 
@@ -798,7 +857,13 @@ class PointCloudObject implements Runnable {
 	public void Close()
 	{
 		if(m_finished) return;
-		//glfwSetWindowShouldClose(m_window, true);
+		glfwSetWindowShouldClose(m_window, true);
+	}
+
+	public void setTT(float a_angle, int a_Zrotoff, int a_Xrotoff) {
+		m_tt_angle = a_angle;
+		m_Zrotoff = a_Zrotoff;
+		m_Xrotoff = a_Xrotoff;
 	}
 
 }
