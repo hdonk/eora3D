@@ -35,6 +35,7 @@ import javax.swing.JScrollBar;
 import javax.swing.border.BevelBorder;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 
 public class ModelGenerator extends JDialog implements ActionListener, WindowListener, AdjustmentListener {
 	Eora3D_MainWindow m_e3d;
@@ -56,6 +57,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private Socket m_socket = null;
 	
 	ArrayList<RGB3DPoint> m_points;
+	private JCheckBox chckbxTurntableScan;
+	private JTextField tfZrotoff;
+	private JTextField tfXrotoff;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -155,6 +159,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		JButton btnColourmap = new JButton("Colourmap");
 		btnColourmap.setBounds(22, 531, 100, 27);
 		panel.add(btnColourmap);
+		
+		chckbxTurntableScan = new JCheckBox("Turntable scan");
+		chckbxTurntableScan.setBounds(13, 361, 115, 18);
+		panel.add(chckbxTurntableScan);
 		btnColourmap.addActionListener(this);
 		
 		imagePanel = new PaintImage();
@@ -180,7 +188,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel_1.setBounds(628, 443, 150, 190);
+		panel_1.setBounds(628, 288, 150, 375);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -216,6 +224,30 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		sbPointsize.setVisibleAmount(4);
 		panel_1.add(sbPointsize);
 		sbPointsize.addAdjustmentListener(this);
+		
+		JLabel lblZRotOff = new JLabel("Z rot off");
+		lblZRotOff.setBounds(0, 165, 60, 15);
+		panel_1.add(lblZRotOff);
+		
+		tfZrotoff = new JTextField();
+		tfZrotoff.setText("0");
+		tfZrotoff.setBounds(0, 186, 122, 27);
+		panel_1.add(tfZrotoff);
+		tfZrotoff.setColumns(10);
+		tfZrotoff.addActionListener(this);
+		
+		JLabel lblXRotOff = new JLabel("X rot off");
+		lblXRotOff.setBounds(6, 225, 60, 15);
+		panel_1.add(lblXRotOff);
+		
+		tfXrotoff = new JTextField();
+		tfXrotoff.setText("0");
+		tfXrotoff.setBounds(6, 252, 122, 27);
+		panel_1.add(tfXrotoff);
+		tfXrotoff.setColumns(10);
+		tfXrotoff.addActionListener(this);
+		
+		
 		
 		JButton btnConfig = new JButton("Config");
 		btnConfig.setBounds(6, 688, 100, 27);
@@ -287,7 +319,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			if(m_detect_thread==null)
 			{
 				Runnable l_runnable = () -> {
-					Detect(-1);
+					Detect(-1, false);
 				};
 				m_detect_thread = new Thread(l_runnable);
 				m_detect_thread.start();
@@ -311,7 +343,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				
 				m_pco.save(l_file);
 			}*/
-			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export.ply");
+			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
 			m_pco.save(l_file);
 			
 		} else
@@ -323,13 +355,15 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		if(ae.getActionCommand() == "Test")
 		{
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
-			Detect(Eora3D_MainWindow.m_e3d_config.sm_test_frame);
+			Detect(Eora3D_MainWindow.m_e3d_config.sm_test_frame, true);
 		} else
 		if(ae.getActionCommand() == "Base")
 		{
 			File l_infile;
+			String l_tt = "";
+			if(chckbxTurntableScan.isSelected()) l_tt="tt0_";
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_base.png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
 			}
 			catch(Exception e)
 			{
@@ -355,8 +389,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		if(ae.getActionCommand() == "Colourmap")
 		{
 			File l_infile;
+			String l_tt = "";
+			if(chckbxTurntableScan.isSelected()) l_tt="tt0_";
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_colourmap.png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
 			}
 			catch(Exception e)
 			{
@@ -383,8 +419,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 			File l_infile;
+			String l_tt = "";
+			if(chckbxTurntableScan.isSelected()) l_tt="tt0_";
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
 			}
 			catch(Exception e)
 			{
@@ -437,7 +475,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		}
 	}
 
-	void Detect(int a_frame)
+	void Detect(int a_frame, boolean a_test)
 	{
 	    DataOutputStream l_dos = null;
 	    DataInputStream l_dis = null;
@@ -479,147 +517,175 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		putToConfig();
-		File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_base.png");
-		File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_colourmap.png");
-		int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
-		int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*45;
-		if(a_frame != -1)
+		int l_tt_end = 18*360;
+		String l_tt = "";
+		if(!chckbxTurntableScan.isSelected() || a_test)
 		{
-			l_start = a_frame;
-			l_end = a_frame+1;
+			l_tt_end = 1;
 		}
-		for (int l_pos = l_start;
-				l_pos < l_end;
-				++l_pos)
+		if(m_socket != null)
 		{
-			File l_infile;
-		    m_points = new ArrayList<RGB3DPoint>();
-			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_pos+".png");
-			}
-			catch(Exception e)
-			{
+	    	try {
+	    		l_dos.writeInt(4);
+	    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
+	    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
+	    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
+				l_dos.flush();
+			} catch (IOException e) {
 				e.printStackTrace();
-				m_detect_thread=null;
-				try {
-					m_socket.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
 				m_socket = null;
-				return;
 			}
-			if(!l_infile.exists()) continue;
-			System.out.println("Analysing "+l_infile.toString());
-			BufferedImage l_inimage, l_baseimage, l_colourmapimage;
-
-			try {
-				l_baseimage = ImageIO.read(l_basefile);
-				l_colourmapimage = ImageIO.read(l_colourmapfile);
-				l_inimage = ImageIO.read(l_infile);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-				m_detect_thread=null;
-				try {
-					m_socket.close();
-				} catch (IOException e2) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
-				m_socket = null;
-				return;
-			}
-			
-			imagePanel.m_image = l_baseimage;
-			imagePanel.m_overlay = analyzeImage(l_baseimage, l_inimage);
-			
-			Thread l_threads[] = new Thread[Eora3D_MainWindow.m_e3d_config.sm_threads];
-			for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
+		}
+    	System.out.println("tt end "+l_tt_end);
+    	
+		for(int l_tt_point = 0; l_tt_point < l_tt_end; ++l_tt_point)
+		{
+			final int l_tt_point_f = l_tt_point;
+			System.out.println("tt"+l_tt_point);
+			if(chckbxTurntableScan.isSelected()) l_tt="tt"+l_tt_point+"_";
+			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
+			File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
+			int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
+			int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*45;
+			if(a_frame != -1)
 			{
-				final int l_lambda_thread = l_thread;
-				final int l_lambda_pos = l_pos;
-				Runnable l_task = () -> { 
-					ArrayList<Point> l_points;
-					// TBC correctify this!
-					int l_range_start = (l_baseimage.getHeight()/8)*l_lambda_thread;
-					int l_range_end = (l_baseimage.getHeight()/8)*(l_lambda_thread+1);
-					l_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
-					for(Point l_found_point: l_points)
-					{
+				l_start = a_frame;
+				l_end = a_frame+1;
+			}
+			for (int l_pos = l_start;
+					l_pos < l_end;
+					++l_pos)
+			{
+				File l_infile;
+			    m_points = new ArrayList<RGB3DPoint>();
+				try {
+					l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+l_pos+".png");
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					m_detect_thread=null;
+					try {
+						m_socket.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					m_socket = null;
+					return;
+				}
+				if(!l_infile.exists()) continue;
+				System.out.println("Analysing "+l_infile.toString());
+				BufferedImage l_inimage, l_baseimage, l_colourmapimage;
+	
+				try {
+					l_baseimage = ImageIO.read(l_basefile);
+					l_colourmapimage = ImageIO.read(l_colourmapfile);
+					l_inimage = ImageIO.read(l_infile);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+					m_detect_thread=null;
+					try {
+						m_socket.close();
+					} catch (IOException e2) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					m_socket = null;
+					return;
+				}
+				
+				imagePanel.m_image = l_baseimage;
+				imagePanel.m_overlay = analyzeImage(l_baseimage, l_inimage);
+				
+				Thread l_threads[] = new Thread[Eora3D_MainWindow.m_e3d_config.sm_threads];
+				for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
+				{
+					final int l_lambda_thread = l_thread;
+					final int l_lambda_pos = l_pos;
+					Runnable l_task = () -> { 
+						ArrayList<Point> l_points;
+						// TBC correctify this!
+						int l_range_start = (l_baseimage.getHeight()/8)*l_lambda_thread;
+						int l_range_end = (l_baseimage.getHeight()/8)*(l_lambda_thread+1);
+						l_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
+						for(Point l_found_point: l_points)
 						{
-							RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_found_point.x, (l_baseimage.getHeight()-l_found_point.y)-1);
-							l_point.m_r = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
-							l_point.m_g = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
-							l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
-							l_point.m_x -= l_baseimage.getWidth();
-							l_point.m_x = -l_point.m_x;
-							//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
-							//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
-//							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
-							if(Math.abs(l_point.m_x)<=10000 &&
-									Math.abs(l_point.m_y)<=10000 &&
-									Math.abs(l_point.m_z)<=10000)
-								m_pco.addPoint(l_point);
-							synchronized(m_points)
 							{
-								m_points.add(l_point);
+								RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_found_point.x, (l_baseimage.getHeight()-l_found_point.y)-1);
+								l_point.m_r = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
+								l_point.m_g = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
+								l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
+								//l_point.m_x -= l_baseimage.getWidth();
+								l_point.m_x = -l_point.m_x;
+								//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
+								//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
+	//							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
+								if(Math.abs(l_point.m_x)<=10000 &&
+										Math.abs(l_point.m_y)<=10000 &&
+										Math.abs(l_point.m_z)<=10000)
+									m_pco.addPoint(l_tt_point_f, l_point);
+								synchronized(m_points)
+								{
+									m_points.add(l_point);
+								}
 							}
 						}
-					}
-				};
-				l_threads[l_thread] = new Thread(l_task);
-				l_threads[l_thread].start();
-			}
-			for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
-			{
-				try {
-					l_threads[l_thread].join();
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					};
+					l_threads[l_thread] = new Thread(l_task);
+					l_threads[l_thread].start();
 				}
-			}
-			imagePanel.repaint();
-			// In linux, send the point off to the possible viewer
-	        if(m_socket != null)
-	        {
-				System.out.println("Sending points "+m_points.size());
-	        	for(int i=0; i<m_points.size(); ++i)
-		        {
-		        	RGB3DPoint l_point = m_points.get(i);
-		        	try {
-		        		l_dos.writeInt(2);
-		        		l_point.write(l_dos);
-						l_dos.flush();
-					} catch (IOException e) {
+				for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
+				{
+					try {
+						l_threads[l_thread].join();
+					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-						m_socket = null;
 					}
-		        	//System.out.println("Sent "+i);
 				}
-    			try {
-    				l_dos.writeInt(3);
-    				l_dis.readInt();
-    			} catch (Exception e) {
-    				// TODO Auto-generated catch block
-    				e.printStackTrace();
-    				m_socket = null;
-	    		}
-				System.out.println("Sent points");
-	        }
-			if(m_stop_detection) {
-				try {
-					m_socket.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				imagePanel.repaint();
+				// In linux, send the point off to the possible viewer
+		        if(m_socket != null)
+		        {
+					System.out.println("Sending points "+m_points.size());
+		        	for(int i=0; i<m_points.size(); ++i)
+			        {
+			        	RGB3DPoint l_point = m_points.get(i);
+			        	try {
+			        		l_dos.writeInt(2);
+			        		l_dos.writeInt(l_tt_point);
+			        		l_point.write(l_dos);
+							l_dos.flush();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							m_socket = null;
+						}
+			        	//System.out.println("Sent "+i);
+					}
+	    			try {
+	    				l_dos.writeInt(3);
+	    				l_dis.readInt();
+	    			} catch (Exception e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    				m_socket = null;
+		    		}
+					System.out.println("Sent points");
+		        }
+				if(m_stop_detection) {
+					try {
+						m_socket.close();
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					return;
 				}
-				return;
+				System.out.println("Complete "+l_infile.toString());
+				//System.gc();
 			}
-			System.out.println("Complete "+l_infile.toString());
-			//System.gc();
 		}
 //		System.out.println("Found "+l_points+" points");
 		System.out.println("Min Z: "+m_e3d.m_cal_data.m_minz);

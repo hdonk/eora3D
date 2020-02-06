@@ -221,7 +221,7 @@ class CalibrationData
 		
 		//System.out.println("In: angle: "+a_angle_steps+" x: "+screen_x+" y: "+screen_y+" Out: x: "+x+"y: "+y+" z: "+z);
 		
-		RGB3DPoint l_point = new RGB3DPoint(capture_w-(int)x, (int)y, (int)z);
+		RGB3DPoint l_point = new RGB3DPoint(/*capture_w-*/(int)x, (int)y, (int)z);
 		return l_point;
 	}
 	
