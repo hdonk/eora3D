@@ -67,6 +67,10 @@ import static org.lwjgl.system.MemoryUtil.*;
 
 import eora3D.RGB3DPoint;
 
+import org.smurn.jply.util.RectBounds;
+import org.smurn.jply.*;
+import org.smurn.jply.util.*;
+
 class PointCloudObject implements Runnable {
 	EGLCapabilities m_egl;
 	GLESCapabilities m_gles;
@@ -865,5 +869,107 @@ class PointCloudObject implements Runnable {
 		m_Zrotoff = a_Zrotoff;
 		m_Xrotoff = a_Xrotoff;
 	}
+	
+	public boolean load()
+	{
+		PlyReaderFile l_prf;
+		File file = m_pcd.getFile(m_index);
+		try
+		{
+			l_prf = new PlyReaderFile(file.getAbsolutePath());
+		}
+		catch(Exception e)
+		{
+			System.err.println("Failed to load "+file.getAbsolutePath());
+			e.printStackTrace();
+			return false;
+		}
+		int pointcount = l_prf.getElementCount("vertex");
+		System.out.println("Vertex count "+pointcount);
 
+		{
+			int l_vertexcount = l_prf.getElementCount("vertex");
+	        // Number of bytes we need per vertex.
+	        int l_vertexsize = 3*4 + 4*4;
+
+	        // A bit of opengl magic to allocate a vertex-buffer-object to
+	        // store the vertices.
+	        IntBuffer l_intbuffer = BufferUtils.createIntBuffer(2);
+	        glGenBuffers(l_intbuffer);
+	        m_point_vbo = l_intbuffer.get(0);
+	        m_point_ibo = l_intbuffer.get(1);
+	        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
+	        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
+	        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
+	                GL_WRITE_ONLY, null).asFloatBuffer();
+	        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
+	        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
+	        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
+	                GL_WRITE_ONLY, null).asIntBuffer();
+
+	        try
+	        {
+		        ElementReader reader = l_prf.nextElementReader();
+		        RectBounds bounds = new RectBounds();
+		            // Just go though the vertices and store the coordinates in the buffer.
+		            Element vertex = reader.readElement();
+		            double l_max = 0.0f;
+		            while (vertex != null) {
+		                double x = vertex.getDouble("x");
+		                double y = vertex.getDouble("y");
+		                double z = vertex.getDouble("z");
+		                l_max = Math.max(l_max, Math.abs(x));
+		                l_max = Math.max(l_max, Math.abs(y));
+		                l_max = Math.max(l_max, Math.abs(z));
+		                double r = vertex.getDouble("red")/255.0f;
+		                double g = vertex.getDouble("green")/255.0f;
+		                double b = vertex.getDouble("blue")/255.0f;
+		                vertexBuffer.put((float) x);
+		                vertexBuffer.put((float) y);
+		                vertexBuffer.put((float) z);
+		                vertexBuffer.put((float) r);
+		                vertexBuffer.put((float) g);
+		                vertexBuffer.put((float) b);
+		                vertexBuffer.put((float) 1.0f);
+		                bounds.addPoint(x, y, z);
+		                vertex = reader.readElement();
+		                indexBuffer.put(m_vertexcount);
+		                ++m_vertexcount;
+		            }
+		            m_scalefactor = 1.0f/(float)l_max;
+		            System.out.println("Largest coord in file is "+l_max+" scale factor "+m_scalefactor);
+	        }
+	        catch(Exception e)
+	        {
+	        	System.err.println("Failed to read ply file");
+	        	e.printStackTrace();
+	    		try
+	    		{
+	    			l_prf.close();
+	    		}
+	    		catch(Exception ec)
+	    		{
+	    			System.err.println("Failed to close "+file.getAbsolutePath());
+	    			ec.printStackTrace();
+	    		}
+	        	return false;
+	        }
+		            
+	        // Tell openGL that we filled the buffers.
+	        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
+	        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
+
+		}
+		try
+		{
+			l_prf.close();
+		}
+		catch(Exception e)
+		{
+			System.err.println("Failed to close "+file.getAbsolutePath());
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 }

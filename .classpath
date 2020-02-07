@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="jPLY/|jPLY/bin/org/" kind="src" path="src"/>
 	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/slf4j-simple-2.0.0-alpha1.jar">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -40,5 +40,6 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="libs/lwjgl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-sources.jar"/>
 	<classpathentry kind="lib" path="libs/joml-1.9.14.jar" sourcepath="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/joml-1.9.14-sources.jar"/>
+	<classpathentry kind="lib" path="libs"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
