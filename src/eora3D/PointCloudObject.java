@@ -308,11 +308,11 @@ class PointCloudObject implements Runnable {
 		        dos.close();*/
 			        for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
-			        	writer.write(m_points.get(j).get(i).m_x+"\n");
-			        	writer.write(m_points.get(j).get(i).m_y+"\n");
-			        	writer.write(m_points.get(j).get(i).m_z+"\n");
-			        	writer.write(m_points.get(j).get(i).m_r+"\n");
-			        	writer.write(m_points.get(j).get(i).m_g+"\n");
+			        	writer.write(m_points.get(j).get(i).m_x+" ");
+			        	writer.write(m_points.get(j).get(i).m_y+" ");
+			        	writer.write(m_points.get(j).get(i).m_z+" ");
+			        	writer.write(m_points.get(j).get(i).m_r+" ");
+			        	writer.write(m_points.get(j).get(i).m_g+" ");
 			        	writer.write(m_points.get(j).get(i).m_b+"\n");
 			        }
 			        writer.close();
@@ -861,7 +861,7 @@ class PointCloudObject implements Runnable {
 	public void Close()
 	{
 		if(m_finished) return;
-		glfwSetWindowShouldClose(m_window, true);
+		//glfwSetWindowShouldClose(m_window, true);
 	}
 
 	public void setTT(float a_angle, int a_Zrotoff, int a_Xrotoff) {
@@ -870,78 +870,53 @@ class PointCloudObject implements Runnable {
 		m_Xrotoff = a_Xrotoff;
 	}
 	
-	public boolean load()
+	public void load(File a_file, int a_max_layer) {
+		synchronized(this) {
+			clear();
+	        for(int j=0; j<a_max_layer; ++j)
+	        {
+	        	if(!load(j, new File(a_file+"_"+j+".ply"))) return;
+	        }
+		}
+	}
+
+	boolean load(int a_layer, File a_file)
 	{
 		PlyReaderFile l_prf;
-		File file = m_pcd.getFile(m_index);
 		try
 		{
-			l_prf = new PlyReaderFile(file.getAbsolutePath());
+			l_prf = new PlyReaderFile(a_file.getAbsolutePath());
 		}
 		catch(Exception e)
 		{
-			System.err.println("Failed to load "+file.getAbsolutePath());
-			e.printStackTrace();
+			System.err.println("Failed to load "+a_file.getAbsolutePath());
 			return false;
 		}
 		int pointcount = l_prf.getElementCount("vertex");
-		System.out.println("Vertex count "+pointcount);
+//		System.out.println("Vertex count "+pointcount);
 
 		{
 			int l_vertexcount = l_prf.getElementCount("vertex");
-	        // Number of bytes we need per vertex.
-	        int l_vertexsize = 3*4 + 4*4;
-
-	        // A bit of opengl magic to allocate a vertex-buffer-object to
-	        // store the vertices.
-	        IntBuffer l_intbuffer = BufferUtils.createIntBuffer(2);
-	        glGenBuffers(l_intbuffer);
-	        m_point_vbo = l_intbuffer.get(0);
-	        m_point_ibo = l_intbuffer.get(1);
-	        glBindBuffer(GL_ARRAY_BUFFER, m_point_vbo);
-	        glBufferData(GL_ARRAY_BUFFER, l_vertexcount*l_vertexsize, GL_STATIC_DRAW);
-	        FloatBuffer vertexBuffer = OESMapbuffer.glMapBufferOES(GL_ARRAY_BUFFER,
-	                GL_WRITE_ONLY, null).asFloatBuffer();
-	        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_point_ibo);
-	        glBufferData(GL_ELEMENT_ARRAY_BUFFER, l_vertexcount*4, GL_STATIC_DRAW);
-	        IntBuffer indexBuffer = OESMapbuffer.glMapBufferOES(GL_ELEMENT_ARRAY_BUFFER,
-	                GL_WRITE_ONLY, null).asIntBuffer();
 
 	        try
 	        {
 		        ElementReader reader = l_prf.nextElementReader();
-		        RectBounds bounds = new RectBounds();
-		            // Just go though the vertices and store the coordinates in the buffer.
+		        for(int l_count = 0; l_count < l_vertexcount; ++l_count)
+		        {
 		            Element vertex = reader.readElement();
-		            double l_max = 0.0f;
-		            while (vertex != null) {
-		                double x = vertex.getDouble("x");
-		                double y = vertex.getDouble("y");
-		                double z = vertex.getDouble("z");
-		                l_max = Math.max(l_max, Math.abs(x));
-		                l_max = Math.max(l_max, Math.abs(y));
-		                l_max = Math.max(l_max, Math.abs(z));
-		                double r = vertex.getDouble("red")/255.0f;
-		                double g = vertex.getDouble("green")/255.0f;
-		                double b = vertex.getDouble("blue")/255.0f;
-		                vertexBuffer.put((float) x);
-		                vertexBuffer.put((float) y);
-		                vertexBuffer.put((float) z);
-		                vertexBuffer.put((float) r);
-		                vertexBuffer.put((float) g);
-		                vertexBuffer.put((float) b);
-		                vertexBuffer.put((float) 1.0f);
-		                bounds.addPoint(x, y, z);
-		                vertex = reader.readElement();
-		                indexBuffer.put(m_vertexcount);
-		                ++m_vertexcount;
-		            }
-		            m_scalefactor = 1.0f/(float)l_max;
-		            System.out.println("Largest coord in file is "+l_max+" scale factor "+m_scalefactor);
+	                double x = vertex.getDouble("x");
+	                double y = vertex.getDouble("y");
+	                double z = vertex.getDouble("z");
+	                double r = vertex.getInt("red");
+	                double g = vertex.getInt("green");
+	                double b = vertex.getInt("blue");
+	                RGB3DPoint l_pt = new RGB3DPoint((int)x,(int) y, (int)z, (int)r, (int)g, (int)b);
+	                this.addPoint(a_layer, l_pt);
+		        }
 	        }
 	        catch(Exception e)
 	        {
-	        	System.err.println("Failed to read ply file");
+	        	System.err.println("Failed to read ply file "+a_file.getAbsolutePath());
 	        	e.printStackTrace();
 	    		try
 	    		{
@@ -949,16 +924,12 @@ class PointCloudObject implements Runnable {
 	    		}
 	    		catch(Exception ec)
 	    		{
-	    			System.err.println("Failed to close "+file.getAbsolutePath());
+	    			System.err.println("Failed to close "+a_file.getAbsolutePath());
 	    			ec.printStackTrace();
 	    		}
 	        	return false;
 	        }
 		            
-	        // Tell openGL that we filled the buffers.
-	        OESMapbuffer.glUnmapBufferOES(GL_ARRAY_BUFFER);
-	        OESMapbuffer.glUnmapBufferOES(GL_ELEMENT_ARRAY_BUFFER);
-
 		}
 		try
 		{
@@ -966,7 +937,7 @@ class PointCloudObject implements Runnable {
 		}
 		catch(Exception e)
 		{
-			System.err.println("Failed to close "+file.getAbsolutePath());
+			System.err.println("Failed to close "+a_file.getAbsolutePath());
 			e.printStackTrace();
 			return false;
 		}

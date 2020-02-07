@@ -60,6 +60,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JCheckBox chckbxTurntableScan;
 	private JTextField tfZrotoff;
 	private JTextField tfXrotoff;
+	private JTextField tfTTrot;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -247,12 +248,28 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfXrotoff.setColumns(10);
 		tfXrotoff.addActionListener(this);
 		
+		JLabel lblTtRot = new JLabel("tt rot");
+		lblTtRot.setBounds(6, 292, 60, 15);
+		panel_1.add(lblTtRot);
+		
+		tfTTrot = new JTextField();
+		tfTTrot.setText("0");
+		tfTTrot.setBounds(6, 319, 122, 27);
+		panel_1.add(tfTTrot);
+		tfTTrot.setColumns(10);
+		tfTTrot.addActionListener(this);
+		
 		
 		
 		JButton btnConfig = new JButton("Config");
 		btnConfig.setBounds(6, 688, 100, 27);
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
+		
+		JButton btnImport = new JButton("Import");
+		btnImport.setBounds(642, 164, 100, 27);
+		getContentPane().add(btnImport);
+		btnImport.addActionListener(this);
 		
 		m_pco = new PointCloudObject();
 		m_pco.m_Pointsize = sbPointsize.getValue();
@@ -346,6 +363,67 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
 			m_pco.save(l_file);
 			
+		} else
+		if(ae.getActionCommand() == "Import")
+		{
+			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
+			m_pco.load(l_file, 18*360);
+
+			DataOutputStream l_dos = null;
+		    DataInputStream l_dis = null;
+			try {
+				m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+				m_socket = null;
+			}
+			if(m_socket!=null)
+			{
+				try {
+					l_dos = new DataOutputStream(m_socket.getOutputStream());
+					l_dis = new DataInputStream(m_socket.getInputStream());
+					l_dos.flush();
+					l_dos.writeInt(0);
+					l_dos.writeInt(1);
+				    l_dos.writeFloat(m_pco.m_Scale);
+				    l_dos.writeFloat(m_pco.m_Pointsize);
+				    for(int j=0; j<m_pco.m_points.size(); ++j)
+				    {
+			        	for(int i=0; i<m_pco.m_points.get(j).size(); ++i)
+				        {
+				        	try {
+				        		l_dos.writeInt(2);
+				        		l_dos.writeInt(j);
+				        		m_pco.m_points.get(j).get(i).write(l_dos);
+								l_dos.flush();
+							} catch (IOException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+								m_socket = null;
+							}
+						}
+		    			System.out.println("Sent layer "+j);
+				    }
+	    			try {
+	    				l_dos.writeInt(3);
+	    				l_dis.readInt();
+	    			} catch (Exception e) {
+	    				// TODO Auto-generated catch block
+	    				e.printStackTrace();
+	    				m_socket = null;
+		    		}
+					System.out.println("Sent points");
+					l_dos.close();
+					l_dis.close();
+					m_socket.close();
+					m_socket = null;
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					m_socket = null;
+				}
+			}
 		} else
 		if(ae.getActionCommand() == "Finish")
 		{
@@ -472,6 +550,75 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(m_e3d);
 			l_editor.setVisible(true);
 			setFromConfig();
+		} else
+		if(ae.getSource().equals(tfXrotoff) || ae.getSource().equals(tfZrotoff) || ae.getSource().equals(tfTTrot))
+		{
+			System.out.println("TT update");
+			if(m_detect_thread == null)
+			{
+				System.out.println("TT update 2");
+			    DataOutputStream l_dos = null;
+				System.out.println("TT update 3");
+
+				try {
+					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+					System.out.println("TT update 4");
+
+				} catch (Exception e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+					m_socket = null;
+				}
+				if(m_socket!=null)
+				{
+					try {
+						l_dos = new DataOutputStream(m_socket.getOutputStream());
+						System.out.println("TT update 5");
+						l_dos.flush();
+						System.out.println("TT update 6");
+			    		l_dos.writeInt(4);
+//			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
+			    		l_dos.writeFloat((float)Integer.parseInt(tfTTrot.getText()));
+			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
+			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
+			    		System.out.println("TT update 7");
+					    l_dos.flush();
+					    System.out.println("TT update 8");
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+						try
+						{
+							System.out.println("TT update 9");
+							l_dos.close();
+							System.out.println("TT update 10");
+							m_socket.close();
+						}
+						catch(Exception z)
+						{
+						
+						}
+						m_socket = null;
+					}
+				}
+				if(m_socket!=null)
+				{
+					try
+					{
+						System.out.println("TT update 9");
+						l_dos.close();
+						System.out.println("TT update 10");
+						m_socket.close();
+						m_socket = null;
+					} catch(Exception e2)
+					{
+						e2.printStackTrace();
+						m_socket = null;
+						return;
+					}
+				}
+				System.out.println("Done");
+			}
 		}
 	}
 
@@ -692,6 +839,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		if(m_socket != null)
 		{
 			try {
+				l_dos.close();
+				l_dis.close();
 				m_socket.close();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
