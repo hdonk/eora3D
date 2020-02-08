@@ -231,7 +231,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblZRotOff);
 		
 		tfZrotoff = new JTextField();
-		tfZrotoff.setText("0");
+		tfZrotoff.setText("-1400");
 		tfZrotoff.setBounds(0, 186, 122, 27);
 		panel_1.add(tfZrotoff);
 		tfZrotoff.setColumns(10);
@@ -253,7 +253,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblTtRot);
 		
 		tfTTrot = new JTextField();
-		tfTTrot.setText("0");
+		tfTTrot.setText("0.0");
 		tfTTrot.setBounds(6, 319, 122, 27);
 		panel_1.add(tfTTrot);
 		tfTTrot.setColumns(10);
@@ -578,7 +578,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						System.out.println("TT update 6");
 			    		l_dos.writeInt(4);
 //			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
-			    		l_dos.writeFloat((float)Integer.parseInt(tfTTrot.getText()));
+			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
 			    		System.out.println("TT update 7");

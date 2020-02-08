@@ -21,7 +21,7 @@ class CalibrationData
 	public int v_offset_2 = 0;
 	
 	private double cal_pos_1_per = 0.90f;
-	private double cal_pos_2_per = 0.70f;
+//	private double cal_pos_2_per = 0.70f;
 	
 	// Calculation outputs
 	public Rectangle pos_1_tl;
@@ -55,6 +55,8 @@ class CalibrationData
 	public double focal_length_pix_y = 0.0f;
 	
 	public int m_laser_to_camera_sep_pix = 0;
+	
+	public double m_pix_to_mm = 1.0f;
 	
 	void calculate()
 	{
@@ -181,14 +183,15 @@ class CalibrationData
 		x = (((double)spot_sep_w)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
 		y = x*Math.tan(Math.toRadians(beta));
 		double d_mm = y;
-		double h_pix = pos_1_board.width;
+		double h_pix = ((double)pos_1_board.width)*(spot_sep_w/board_w);
 		double H_mm = spot_sep_w;
 		focal_length_pix_x = (d_mm*h_pix)/H_mm;
 
 		d_mm = y;
-		h_pix = pos_1_board.height;
+		h_pix = pos_1_board.height*(spot_sep_h/board_h);
 		H_mm = spot_sep_h;
 		focal_length_pix_y = (d_mm*h_pix)/H_mm;
+//		focal_length_pix_y = focal_length_pix_x;
 		//focal_length_pix *= 1.1f;
 		System.out.println("X focal length in pixels: "+focal_length_pix_x);
 		System.out.println("Y focal length in pixels: "+focal_length_pix_y);
@@ -197,6 +200,15 @@ class CalibrationData
 		m_laser_to_camera_sep_pix = cal_square_bl.x + pos_1_board.width/2;
 		//m_laser_to_camera_sep_pix *= 1.2f;
 		System.out.println("Camera laser sep pixels: "+m_laser_to_camera_sep_pix);
+		
+		float board_left = capture_w*0.1f;
+		float board_right = capture_w*0.9f;
+		RGB3DPoint bl = getPointOffset(Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1, (int)board_left, 0);
+		RGB3DPoint br = getPointOffset(Eora3D_MainWindow.m_e3d_config.sm_calibration_tr_motorpos_1, (int)board_right, 0);
+		
+		int board_width_pixels = br.m_x - bl.m_x;
+		
+		m_pix_to_mm = spot_sep_w/board_width_pixels;
 	}
 	
 	RGB3DPoint getPointOffset(int a_angle_steps, int screen_x, int screen_y)

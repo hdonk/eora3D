@@ -108,7 +108,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		getContentPane().add(btnStartTurntableScan);
 		btnStartTurntableScan.addActionListener(this);
 		
-		JLabel lblTurntableStepSize = new JLabel("Turntable step size (deg)");
+		JLabel lblTurntableStepSize = new JLabel("Turntable stepsize (18/deg)");
 		lblTurntableStepSize.setBounds(16, 345, 194, 15);
 		getContentPane().add(lblTurntableStepSize);
 		
