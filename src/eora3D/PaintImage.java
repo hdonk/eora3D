@@ -24,21 +24,23 @@ class PaintImage extends JPanel
   {
 //	System.out.println("PI "+m_image);
 	  float l_scale = 1.0f;
-    if(m_image == null) return;
+	BufferedImage l_image = m_image;
+    if(l_image == null) l_image = m_overlay;
+    if(l_image == null) return;
 	g.clearRect(0,  0,  getWidth(), getHeight());
 	
-	l_scale = (float)(getWidth())/(float)(m_image.getWidth());
+	l_scale = (float)(getWidth())/(float)(l_image.getWidth());
 	//System.out.println("1. x scale "+x_scale+", y scale "+y_scale);
 	
-	if(l_scale*(float)m_image.getHeight()>getHeight())
+	if(l_scale*(float)l_image.getHeight()>getHeight())
 	{
-		l_scale = ((float)(getHeight()))/(((float)m_image.getHeight()));
+		l_scale = ((float)(getHeight()))/(((float)l_image.getHeight()));
 		//System.out.println("2. x scale "+x_scale+", y scale "+y_scale);
 	}
 	
 	
-    g.drawImage(m_image, 0, 0, (int)(m_image.getWidth()*l_scale), (int)(m_image.getHeight()*l_scale), null);
-    if(m_overlay != null) g.drawImage(m_overlay, 0, 0, (int)(m_image.getWidth()*l_scale), (int)(m_image.getHeight()*l_scale), null);
+    g.drawImage(l_image, 0, 0, (int)(l_image.getWidth()*l_scale), (int)(l_image.getHeight()*l_scale), null);
+    if(m_overlay != null) g.drawImage(m_overlay, 0, 0, (int)(l_image.getWidth()*l_scale), (int)(l_image.getHeight()*l_scale), null);
     
     g.setColor(Color.blue);
     if(pos==1)
