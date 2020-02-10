@@ -740,7 +740,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					return;
 				}
 				
-				imagePanel.m_image = l_baseimage;
+				if(!a_test) imagePanel.m_image = l_baseimage;
+				else imagePanel.m_image = null;
 				imagePanel.m_overlay = analyzeImage(l_baseimage, l_inimage);
 				
 				Thread l_threads[] = new Thread[Eora3D_MainWindow.m_e3d_config.sm_threads];
@@ -858,8 +859,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 
 		for(y = 0; y< a_in.getHeight(); ++y)
 		{
-			boolean l_found = false;
-			for(x = a_in.getWidth()-1; x>=0; --x)
+			boolean l_in_laser = false;
+			int l_start_of_high_point = -1;
+			int l_end_of_high_point = -1;
+			int mr=0, mg=0, mb=0;
+			int l_laser_point_count = 0;
+			for(x = 0; x<a_in.getWidth(); ++x)
 			{
 				int argb = a_in.getRGB(x, y);
 				int r = (argb & 0xff0000) >> 16;
@@ -890,45 +895,104 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 //        		g = 255-g;
 //        		b = 255-b;
 
+        		boolean l_detected = false;
         		int l_argb_out = 0;
         		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_argb_out = 0xff00ff00;
-	        		else l_found = false;
-	        		//else argb = 0xff000000;
-        		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_detected = true;
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_argb_out = 0xff00ff00;
-	        		else l_found = false;
-	        		//else argb = 0xff000000;
-        		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_detected = true;
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
         		{
         			float pc = ((float)rd/255.0f + (float)gd/255.0f + (float)bd/255.0f)*100.0f;
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_argb_out = 0xff00ff00;
-	        		else l_found = false;
-	        		//else argb = 0xff000000;
-        		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_detected = true;
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
         		{
         			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_argb_out = 0xff00ff00;
-	        		else l_found = false;
-	        		//else argb = 0xff000000;
-        		}
-//        		argb = (r << 16) | (g << 8) | (b);
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_detected = true;
+	        	}
 
-//				argb = 0x00ffffff - argb;				
-//				argb |= 0xff000000;
-				if(l_argb_out == 0xff00ff00) l_found = true;
-        		if(l_found)
+        		if(l_detected)
+    			{
+        			l_argb_out = 0xff00ff00; // Green spot if threshold passed
+        			++l_laser_point_count;
+    			}
+        		if(!l_in_laser)
         		{
-        			a_out.setRGB(x, y, l_argb_out);
+        			if(l_detected)
+        			{
+	        			l_in_laser = true;
+	        			l_start_of_high_point = x;
+	    				l_end_of_high_point = x;
+	        			mr = rd;
+	        			mg = gd;
+	        			mb = bd;
+        			}
         		}
+        		else if(l_in_laser)
+        		{
+        			if(!l_detected)
+        			{
+        				// Got to end of laser detection area
+        				l_end_of_high_point = x-1;
+        				if(l_start_of_high_point!=-1 && l_laser_point_count>=4)
+        				{
+        					for(x=l_start_of_high_point; x<=l_end_of_high_point; ++x)
+        					{
+        						a_out.setRGB(x, y, 0xff0000ff);
+        					}
+        					int l_mid_hight_point = (l_start_of_high_point+l_end_of_high_point)/2;
+        					a_out.setRGB(l_mid_hight_point, y, 0xffff0000);
+        				}
+        				l_in_laser = false;
+        				l_start_of_high_point = -1;
+        				l_end_of_high_point = -1;
+        				
+        				l_laser_point_count = 0;
+        				
+        			} else
+        			if(rd>mr || gd>mg || bd>mb)
+        			{
+            			l_start_of_high_point = x;
+        				l_end_of_high_point = x;
+            			mr = rd;
+            			mg = gd;
+            			mb = bd;
+        			}
+        			else if(rd<mr || gd<mg || bd<mb)
+        			{
+        				l_end_of_high_point = x;
+        			}
+        		}
+        		if(l_argb_out != 0) a_out.setRGB(x, y, l_argb_out);
 			}
+			if(l_start_of_high_point!=-1 && l_laser_point_count>=4)
+			{
+				//System.out.println("Y: "+y+" S: "+l_start_of_high_point+" E: "+l_end_of_high_point);
+				if(l_end_of_high_point == -1) l_end_of_high_point = a_in.getWidth()-1;
+				for(x=l_start_of_high_point; x<=l_end_of_high_point; ++x)
+				{
+					a_out.setRGB(x, y, 0xff0000ff);
+				}
+				int l_mid_hight_point = (l_start_of_high_point+l_end_of_high_point)/2;
+				a_out.setRGB(l_mid_hight_point, y, 0xffff0000);
+			}
+			l_in_laser = false;
+			l_start_of_high_point = -1;
+			l_end_of_high_point = -1;
+			l_laser_point_count = 0;
 		}
+		/*try {
+			ImageIO.write(a_out, "png", new File("/home/nickh/test.png"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}*/
+
 		return a_out;
 	}
 	
