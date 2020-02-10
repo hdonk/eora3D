@@ -1,6 +1,7 @@
 package eora3D;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
@@ -14,10 +15,12 @@ class PaintImage extends JPanel
   public CalibrationData m_cal_data = null;
  
   public int pos = 1;
+  boolean m_scale_to_fit = false;
   
-  public PaintImage ()
+  public PaintImage (boolean a_scale_to_fit)
   {
-    super();
+	  super();
+	  m_scale_to_fit = a_scale_to_fit;
   }
 
   public void paintComponent(Graphics g)
@@ -29,16 +32,24 @@ class PaintImage extends JPanel
     if(l_image == null) return;
 	g.clearRect(0,  0,  getWidth(), getHeight());
 	
-	l_scale = (float)(getWidth())/(float)(l_image.getWidth());
-	//System.out.println("1. x scale "+x_scale+", y scale "+y_scale);
-	
-	if(l_scale*(float)l_image.getHeight()>getHeight())
+	if(m_scale_to_fit)
 	{
-		l_scale = ((float)(getHeight()))/(((float)l_image.getHeight()));
-		//System.out.println("2. x scale "+x_scale+", y scale "+y_scale);
+		l_scale = (float)(getWidth())/(float)(l_image.getWidth());
+		//System.out.println("1. x scale "+x_scale+", y scale "+y_scale);
+		
+		if(l_scale*(float)l_image.getHeight()>getHeight())
+		{
+			l_scale = ((float)(getHeight()))/(((float)l_image.getHeight()));
+			//System.out.println("2. x scale "+x_scale+", y scale "+y_scale);
+		}
 	}
-	
-	
+	else
+	{
+		l_scale = 1.0f;
+		setPreferredSize(new Dimension(l_image.getWidth(), l_image.getHeight()));
+		revalidate();
+	}
+
     g.drawImage(l_image, 0, 0, (int)(l_image.getWidth()*l_scale), (int)(l_image.getHeight()*l_scale), null);
     if(m_overlay != null) g.drawImage(m_overlay, 0, 0, (int)(l_image.getWidth()*l_scale), (int)(l_image.getHeight()*l_scale), null);
     

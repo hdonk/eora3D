@@ -237,6 +237,30 @@ class CalibrationData
 		return l_point;
 	}
 	
+	boolean checkThreshold(int r, int g, int b)
+	{
+		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
+		{
+    		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
+    				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
+    				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return true;
+		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
+		{
+    		if(r>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
+    				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
+    				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return true;
+		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
+		{
+			float pc = ((float)r/255.0f + (float)g/255.0f + (float)b/255.0f)*100.0f;
+    		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return true;
+		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
+		{
+			float pc = (((float)r/255.0f)*40.0f + ((float)g/255.0f)*20.0f + ((float)b/255.0f)*40.0f);
+    		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return true;
+		}
+		return false;
+	}
+	
 	int findLaserPoint(BufferedImage a_base, BufferedImage a_in, int a_y, int a_x_min, int a_x_max)
 	{
 		for(int x = a_x_max-1; x>=a_x_min; --x)
@@ -255,25 +279,7 @@ class CalibrationData
     		int gd = Math.abs(g_base-g);
     		int bd = Math.abs(b_base-b);
 
-    		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
-    		{
-        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
-        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
-        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
-    		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
-    		{
-        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
-        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) return x;
-    		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
-    		{
-    			float pc = ((float)rd/255.0f + (float)gd/255.0f + (float)bd/255.0f)*100.0f;
-        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return x;
-    		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
-    		{
-    			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
-        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return x;
-    		}
+    		if(checkThreshold(rd, gd, bd)) return x;
 		}
 		return -1;
 	}

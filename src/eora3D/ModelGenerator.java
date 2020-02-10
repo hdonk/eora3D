@@ -32,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.JInternalFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
 import javax.swing.border.BevelBorder;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -60,7 +61,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JCheckBox chckbxTurntableScan;
 	private JTextField tfZrotoff;
 	private JTextField tfXrotoff;
-	private JTextField tfTTrot;
+//	private JTextField tfTTrot;
+	private JScrollPane imageScrollPane;
+	private JTextField tfMinpointsperlaser;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -160,17 +163,32 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		JButton btnColourmap = new JButton("Colourmap");
 		btnColourmap.setBounds(22, 531, 100, 27);
 		panel.add(btnColourmap);
-		
-		chckbxTurntableScan = new JCheckBox("Turntable scan");
-		chckbxTurntableScan.setBounds(13, 361, 115, 18);
-		panel.add(chckbxTurntableScan);
 		btnColourmap.addActionListener(this);
 		
-		imagePanel = new PaintImage();
+		chckbxTurntableScan = new JCheckBox("Turntable scan");
+		chckbxTurntableScan.setBounds(6, 410, 115, 18);
+		panel.add(chckbxTurntableScan);
+		
+		JLabel lblMinLaserBand = new JLabel("Min laser band pts");
+		lblMinLaserBand.setBounds(6, 351, 129, 15);
+		panel.add(lblMinLaserBand);
+		
+		tfMinpointsperlaser = new JTextField();
+		tfMinpointsperlaser.setText("3");
+		tfMinpointsperlaser.setBounds(6, 371, 122, 27);
+		panel.add(tfMinpointsperlaser);
+		tfMinpointsperlaser.setColumns(10);
+		tfMinpointsperlaser.addActionListener(this);
+
+		
+		imagePanel = new PaintImage(false);
 		imagePanel.setBounds(156, 0, 460, 633);
-		getContentPane().add(imagePanel);
 		imagePanel.m_cal_data = m_e3d.m_cal_data;
 		imagePanel.pos = 0;
+		
+		imageScrollPane = new JScrollPane(imagePanel);
+		imageScrollPane.setBounds(156, 0, 460, 633);
+		getContentPane().add(imageScrollPane);
 		
 		JButton btnGenerate = new JButton("Generate");
 		btnGenerate.setBounds(642, 6, 100, 27);
@@ -231,7 +249,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblZRotOff);
 		
 		tfZrotoff = new JTextField();
-		tfZrotoff.setText("-1400");
+		tfZrotoff.setText("1400");
 		tfZrotoff.setBounds(0, 186, 122, 27);
 		panel_1.add(tfZrotoff);
 		tfZrotoff.setColumns(10);
@@ -248,7 +266,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfXrotoff.setColumns(10);
 		tfXrotoff.addActionListener(this);
 		
-		JLabel lblTtRot = new JLabel("tt rot");
+/*		JLabel lblTtRot = new JLabel("tt rot");
 		lblTtRot.setBounds(6, 292, 60, 15);
 		panel_1.add(lblTtRot);
 		
@@ -257,7 +275,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfTTrot.setBounds(6, 319, 122, 27);
 		panel_1.add(tfTTrot);
 		tfTTrot.setColumns(10);
-		tfTTrot.addActionListener(this);
+		tfTTrot.addActionListener(this);*/
 		
 		
 		
@@ -316,6 +334,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			cbDetectionmethod.setSelectedIndex(3);
 		}
 		tfTestframe.setText(""+Eora3D_MainWindow.m_e3d_config.sm_test_frame);
+		tfMinpointsperlaser.setText(""+Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser);
 	}
 	
 	void putToConfig()
@@ -326,6 +345,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(tfBluethreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagechange.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)cbDetectionmethod.getSelectedItem();
+		Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser = Integer.parseInt(tfMinpointsperlaser.getText());
 	}
 	
 	@Override
@@ -551,7 +571,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			l_editor.setVisible(true);
 			setFromConfig();
 		} else
-		if(ae.getSource().equals(tfXrotoff) || ae.getSource().equals(tfZrotoff) || ae.getSource().equals(tfTTrot))
+		if(ae.getSource().equals(tfXrotoff) || ae.getSource().equals(tfZrotoff)/* || ae.getSource().equals(tfTTrot)*/)
 		{
 			System.out.println("TT update");
 			if(m_detect_thread == null)
@@ -577,8 +597,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						l_dos.flush();
 						System.out.println("TT update 6");
 			    		l_dos.writeInt(4);
-//			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
-			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
+			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
+//			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
 			    		System.out.println("TT update 7");
@@ -763,7 +783,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 								l_point.m_g = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
 								l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
 								//l_point.m_x -= l_baseimage.getWidth();
-								l_point.m_x = -l_point.m_x;
+								//l_point.m_x = -l_point.m_x;
 								//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 								//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
 	//							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
@@ -1004,7 +1024,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		for(y = a_start; y < a_end; ++y)
 		{
 			int l_hits = Eora3D_MainWindow.m_e3d_config.sm_max_points_per_line;
-			boolean l_detect_end = false;
+			boolean l_in_laser = false;
+			int l_start_of_high_point = -1;
+			int l_end_of_high_point = -1;
+			int mr=0, mg=0, mb=0;
+			int l_laser_point_count = 0;
 			for(x = 0; x < a_in.getWidth(); ++x)
 			{
 				int argb = a_in.getRGB(x, y);
@@ -1021,38 +1045,88 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		int gd = Math.abs(g_base-g);
         		int bd = Math.abs(b_base-b);
 
-        		boolean l_found = false;
+        		boolean l_detected = false;
         		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Or"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r ||
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g ||
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_found = true;
-        		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_detected = true;
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("And"))
         		{
 	        		if(rd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
 	        				gd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_found = true;
-        		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
+	        				bd>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_detected = true;
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("%"))
         		{
         			float pc = ((float)rd/255.0f + (float)gd/255.0f + (float)bd/255.0f)*100.0f;
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_found = true;
-        		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_detected = true;
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("Weighted %"))
         		{
         			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
-	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_found = true;
-        		}
-        		if(!l_detect_end && l_found)
+	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_detected = true;
+	        	}
+
+        		if(l_detected)
+    			{
+        			++l_laser_point_count;
+    			}
+        		if(!l_in_laser)
         		{
-        			l_detect_end = true;
-        			a_out.add(new Point(x, y));
-        			--l_hits;
-        			if(l_hits == 0) break;
+        			if(l_detected)
+        			{
+	        			l_in_laser = true;
+	        			l_start_of_high_point = x;
+	    				l_end_of_high_point = x;
+	        			mr = rd;
+	        			mg = gd;
+	        			mb = bd;
+        			}
         		}
-        		else if(l_detect_end && !l_found)
+        		else if(l_in_laser)
         		{
-        			l_detect_end = false;
+        			if(!l_detected)
+        			{
+        				// Got to end of laser detection area
+        				l_end_of_high_point = x-1;
+        				if(l_start_of_high_point!=-1 && l_laser_point_count>Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser)
+        				{
+        					int l_mid_hight_point = (l_start_of_high_point+l_end_of_high_point)/2;
+        					a_out.add(new Point(l_mid_hight_point, y));
+                			--l_hits;
+                			if(l_hits == 0) break;
+        				}
+        				l_in_laser = false;
+        				l_start_of_high_point = -1;
+        				l_end_of_high_point = -1;
+        				
+        				l_laser_point_count = 0;
+        				
+        			} else
+        			if(rd>mr || gd>mg || bd>mb)
+        			{
+            			l_start_of_high_point = x;
+        				l_end_of_high_point = x;
+            			mr = rd;
+            			mg = gd;
+            			mb = bd;
+        			}
+        			else if(rd<mr || gd<mg || bd<mb)
+        			{
+        				l_end_of_high_point = x;
+        			}
         		}
 			}
+			if(l_start_of_high_point!=-1 && l_laser_point_count>Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser && l_hits!=0)
+			{
+				//System.out.println("Y: "+y+" S: "+l_start_of_high_point+" E: "+l_end_of_high_point);
+				if(l_end_of_high_point == -1) l_end_of_high_point = a_in.getWidth()-1;
+				int l_mid_hight_point = (l_start_of_high_point+l_end_of_high_point)/2;
+				a_out.add(new Point(l_mid_hight_point, y));
+			}
+			l_in_laser = false;
+			l_start_of_high_point = -1;
+			l_end_of_high_point = -1;
+			l_laser_point_count = 0;
 		}
 		return a_out;
 	}
