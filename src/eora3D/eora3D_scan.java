@@ -92,7 +92,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		getContentPane().add(btnLaserTestEnd);
 		btnLaserTestEnd.addActionListener(this);
 		
-		imagePanel = new PaintImage();
+		imagePanel = new PaintImage(true);
 		imagePanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		imagePanel.setBounds(252, 33, 730, 940);
 		imagePanel.pos = 0;
@@ -279,7 +279,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 
 	    String[] list = dir.list(filter);
 	    File file;
-	    if (list.length == 0) return;
+	    if (list==null || list.length == 0) return;
 
 	    for (int i = 0; i < list.length; i++) {
 	      //file = new File(directory + list[i]);
@@ -305,6 +305,7 @@ public class eora3D_scan extends JDialog implements ActionListener {
 		{
 			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights ON", JOptionPane.INFORMATION_MESSAGE);
 		}
+		for(int l_flush=0; l_flush<25; ++l_flush) m_e3d.m_camera.getImage();
 		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan"+a_file_insert+"_colourmap.png");
 		BufferedImage l_image = m_e3d.m_camera.getImage();
 		l_image.flush();

@@ -79,7 +79,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		this.addWindowListener(this);
 		getContentPane().setLayout(null);
 		
-		image = new PaintImage();
+		image = new PaintImage(true);
 		image.setBounds(382, 12, 698, 846);
 		getContentPane().add(image);
 		
