@@ -46,6 +46,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfCameraWidth;
 	private JTextField tfCameraHeight;
 	private JTextField tfMaxPointsPerLine;
+	private JTextField tfMinpointsperlaser;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -208,6 +209,17 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfMaxPointsPerLine.setColumns(10);
 		tfMaxPointsPerLine.addActionListener(this);
 		
+		JLabel lblMinLaserBand = new JLabel("Min laser band points");
+		lblMinLaserBand.setBounds(146, 163, 158, 15);
+		panel_2.add(lblMinLaserBand);
+		
+		tfMinpointsperlaser = new JTextField();
+		tfMinpointsperlaser.setText("3");
+		tfMinpointsperlaser.setBounds(140, 195, 122, 27);
+		panel_2.add(tfMinpointsperlaser);
+		tfMinpointsperlaser.setColumns(10);
+		tfMinpointsperlaser.addActionListener(this);
+		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBorder(new TitledBorder(null, "Camera", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_3.setBounds(181, 0, 123, 161);
@@ -360,6 +372,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfBluethreshold.setText(""+a_cfg.sm_laser_detection_threshold_b);
 		tfPercentagethreshold.setText(""+a_cfg.sm_laser_detection_threshold_percent);
 		tfMaxPointsPerLine.setText(""+a_cfg.sm_max_points_per_line);
+		tfMinpointsperlaser.setText(""+a_cfg.sm_min_points_per_laser);
 		tfStartposition.setText(""+a_cfg.sm_scan_start_angle);
 		tfEndposition.setText(""+a_cfg.sm_scan_end_angle);
 		tfStepsize.setText(""+a_cfg.sm_scan_step_size);
@@ -415,6 +428,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.sm_laser_detection_threshold_b = Integer.parseInt(tfBluethreshold.getText());
 		a_cfg.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagethreshold.getText());
 		a_cfg.sm_max_points_per_line = Integer.parseInt(tfMaxPointsPerLine.getText());
+		a_cfg.sm_min_points_per_laser = Integer.parseInt(tfMinpointsperlaser.getText());
 		a_cfg.sm_scan_start_angle = Integer.parseInt(tfStartposition.getText());
 		a_cfg.sm_scan_end_angle = Integer.parseInt(tfEndposition.getText());
 		a_cfg.sm_scan_step_size = Integer.parseInt(tfStepsize.getText());
