@@ -940,7 +940,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         			{
         				// Got to end of laser detection area
         				l_end_of_high_point = x-1;
-        				if(l_start_of_high_point!=-1 && l_laser_point_count>=4)
+        				if(l_start_of_high_point!=-1 && l_laser_point_count>Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser)
         				{
         					for(x=l_start_of_high_point; x<=l_end_of_high_point; ++x)
         					{
@@ -971,7 +971,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		}
         		if(l_argb_out != 0) a_out.setRGB(x, y, l_argb_out);
 			}
-			if(l_start_of_high_point!=-1 && l_laser_point_count>=4)
+			if(l_start_of_high_point!=-1 && l_laser_point_count>Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser)
 			{
 				//System.out.println("Y: "+y+" S: "+l_start_of_high_point+" E: "+l_end_of_high_point);
 				if(l_end_of_high_point == -1) l_end_of_high_point = a_in.getWidth()-1;

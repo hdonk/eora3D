@@ -30,6 +30,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public float sm_laser_detection_threshold_percent = 30.0f;
 	public String sm_laser_detection_threshold_logic = "Or";
 	public int sm_max_points_per_line = 3;
+	public int sm_min_points_per_laser = 3;
 	
 	public int sm_calibration_vertical_offset = 0;
 	
