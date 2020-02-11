@@ -290,7 +290,23 @@ class PointCloudObject implements Runnable {
 			        writer.write("Java E3D tool");
 			        writer.write('\n');
 		
-			        writer.write("element vertex "+m_points.get(j).size()+"\n");
+			        // Count through how many points pass filter
+			        int l_vc = 0;
+			        for(int i=0; i<m_points.get(j).size(); ++i)
+			        {
+			    		if(
+			    				m_points.get(j).get(i).m_x >= Eora3D_MainWindow.m_e3d_config.sm_leftfilter &&
+	    						m_points.get(j).get(i).m_x <= Eora3D_MainWindow.m_e3d_config.sm_rightfilter &&
+			    		
+			    				m_points.get(j).get(i).m_y >= Eora3D_MainWindow.m_e3d_config.sm_bottomfilter &&
+	    						m_points.get(j).get(i).m_y <= Eora3D_MainWindow.m_e3d_config.sm_topfilter  &&
+			    		
+			    				m_points.get(j).get(i).m_z >= Eora3D_MainWindow.m_e3d_config.sm_frontfilter &&
+			    				m_points.get(j).get(i).m_z <= Eora3D_MainWindow.m_e3d_config.sm_backfilter ) ++l_vc;
+			        }
+
+			        
+			        writer.write("element vertex "+l_vc+"\n");
 			        writer.write("property double x\n");
 			        writer.write("property double y\n");
 			        writer.write("property double z\n");
@@ -308,12 +324,23 @@ class PointCloudObject implements Runnable {
 		        dos.close();*/
 			        for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
-			        	writer.write(m_points.get(j).get(i).m_x+" ");
-			        	writer.write(m_points.get(j).get(i).m_y+" ");
-			        	writer.write(m_points.get(j).get(i).m_z+" ");
-			        	writer.write(m_points.get(j).get(i).m_r+" ");
-			        	writer.write(m_points.get(j).get(i).m_g+" ");
-			        	writer.write(m_points.get(j).get(i).m_b+"\n");
+			        	if(
+			    				m_points.get(j).get(i).m_x >= Eora3D_MainWindow.m_e3d_config.sm_leftfilter &&
+	    						m_points.get(j).get(i).m_x <= Eora3D_MainWindow.m_e3d_config.sm_rightfilter &&
+			    		
+			    				m_points.get(j).get(i).m_y >= Eora3D_MainWindow.m_e3d_config.sm_bottomfilter &&
+	    						m_points.get(j).get(i).m_y <= Eora3D_MainWindow.m_e3d_config.sm_topfilter  &&
+			    		
+			    				m_points.get(j).get(i).m_z >= Eora3D_MainWindow.m_e3d_config.sm_frontfilter &&
+			    				m_points.get(j).get(i).m_z <= Eora3D_MainWindow.m_e3d_config.sm_backfilter )
+			        	{
+				        	writer.write(m_points.get(j).get(i).m_x+" ");
+				        	writer.write(m_points.get(j).get(i).m_y+" ");
+				        	writer.write(m_points.get(j).get(i).m_z+" ");
+				        	writer.write(m_points.get(j).get(i).m_r+" ");
+				        	writer.write(m_points.get(j).get(i).m_g+" ");
+				        	writer.write(m_points.get(j).get(i).m_b+"\n");
+			        	}
 			        }
 			        writer.close();
 		        }
@@ -533,8 +560,6 @@ class PointCloudObject implements Runnable {
 		FloatBuffer fb = BufferUtils.createFloatBuffer(16);
 
 		Quaternionf q = new Quaternionf();
-		Quaternionf q0 = new Quaternionf();
-		Quaternionf q1 = new Quaternionf();
 		projectM
 				.setOrtho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -30000.0f, 30000.0f);
 //				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 6000.0f);
@@ -626,6 +651,7 @@ class PointCloudObject implements Runnable {
 		}
 		for(int i=0; i<m_points.size(); ++i)
 		{
+			q = new Quaternionf();
 //			private int m_tt_angle;
 //			private int m_Zrotoff;
 //			private int m_Xrotoff;
