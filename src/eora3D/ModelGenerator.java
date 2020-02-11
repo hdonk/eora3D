@@ -37,6 +37,7 @@ import javax.swing.border.BevelBorder;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.border.TitledBorder;
 
 public class ModelGenerator extends JDialog implements ActionListener, WindowListener, AdjustmentListener {
 	Eora3D_MainWindow m_e3d;
@@ -65,6 +66,14 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JScrollPane imageScrollPane;
 	private JTextField tfMinpointsperlaser;
 	
+	boolean m_config_verify = false;
+	private JTextField tfLeftFilter;
+	private JTextField tfRightFilter;
+	private JTextField tfTopFilter;
+	private JTextField tfBottomFilter;
+	private JTextField tfFrontFilter;
+	private JTextField tfBackFilter;
+	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
 		setModal(true);
@@ -74,14 +83,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		setSize(824,792);
 		
 		JPanel panel = new JPanel();
-		panel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		panel.setBorder(new TitledBorder(null, "Laser Detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel.setBounds(6, 0, 141, 646);
 		getContentPane().add(panel);
 		panel.setLayout(null);
-		
-		JLabel label = new JLabel("Laser detection");
-		label.setBounds(6, 6, 106, 15);
-		panel.add(label);
 		
 		JLabel label_1 = new JLabel("Detection method");
 		label_1.setBounds(6, 33, 122, 15);
@@ -191,37 +196,33 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		getContentPane().add(imageScrollPane);
 		
 		JButton btnGenerate = new JButton("Generate");
-		btnGenerate.setBounds(642, 6, 100, 27);
+		btnGenerate.setBounds(698, 0, 100, 27);
 		getContentPane().add(btnGenerate);
 		btnGenerate.addActionListener(this);
 		
 		JButton btnExport = new JButton("Export");
-		btnExport.setBounds(642, 45, 100, 27);
+		btnExport.setBounds(698, 33, 100, 27);
 		getContentPane().add(btnExport);
 		btnExport.addActionListener(this);
 		
 		JButton btnFinish = new JButton("Finish");
-		btnFinish.setBounds(642, 84, 100, 27);
+		btnFinish.setBounds(698, 66, 100, 27);
 		getContentPane().add(btnFinish);
 		btnFinish.addActionListener(this);
 		
 		JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		panel_1.setBounds(628, 288, 150, 375);
+		panel_1.setBorder(new TitledBorder(null, "3D Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(648, 493, 150, 222);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
-		JLabel lbldDisplay = new JLabel("3D Display");
-		lbldDisplay.setBounds(6, 6, 79, 15);
-		panel_1.add(lbldDisplay);
-		
 		JLabel lblScaling = new JLabel("Scaling");
-		lblScaling.setBounds(6, 33, 60, 15);
+		lblScaling.setBounds(6, 26, 60, 15);
 		panel_1.add(lblScaling);
 		
 		sbScaling = new JScrollBar();
 		sbScaling.setOrientation(JScrollBar.HORIZONTAL);
-		sbScaling.setBounds(6, 60, 122, 27);
+		sbScaling.setBounds(6, 45, 122, 27);
 		sbScaling.setValue(10);
 		sbScaling.setMinimum(1);
 		sbScaling.setMaximum(40);
@@ -229,12 +230,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		sbScaling.addAdjustmentListener(this);
 		
 		JLabel lblPointSize = new JLabel("Point size");
-		lblPointSize.setBounds(6, 99, 60, 15);
+		lblPointSize.setBounds(6, 74, 60, 15);
 		panel_1.add(lblPointSize);
 		
 		sbPointsize = new JScrollBar();
 		sbPointsize.setOrientation(JScrollBar.HORIZONTAL);
-		sbPointsize.setBounds(6, 126, 122, 27);
+		sbPointsize.setBounds(6, 91, 122, 27);
 		sbPointsize.setBlockIncrement(10);
 		sbPointsize.setUnitIncrement(10);
 		sbPointsize.setMinimum(10);
@@ -245,23 +246,23 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		sbPointsize.addAdjustmentListener(this);
 		
 		JLabel lblZRotOff = new JLabel("Z rot off");
-		lblZRotOff.setBounds(0, 165, 60, 15);
+		lblZRotOff.setBounds(6, 123, 60, 15);
 		panel_1.add(lblZRotOff);
 		
 		tfZrotoff = new JTextField();
 		tfZrotoff.setText("1400");
-		tfZrotoff.setBounds(0, 186, 122, 27);
+		tfZrotoff.setBounds(6, 139, 122, 27);
 		panel_1.add(tfZrotoff);
 		tfZrotoff.setColumns(10);
 		tfZrotoff.addActionListener(this);
 		
 		JLabel lblXRotOff = new JLabel("X rot off");
-		lblXRotOff.setBounds(6, 225, 60, 15);
+		lblXRotOff.setBounds(6, 169, 60, 15);
 		panel_1.add(lblXRotOff);
 		
 		tfXrotoff = new JTextField();
 		tfXrotoff.setText("0");
-		tfXrotoff.setBounds(6, 252, 122, 27);
+		tfXrotoff.setBounds(6, 186, 122, 27);
 		panel_1.add(tfXrotoff);
 		tfXrotoff.setColumns(10);
 		tfXrotoff.addActionListener(this);
@@ -285,8 +286,74 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		btnConfig.addActionListener(this);
 		
 		JButton btnImport = new JButton("Import");
-		btnImport.setBounds(642, 164, 100, 27);
+		btnImport.setBounds(698, 99, 100, 27);
 		getContentPane().add(btnImport);
+		
+		JPanel panel_2 = new JPanel();
+		panel_2.setBorder(new TitledBorder(null, "Filters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_2.setBounds(648, 136, 150, 318);
+		getContentPane().add(panel_2);
+		panel_2.setLayout(null);
+		
+		JLabel lblLeft = new JLabel("Left");
+		lblLeft.setBounds(6, 22, 60, 15);
+		panel_2.add(lblLeft);
+		
+		tfLeftFilter = new JTextField();
+		tfLeftFilter.setBounds(6, 38, 122, 27);
+		panel_2.add(tfLeftFilter);
+		tfLeftFilter.setColumns(10);
+		tfLeftFilter.addActionListener(this);
+		
+		JLabel lblRight = new JLabel("Right");
+		lblRight.setBounds(6, 67, 60, 15);
+		panel_2.add(lblRight);
+		
+		tfRightFilter = new JTextField();
+		tfRightFilter.setColumns(10);
+		tfRightFilter.setBounds(6, 83, 122, 27);
+		panel_2.add(tfRightFilter);
+		tfRightFilter.addActionListener(this);
+		
+		JLabel lblTop = new JLabel("Top");
+		lblTop.setBounds(6, 114, 60, 15);
+		panel_2.add(lblTop);
+		
+		tfTopFilter = new JTextField();
+		tfTopFilter.setColumns(10);
+		tfTopFilter.setBounds(6, 130, 122, 27);
+		panel_2.add(tfTopFilter);
+		tfTopFilter.addActionListener(this);
+		
+		JLabel lblBottom = new JLabel("Bottom");
+		lblBottom.setBounds(6, 159, 60, 15);
+		panel_2.add(lblBottom);
+		
+		tfBottomFilter = new JTextField();
+		tfBottomFilter.setColumns(10);
+		tfBottomFilter.setBounds(6, 175, 122, 27);
+		panel_2.add(tfBottomFilter);
+		tfBottomFilter.addActionListener(this);
+		
+		JLabel lblFront = new JLabel("Front");
+		lblFront.setBounds(6, 198, 60, 15);
+		panel_2.add(lblFront);
+		
+		tfFrontFilter = new JTextField();
+		tfFrontFilter.setColumns(10);
+		tfFrontFilter.setBounds(6, 214, 122, 27);
+		panel_2.add(tfFrontFilter);
+		tfFrontFilter.addActionListener(this);
+		
+		tfBackFilter = new JTextField();
+		tfBackFilter.setColumns(10);
+		tfBackFilter.setBounds(6, 263, 122, 27);
+		panel_2.add(tfBackFilter);
+		tfBackFilter.addActionListener(this);
+		
+		JLabel lblBack = new JLabel("Back");
+		lblBack.setBounds(6, 247, 60, 15);
+		panel_2.add(lblBack);
 		btnImport.addActionListener(this);
 		
 		m_pco = new PointCloudObject();
@@ -317,6 +384,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfGreenthreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g);
 		tfBluethreshold.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b);		
 		tfPercentagechange.setText(""+Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent);
+		
+		tfLeftFilter.setText(""+Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
+		tfRightFilter.setText(""+Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
+		tfTopFilter.setText(""+Eora3D_MainWindow.m_e3d_config.sm_topfilter);
+		tfBottomFilter.setText(""+Eora3D_MainWindow.m_e3d_config.sm_bottomfilter);
+		tfFrontFilter.setText(""+Eora3D_MainWindow.m_e3d_config.sm_frontfilter);
+		tfBackFilter.setText(""+Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 		if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("Or"))
 		{
 			cbDetectionmethod.setSelectedIndex(0);
@@ -339,6 +413,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	
 	void putToConfig()
 	{
+		if(m_config_verify) return;
 		Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r = Integer.parseInt(tfRedthreshold.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g = Integer.parseInt(tfGreenthreshold.getText());
@@ -346,6 +421,18 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(tfPercentagechange.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)cbDetectionmethod.getSelectedItem();
 		Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser = Integer.parseInt(tfMinpointsperlaser.getText());
+		
+		Eora3D_MainWindow.m_e3d_config.sm_leftfilter = Integer.parseInt(tfLeftFilter.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_rightfilter = Integer.parseInt(tfRightFilter.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_topfilter = Integer.parseInt(tfTopFilter.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_bottomfilter = Integer.parseInt(tfBottomFilter.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_frontfilter = Integer.parseInt(tfFrontFilter.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_backfilter = Integer.parseInt(tfBackFilter.getText());
+		
+		m_config_verify = true;
+		Eora3D_MainWindow.m_e3d_config.verify();
+		setFromConfig();
+		m_config_verify = false;
 	}
 	
 	@Override
@@ -571,19 +658,23 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			l_editor.setVisible(true);
 			setFromConfig();
 		} else
-		if(ae.getSource().equals(tfXrotoff) || ae.getSource().equals(tfZrotoff)/* || ae.getSource().equals(tfTTrot)*/)
+		if(ae.getSource().equals(tfXrotoff) || ae.getSource().equals(tfZrotoff)/* || ae.getSource().equals(tfTTrot)*/
+				|| ae.getSource().equals(tfLeftFilter)
+				|| ae.getSource().equals(tfRightFilter)
+				|| ae.getSource().equals(tfBottomFilter)
+				|| ae.getSource().equals(tfTopFilter)
+				|| ae.getSource().equals(tfFrontFilter)
+				|| ae.getSource().equals(tfBackFilter)
+				)
 		{
-			System.out.println("TT update");
 			if(m_detect_thread == null)
 			{
-				System.out.println("TT update 2");
 			    DataOutputStream l_dos = null;
-				System.out.println("TT update 3");
+			    
+			    putToConfig();
 
 				try {
 					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
-					System.out.println("TT update 4");
-
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -593,25 +684,25 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				{
 					try {
 						l_dos = new DataOutputStream(m_socket.getOutputStream());
-						System.out.println("TT update 5");
 						l_dos.flush();
-						System.out.println("TT update 6");
 			    		l_dos.writeInt(4);
 			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
 //			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
-			    		System.out.println("TT update 7");
+			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
+			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
+			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_topfilter);
+			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_bottomfilter);
+			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_frontfilter);
+			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 					    l_dos.flush();
-					    System.out.println("TT update 8");
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 						try
 						{
-							System.out.println("TT update 9");
 							l_dos.close();
-							System.out.println("TT update 10");
 							m_socket.close();
 						}
 						catch(Exception z)
@@ -625,9 +716,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				{
 					try
 					{
-						System.out.println("TT update 9");
 						l_dos.close();
-						System.out.println("TT update 10");
 						m_socket.close();
 						m_socket = null;
 					} catch(Exception e2)
@@ -697,6 +786,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
 	    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 	    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
+	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
+	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
+	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_topfilter);
+	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_bottomfilter);
+	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_frontfilter);
+	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 				l_dos.flush();
 			} catch (IOException e) {
 				e.printStackTrace();
