@@ -197,23 +197,23 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		getContentPane().add(imageScrollPane);
 		
 		JButton btnGenerate = new JButton("Generate");
-		btnGenerate.setBounds(698, 0, 100, 27);
+		btnGenerate.setBounds(669, 0, 129, 27);
 		getContentPane().add(btnGenerate);
 		btnGenerate.addActionListener(this);
 		
 		JButton btnExport = new JButton("Export");
-		btnExport.setBounds(698, 33, 100, 27);
+		btnExport.setBounds(669, 33, 129, 27);
 		getContentPane().add(btnExport);
 		btnExport.addActionListener(this);
 		
 		JButton btnFinish = new JButton("Finish");
-		btnFinish.setBounds(698, 66, 100, 27);
+		btnFinish.setBounds(669, 96, 129, 27);
 		getContentPane().add(btnFinish);
 		btnFinish.addActionListener(this);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "3D Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(648, 466, 150, 272);
+		panel_1.setBounds(648, 481, 150, 272);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -292,18 +292,24 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		
 		
+		JButton btnExportMerged = new JButton("Export merged");
+		btnExportMerged.setBounds(669, 67, 129, 27);
+		getContentPane().add(btnExportMerged);
+		btnExportMerged.addActionListener(this);
+		
 		JButton btnConfig = new JButton("Config");
 		btnConfig.setBounds(6, 688, 100, 27);
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
 		
 		JButton btnImport = new JButton("Import");
-		btnImport.setBounds(698, 99, 100, 27);
+		btnImport.setBounds(669, 129, 129, 27);
 		getContentPane().add(btnImport);
+		btnImport.addActionListener(this);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Filters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(648, 136, 150, 318);
+		panel_2.setBounds(648, 181, 150, 300);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -366,7 +372,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		JLabel lblBack = new JLabel("Back");
 		lblBack.setBounds(6, 247, 60, 15);
 		panel_2.add(lblBack);
-		btnImport.addActionListener(this);
 		
 		m_pco = new PointCloudObject();
 		m_pco.m_Pointsize = sbPointsize.getValue();
@@ -461,28 +466,34 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				m_detect_thread.start();
 			}
 		} else
-		if(ae.getActionCommand() == "Export")
-		{
-			/*
-			JFileChooser l_fc;
-			l_fc = new JFileChooser();
-			l_fc.setSelectedFile(new File("export.ply"));
-			l_fc.setFileFilter(new extensionFileFilter("ply"));
-			int l_ret = l_fc.showSaveDialog(this);
+			if(ae.getActionCommand() == "Export")
+			{
+				/*
+				JFileChooser l_fc;
+				l_fc = new JFileChooser();
+				l_fc.setSelectedFile(new File("export.ply"));
+				l_fc.setFileFilter(new extensionFileFilter("ply"));
+				int l_ret = l_fc.showSaveDialog(this);
 
-			if (l_ret == JFileChooser.APPROVE_OPTION) {
-				File l_file = l_fc.getSelectedFile();
-				if(!l_file.toString().contains("."))
-				{
-					l_file = new File(l_file.toString()+".ply");
-				}
-				
+				if (l_ret == JFileChooser.APPROVE_OPTION) {
+					File l_file = l_fc.getSelectedFile();
+					if(!l_file.toString().contains("."))
+					{
+						l_file = new File(l_file.toString()+".ply");
+					}
+					
+					m_pco.save(l_file);
+				}*/
+				File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
 				m_pco.save(l_file);
-			}*/
-			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
-			m_pco.save(l_file);
-			
-		} else
+				
+			} else
+				if(ae.getActionCommand() == "Export merged")
+				{
+					File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
+					m_pco.m_pix_to_mm = m_e3d.m_cal_data.m_pix_to_mm;
+					m_pco.save_apply_offsets(l_file);
+				} else
 		if(ae.getActionCommand() == "Import")
 		{
 			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
@@ -699,7 +710,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						l_dos = new DataOutputStream(m_socket.getOutputStream());
 						l_dos.flush();
 			    		l_dos.writeInt(4);
-			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
+			    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.0f);
 //			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
@@ -711,6 +722,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_frontfilter);
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 					    l_dos.flush();
+						m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.0f,
+								Integer.parseInt(tfZrotoff.getText()),
+								Integer.parseInt(tfXrotoff.getText()),
+								Integer.parseInt(tfYDisplayOffset.getText()),
+								Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
+								Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
+								Eora3D_MainWindow.m_e3d_config.sm_topfilter,
+								Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
+								Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
+								Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();

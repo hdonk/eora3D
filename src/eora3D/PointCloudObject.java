@@ -1,21 +1,5 @@
 package eora3D;
 
-import static org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER;
-
-import static org.lwjgl.opengles.GLES20.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengles.GLES20.GL_FLOAT;
-import static org.lwjgl.opengles.GLES20.GL_NO_ERROR;
-import static org.lwjgl.opengles.GLES20.GL_POINTS;
-import static org.lwjgl.opengles.GLES20.GL_STATIC_DRAW;
-import static org.lwjgl.opengles.GLES20.GL_UNSIGNED_INT;
-import static org.lwjgl.opengles.GLES20.glBindBuffer;
-import static org.lwjgl.opengles.GLES20.glBufferData;
-import static org.lwjgl.opengles.GLES20.glDeleteBuffers;
-import static org.lwjgl.opengles.GLES20.glDrawElements;
-import static org.lwjgl.opengles.GLES20.glEnableVertexAttribArray;
-import static org.lwjgl.opengles.GLES20.glGenBuffers;
-import static org.lwjgl.opengles.GLES20.glGetError;
-import static org.lwjgl.opengles.GLES20.glVertexAttribPointer;
 import static org.lwjgl.opengles.GLES30.glBindVertexArray;
 
 import java.io.BufferedReader;
@@ -41,6 +25,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengles.GLESCapabilities;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.lwjgl.BufferUtils;
 
 import org.lwjgl.opengles.*;
@@ -100,9 +85,19 @@ class PointCloudObject implements Runnable {
 	
 	ArrayList<Integer> m_vertexcount = null;
 	ArrayList<Integer> m_vertexoffset = null;
-	private float m_tt_angle;
-	private int m_Zrotoff;
-	private int m_Xrotoff;
+	public float m_tt_angle = 0.0f;
+	public int m_Zrotoff = 0;
+	public int m_Xrotoff = 0;
+	public int m_Ydispoff = 0;
+
+	private int m_leftfilter = -5000;
+	private int m_rightfilter = 5000;
+	private int m_topfilter = 5000;
+	private int m_bottomfilter = -5000;
+	private int m_frontfilter = -5000;
+	private int m_backfilter = 5000;
+	
+	public double m_pix_to_mm = 1.0f;
 	
 	public PointCloudObject()
 	{
@@ -295,14 +290,14 @@ class PointCloudObject implements Runnable {
 			        for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
 			    		if(
-			    				m_points.get(j).get(i).m_x >= Eora3D_MainWindow.m_e3d_config.sm_leftfilter &&
-	    						m_points.get(j).get(i).m_x <= Eora3D_MainWindow.m_e3d_config.sm_rightfilter &&
+			    				m_points.get(j).get(i).m_x >= m_leftfilter &&
+	    						m_points.get(j).get(i).m_x <= m_rightfilter &&
 			    		
-			    				m_points.get(j).get(i).m_y >= Eora3D_MainWindow.m_e3d_config.sm_bottomfilter &&
-	    						m_points.get(j).get(i).m_y <= Eora3D_MainWindow.m_e3d_config.sm_topfilter  &&
+			    				m_points.get(j).get(i).m_y >= m_bottomfilter &&
+	    						m_points.get(j).get(i).m_y <= m_topfilter  &&
 			    		
-			    				m_points.get(j).get(i).m_z >= Eora3D_MainWindow.m_e3d_config.sm_frontfilter &&
-			    				m_points.get(j).get(i).m_z <= Eora3D_MainWindow.m_e3d_config.sm_backfilter ) ++l_vc;
+			    				m_points.get(j).get(i).m_z >= m_frontfilter &&
+			    				m_points.get(j).get(i).m_z <= m_backfilter ) ++l_vc;
 			        }
 
 			        
@@ -325,14 +320,14 @@ class PointCloudObject implements Runnable {
 			        for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
 			        	if(
-			    				m_points.get(j).get(i).m_x >= Eora3D_MainWindow.m_e3d_config.sm_leftfilter &&
-	    						m_points.get(j).get(i).m_x <= Eora3D_MainWindow.m_e3d_config.sm_rightfilter &&
+			    				m_points.get(j).get(i).m_x >= m_leftfilter &&
+	    						m_points.get(j).get(i).m_x <= m_rightfilter &&
 			    		
-			    				m_points.get(j).get(i).m_y >= Eora3D_MainWindow.m_e3d_config.sm_bottomfilter &&
-	    						m_points.get(j).get(i).m_y <= Eora3D_MainWindow.m_e3d_config.sm_topfilter  &&
+			    				m_points.get(j).get(i).m_y >= m_bottomfilter &&
+	    						m_points.get(j).get(i).m_y <= m_topfilter  &&
 			    		
-			    				m_points.get(j).get(i).m_z >= Eora3D_MainWindow.m_e3d_config.sm_frontfilter &&
-			    				m_points.get(j).get(i).m_z <= Eora3D_MainWindow.m_e3d_config.sm_backfilter )
+			    				m_points.get(j).get(i).m_z >= m_frontfilter &&
+			    				m_points.get(j).get(i).m_z <= m_backfilter )
 			        	{
 				        	writer.write(m_points.get(j).get(i).m_x+" ");
 				        	writer.write(m_points.get(j).get(i).m_y+" ");
@@ -344,6 +339,91 @@ class PointCloudObject implements Runnable {
 			        }
 			        writer.close();
 		        }
+			} catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			System.out.println("Finished");
+		}
+	}
+	
+	public void save_apply_offsets(File a_file) {
+		synchronized(this) {
+			if(m_points.isEmpty())
+				return;
+			System.out.println("Starting");
+			try
+			{
+				FileOutputStream fos = new FileOutputStream(a_file+".ply");
+		        Writer writer= new OutputStreamWriter(fos, "UTF8");
+		        writer.write("ply\n");
+		        writer.write("format ");
+		        writer.write("ascii");
+		        writer.write(" 1.0\n");
+		        writer.write("comment ");
+		        writer.write("Java E3D tool");
+		        writer.write('\n');
+
+		        int l_vc = 0;
+		        // Count through how many points pass filter
+		        for(int j=0; j<m_points.size(); ++j)
+		        {
+			        for(int i=0; i<m_points.get(j).size(); ++i)
+			        {
+			    		if(
+			    				m_points.get(j).get(i).m_x >= m_leftfilter &&
+	    						m_points.get(j).get(i).m_x <= m_rightfilter &&
+			    		
+			    				m_points.get(j).get(i).m_y >= m_bottomfilter &&
+	    						m_points.get(j).get(i).m_y <= m_topfilter  &&
+			    		
+			    				m_points.get(j).get(i).m_z >= m_frontfilter &&
+			    				m_points.get(j).get(i).m_z <= m_backfilter ) ++l_vc;
+			        }
+		        }
+
+		        writer.write("element vertex "+l_vc+"\n");
+		        writer.write("property double x\n");
+		        writer.write("property double y\n");
+		        writer.write("property double z\n");
+		        writer.write("property uint8 red\n");
+	    		writer.write("property uint8 green\n");
+				writer.write("property uint8 blue\n");
+	
+		        writer.write("end_header\n");
+		        writer.flush();
+
+		        for(int j=0; j<m_points.size(); ++j)
+		        {
+			        Matrix4f modelM = new Matrix4f();
+					modelM.identity();
+					Quaternionf q = new Quaternionf();
+					modelM.rotate(q.rotateY((float) Math.toRadians(j*m_tt_angle)).normalize());
+					modelM.translate(m_Xrotoff, m_Ydispoff, -m_Zrotoff);
+			        for(int i=0; i<m_points.get(j).size(); ++i)
+			        {
+			        	if(
+			    				m_points.get(j).get(i).m_x >= m_leftfilter &&
+	    						m_points.get(j).get(i).m_x <= m_rightfilter &&
+			    		
+			    				m_points.get(j).get(i).m_y >= m_bottomfilter &&
+	    						m_points.get(j).get(i).m_y <= m_topfilter  &&
+			    		
+			    				m_points.get(j).get(i).m_z >= m_frontfilter &&
+			    				m_points.get(j).get(i).m_z <= m_backfilter )
+			        	{
+			        		Vector3f v = new Vector3f(m_points.get(j).get(i).m_x, m_points.get(j).get(i).m_y, m_points.get(j).get(i).m_z);
+			        		modelM.transformPosition(v);
+				        	writer.write(((float)v.x)+" ");
+				        	writer.write(((float)v.y)+" ");
+				        	writer.write(((float)v.z)+" ");
+				        	writer.write(m_points.get(j).get(i).m_r+" ");
+				        	writer.write(m_points.get(j).get(i).m_g+" ");
+				        	writer.write(m_points.get(j).get(i).m_b+"\n");
+			        	}
+			        }
+		        }
+		        writer.close();
 			} catch(Exception e)
 			{
 				e.printStackTrace();
@@ -890,12 +970,6 @@ class PointCloudObject implements Runnable {
 		//glfwSetWindowShouldClose(m_window, true);
 	}
 
-	public void setTT(float a_angle, int a_Zrotoff, int a_Xrotoff) {
-		m_tt_angle = a_angle;
-		m_Zrotoff = a_Zrotoff;
-		m_Xrotoff = a_Xrotoff;
-	}
-	
 	public void load(File a_file, int a_max_layer) {
 		synchronized(this) {
 			clear();
@@ -968,5 +1042,26 @@ class PointCloudObject implements Runnable {
 			return false;
 		}
 		return true;
+	}
+	
+	public void setTT(float a_angle, int a_Zrotoff, int a_Xrotoff, int a_Ydispoff,
+			int a_leftfilter,
+			int a_rightfilter,
+			int a_topfilter,
+			int a_bottomfilter,
+			int a_frontfilter,
+			int a_backfilter) {
+		m_tt_angle = a_angle;
+		m_Zrotoff = a_Zrotoff;
+		m_Xrotoff = a_Xrotoff;
+		m_Ydispoff = a_Ydispoff;
+		
+		m_leftfilter = a_leftfilter;
+		m_rightfilter = a_rightfilter;
+		m_topfilter = a_topfilter;
+		m_bottomfilter = a_bottomfilter;
+		m_frontfilter = a_frontfilter;
+		m_backfilter = a_backfilter;
+
 	}
 }
