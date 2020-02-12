@@ -73,6 +73,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfBottomFilter;
 	private JTextField tfFrontFilter;
 	private JTextField tfBackFilter;
+	private JTextField tfYDisplayOffset;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -212,7 +213,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "3D Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(648, 493, 150, 222);
+		panel_1.setBounds(648, 466, 150, 272);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -266,6 +267,17 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(tfXrotoff);
 		tfXrotoff.setColumns(10);
 		tfXrotoff.addActionListener(this);
+		
+		JLabel lblYDisplayOffset = new JLabel("Y display offset");
+		lblYDisplayOffset.setBounds(6, 214, 122, 15);
+		panel_1.add(lblYDisplayOffset);
+		
+		tfYDisplayOffset = new JTextField();
+		tfYDisplayOffset.setText("500");
+		tfYDisplayOffset.setBounds(6, 228, 122, 27);
+		panel_1.add(tfYDisplayOffset);
+		tfYDisplayOffset.setColumns(10);
+		tfYDisplayOffset.addActionListener(this);
 		
 /*		JLabel lblTtRot = new JLabel("tt rot");
 		lblTtRot.setBounds(6, 292, 60, 15);
@@ -665,6 +677,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				|| ae.getSource().equals(tfTopFilter)
 				|| ae.getSource().equals(tfFrontFilter)
 				|| ae.getSource().equals(tfBackFilter)
+				|| ae.getSource().equals(tfYDisplayOffset)
 				)
 		{
 			if(m_detect_thread == null)
@@ -690,6 +703,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 //			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
+			    		l_dos.writeInt(Integer.parseInt(tfYDisplayOffset.getText()));
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_topfilter);
@@ -786,6 +800,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
 	    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 	    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
+	    		l_dos.writeInt(Integer.parseInt(tfYDisplayOffset.getText()));
 	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
 	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
 	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_topfilter);
@@ -855,9 +870,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					return;
 				}
 				
-				if(!a_test) imagePanel.m_image = l_baseimage;
+				if(!a_test) imagePanel.m_image = l_inimage;
 				else imagePanel.m_image = null;
-				imagePanel.m_overlay = analyzeImage(l_baseimage, l_inimage);
+				if(a_test) imagePanel.m_overlay = analyzeImage(l_baseimage, l_inimage);
+				else imagePanel.m_overlay = null;
 				
 				Thread l_threads[] = new Thread[Eora3D_MainWindow.m_e3d_config.sm_threads];
 				for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)

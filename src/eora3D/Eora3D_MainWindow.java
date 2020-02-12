@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -253,6 +254,9 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			try
 			{
 				m_camera.open();
+				BufferedImage l_image = m_camera.getImage();
+				m_e3d_config.sm_camera_res_w = l_image.getWidth();
+				m_e3d_config.sm_camera_res_h = l_image.getHeight();
 			}
 			catch(Exception e1)
 			{
