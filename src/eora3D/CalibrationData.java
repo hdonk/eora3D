@@ -165,12 +165,15 @@ class CalibrationData
 /*		cal_square_tl = new Point();
 		cal_square_tr = new Point();*/
 		
-		x = (((double)pos_1_board_pix.width)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
+		double l_spot_sep_pix_x = pos_1_tr_det_spot.x - pos_1_tl_det_spot.x;
+		double l_spot_sep_pix_y = pos_1_bl_det_spot.y - pos_1_tl_det_spot.y;
+		
+		x = ((l_spot_sep_pix_x)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
 		cal_square_bl_pix.x = (int)x;
 		y = x*Math.tan(Math.toRadians(beta));
 		cal_square_bl_pix.y = (int)y;
 		cal_square_br_pix.y = (int)y;
-		cal_square_br_pix.x = cal_square_bl_pix.x + pos_1_board_pix.width;
+		cal_square_br_pix.x = (int) (cal_square_bl_pix.x + l_spot_sep_pix_x);
 		
 /*		x = (((double)pos_2_board.width)*Math.tan(Math.toRadians(alpha_prime)))/(Math.tan(Math.toRadians(beta_prime))-Math.tan(Math.toRadians(alpha_prime)));
 		cal_square_tl.x = (int)x;
@@ -183,7 +186,7 @@ class CalibrationData
 		x = (((double)spot_sep_w_mm)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
 		y = x*Math.tan(Math.toRadians(beta));
 		double d_mm = y;
-		double h_pix = ((double)pos_1_board_pix.width)*(spot_sep_w_mm/board_w_mm);
+		double h_pix = (l_spot_sep_pix_x)/*(spot_sep_w_mm/board_w_mm)*/;
 		double H_mm = spot_sep_w_mm;
 		focal_length_pix_x = (d_mm*h_pix)/H_mm;
 
@@ -192,7 +195,7 @@ class CalibrationData
 		m_pix_to_mm = spot_sep_w_mm / h_pix; 
 
 		d_mm = y;
-		h_pix = pos_1_board_pix.height*(spot_sep_h_mm/board_h_mm);
+		h_pix = l_spot_sep_pix_y /**(spot_sep_h_mm/board_h_mm)*/;
 		H_mm = spot_sep_h_mm;
 		focal_length_pix_y = (d_mm*h_pix)/H_mm;
 //		focal_length_pix_y = focal_length_pix_x;
