@@ -374,6 +374,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_2.add(lblBack);
 		
 		m_pco = new PointCloudObject();
+		m_pco.m_finished = true;
 		m_pco.m_Pointsize = sbPointsize.getValue();
 		m_pco.m_Scale = sbScaling.getValue();
 		//new Thread(m_pco).start();

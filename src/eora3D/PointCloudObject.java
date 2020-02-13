@@ -1,5 +1,20 @@
 package eora3D;
 
+import static org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER;
+import static org.lwjgl.opengles.GLES20.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengles.GLES20.GL_FLOAT;
+import static org.lwjgl.opengles.GLES20.GL_NO_ERROR;
+import static org.lwjgl.opengles.GLES20.GL_POINTS;
+import static org.lwjgl.opengles.GLES20.GL_STATIC_DRAW;
+import static org.lwjgl.opengles.GLES20.GL_UNSIGNED_INT;
+import static org.lwjgl.opengles.GLES20.glBindBuffer;
+import static org.lwjgl.opengles.GLES20.glBufferData;
+import static org.lwjgl.opengles.GLES20.glDeleteBuffers;
+import static org.lwjgl.opengles.GLES20.glDrawElements;
+import static org.lwjgl.opengles.GLES20.glEnableVertexAttribArray;
+import static org.lwjgl.opengles.GLES20.glGenBuffers;
+import static org.lwjgl.opengles.GLES20.glGetError;
+import static org.lwjgl.opengles.GLES20.glVertexAttribPointer;
 import static org.lwjgl.opengles.GLES30.glBindVertexArray;
 
 import java.io.BufferedReader;
@@ -56,7 +71,7 @@ import org.smurn.jply.util.RectBounds;
 import org.smurn.jply.*;
 import org.smurn.jply.util.*;
 
-class PointCloudObject implements Runnable {
+public class PointCloudObject implements Runnable {
 	EGLCapabilities m_egl;
 	GLESCapabilities m_gles;
 
@@ -81,9 +96,10 @@ class PointCloudObject implements Runnable {
 	public float m_Pointsize;
 	public float m_Scale;
 
-	boolean m_finished = false;
+	public boolean m_finished = false;
 	
 	ArrayList<Integer> m_vertexcount = null;
+	ArrayList<Integer> m_vertexdisplaycount = null;
 	ArrayList<Integer> m_vertexoffset = null;
 	public float m_tt_angle = 0.0f;
 	public int m_Zrotoff = 0;
@@ -107,6 +123,7 @@ class PointCloudObject implements Runnable {
 	public void clear()
 	{
 		m_vertexcount = new ArrayList<Integer>();
+		m_vertexdisplaycount = new ArrayList<Integer>();
 		m_vertexoffset = new ArrayList<Integer>();
 		m_points = new ArrayList<ArrayList<RGB3DPoint>>();
 /*		m_point_vbo = -1;
@@ -177,23 +194,53 @@ class PointCloudObject implements Runnable {
 		        
 		        int l_count = 0;
 		        for(int al=0; al<m_points.size(); ++al)
-		        	for(int j=0; j<m_points.get(al).size(); ++j)
 		        {
-		        	RGB3DPoint l_pt = m_points.get(al).get(j);
-		        	float x = (float)l_pt.m_x;
-		        	float y = (float)l_pt.m_y;
-		        	float z = (float)l_pt.m_z;
-		        	float r = (float)l_pt.m_r/255.0f;
-		        	float g = (float)l_pt.m_g/255.0f;
-		        	float b = (float)l_pt.m_b/255.0f;
-	                vertexBuffer.put((float) x);
-	                vertexBuffer.put((float) y);
-	                vertexBuffer.put((float) z);
-	                vertexBuffer.put((float) r);
-	                vertexBuffer.put((float) g);
-	                vertexBuffer.put((float) b);
-	                vertexBuffer.put((float) 1.0f);
-	                indexBuffer.put(l_count++);
+		        	int l_vc = 0;
+		        	for(int j=0; j<m_points.get(al).size(); ++j)
+			        {
+		        		
+			        	RGB3DPoint l_pt = m_points.get(al).get(j);
+			        	if(
+			        			l_pt.m_x >= m_leftfilter &&
+	        					l_pt.m_x <= m_rightfilter &&
+			    		
+    							l_pt.m_y >= m_bottomfilter &&
+								l_pt.m_y <= m_topfilter  &&
+			    		
+								l_pt.m_z >= m_frontfilter &&
+								l_pt.m_z <= m_backfilter )
+			        	{
+
+				        	float x = (float)l_pt.m_x;
+				        	float y = (float)l_pt.m_y;
+				        	float z = (float)l_pt.m_z;
+				        	float r = (float)l_pt.m_r/255.0f;
+				        	float g = (float)l_pt.m_g/255.0f;
+				        	float b = (float)l_pt.m_b/255.0f;
+			                vertexBuffer.put((float) x);
+			                vertexBuffer.put((float) y);
+			                vertexBuffer.put((float) z);
+			                vertexBuffer.put((float) r);
+			                vertexBuffer.put((float) g);
+			                vertexBuffer.put((float) b);
+			                vertexBuffer.put((float) 1.0f);
+			                indexBuffer.put(l_count++);
+			                ++l_vc;
+			        	}
+			        }
+		        	//System.out.println("filtered out "+(m_points.get(al).size()-l_vc));
+		        	for(int j=0; j<m_points.get(al).size()-l_vc; ++j)
+		        	{
+		        		vertexBuffer.put(0.0f);
+		        		vertexBuffer.put(0.0f);
+		        		vertexBuffer.put(0.0f);
+		        		vertexBuffer.put(0.0f);
+		        		vertexBuffer.put(0.0f);
+		        		vertexBuffer.put(0.0f);
+		        		vertexBuffer.put(0.0f);
+		        		indexBuffer.put(l_count++);
+		        	}
+		        	m_vertexdisplaycount.set(al, Integer.valueOf(l_vc) );
 		        }
 			            
 		        // Tell openGL that we filled the buffers.
@@ -231,7 +278,7 @@ class PointCloudObject implements Runnable {
 			if(!GLok("Setting glBindVertexArray")) return;
 			
 			
-			glDrawElements(GL_POINTS, m_vertexcount.get(a_list), GL_UNSIGNED_INT, m_vertexoffset.get(a_list)*4);
+			glDrawElements(GL_POINTS, m_vertexdisplaycount.get(a_list), GL_UNSIGNED_INT, m_vertexoffset.get(a_list)*4);
 			if(!GLok("glDrawElements")) return;
 		}
 	}
@@ -246,6 +293,7 @@ class PointCloudObject implements Runnable {
 				m_points.add(new ArrayList<RGB3DPoint>());
 				m_vertexcount.add(Integer.valueOf(0));
 				m_vertexoffset.add(Integer.valueOf(0));
+				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(l_point);
 			//m_refresh = true;
@@ -260,6 +308,7 @@ class PointCloudObject implements Runnable {
 				m_points.add(new ArrayList<RGB3DPoint>());
 				m_vertexcount.add(Integer.valueOf(0));
 				m_vertexoffset.add(Integer.valueOf(0));
+				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(a_point);
 			//m_refresh = true;
@@ -639,22 +688,39 @@ class PointCloudObject implements Runnable {
 		Matrix4f modelView = new Matrix4f();
 		FloatBuffer fb = BufferUtils.createFloatBuffer(16);
 
-		Quaternionf q = new Quaternionf();
+		float l_x_scale = 1.0f;
+		float l_y_scale = 1.0f;
+		if(displayW>displayH)
+		{
+			l_x_scale = (float)displayH/(float)displayW;
+		}
+		else
+		{
+			l_y_scale = (float)displayW/(float)displayH;			
+		}
+		
+		
+/*		
+		float aspect = width / height;
+		glViewport(0, 0, width, height);
+		if (aspect >= 1.0)
+		  glOrtho(-50.0 * aspect, 50.0 * aspect, -50.0, 50.0, 1.0, -1.0);
+		else
+		  glOrtho(-50.0, 50.0, -50.0 / aspect, 50.0 / aspect, 1.0, -1.0);*/
+		
+		
+		
+		
 		projectM
-				.setOrtho(-1000.0f, 1000.0f, -1000.0f, 1000.0f, -30000.0f, 30000.0f);
-//				.setPerspective((3.14159f * 2.0f) / 3.0f, (float) displayW / (float) displayH, 0.01f, 6000.0f);
+				.setOrtho(-1000.0f/l_x_scale, 1000.0f/l_x_scale, -1000.0f/l_y_scale, 1000.0f/l_y_scale, -30000.0f, 30000.0f);
 		viewM.identity();
-//		viewM
-//				.lookAt(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos+2000.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f);
-		viewM.lookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-/*		viewM.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos);
-		viewM.rotate(q.rotateZ((float) Math.toRadians(m_pcd.z_rot)).normalize())
-				.rotate(q0.rotateY((float) Math.toRadians(m_pcd.y_rot)).normalize())
-				.rotate(q1.rotateX((float) Math.toRadians(m_pcd.x_rot)).normalize());*/
+		// Corner view
+		viewM.lookAt(-100.0f, 100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		// Top view
+		//viewM.lookAt(0.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		modelM.identity();
+		Quaternionf q = new Quaternionf();
 		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
-		//modelM.translate(0.0f, 0.0f, 0.0f);
-		// System.out.println("Z "+(-2f+rot/120.0f));
 
 		glUseProgram(m_main_program);
 		if (!GLok(""))
@@ -731,7 +797,6 @@ class PointCloudObject implements Runnable {
 		}
 		for(int i=0; i<m_points.size(); ++i)
 		{
-			q = new Quaternionf();
 //			private int m_tt_angle;
 //			private int m_Zrotoff;
 //			private int m_Xrotoff;
@@ -739,8 +804,9 @@ class PointCloudObject implements Runnable {
 			
 			
 			modelM.identity();
-			modelM.translate(m_Xrotoff, 0.0f, m_Zrotoff);
-			modelM.rotate(q.rotateY((float) Math.toRadians(m_rot + i*m_tt_angle)).normalize());
+			q = new Quaternionf();
+			modelM.rotate(q.rotateY((float) Math.toRadians(i*m_tt_angle+m_rot)).normalize());
+			modelM.translate(m_Xrotoff, m_Ydispoff, -m_Zrotoff);
 			//modelM.translate(0.0f, 0.0f, -2000.0f);
 			modelViewLoc = glGetUniformLocation(l_program, "modelView");
 			if (!GLok("Calling glGetUniformLocation"))
@@ -757,7 +823,7 @@ class PointCloudObject implements Runnable {
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		m_rot += delta * 20f;
+		m_rot += delta * 5f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
