@@ -379,13 +379,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		//new Thread(m_pco).start();
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
-			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
-			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+			m_e3d.m_cal_data.capture_h_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_w_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
 		}
 		else
 		{
-			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
-			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+			m_e3d.m_cal_data.capture_w_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_h_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
 		}
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
@@ -491,6 +491,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				if(ae.getActionCommand() == "Export merged")
 				{
 					File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
+					m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.0f,
+							Integer.parseInt(tfZrotoff.getText()),
+							Integer.parseInt(tfXrotoff.getText()),
+							Integer.parseInt(tfYDisplayOffset.getText()),
+							Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
+							Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
+							Eora3D_MainWindow.m_e3d_config.sm_topfilter,
+							Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
+							Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
+							Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 					m_pco.m_pix_to_mm = m_e3d.m_cal_data.m_pix_to_mm;
 					m_pco.save_apply_offsets(l_file);
 				} else
@@ -797,13 +807,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		}
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
-			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
-			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+			m_e3d.m_cal_data.capture_h_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_w_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
 		}
 		else
 		{
-			m_e3d.m_cal_data.capture_w = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
-			m_e3d.m_cal_data.capture_h = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
+			m_e3d.m_cal_data.capture_w_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
+			m_e3d.m_cal_data.capture_h_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_h;
 		}
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
