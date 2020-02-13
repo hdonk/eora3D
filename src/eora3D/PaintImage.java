@@ -57,64 +57,64 @@ class PaintImage extends JPanel
     if(pos==1)
     {
 	    g.drawRect(
-	    		(int)(m_cal_data.pos_1_board.x*l_scale),
-	    		(int)(m_cal_data.pos_1_board.y*l_scale),
-	    		(int)(m_cal_data.pos_1_board.width*l_scale),
-	    		(int)(m_cal_data.pos_1_board.height*l_scale)
+	    		(int)(m_cal_data.pos_1_board_pix.x*l_scale),
+	    		(int)(m_cal_data.pos_1_board_pix.y*l_scale),
+	    		(int)(m_cal_data.pos_1_board_pix.width*l_scale),
+	    		(int)(m_cal_data.pos_1_board_pix.height*l_scale)
 	    		);
 	    g.drawRect(
 	    		0,
 	    		0,
-	    		(int)(m_cal_data.capture_w*l_scale),
-	    		(int)(m_cal_data.capture_h*l_scale)
+	    		(int)(m_cal_data.capture_w_pix*l_scale),
+	    		(int)(m_cal_data.capture_h_pix*l_scale)
 	    		);
 	    g.drawOval(
-	    		(int)(m_cal_data.pos_1_tl.x*l_scale),
-				(int)(m_cal_data.pos_1_tl.y*l_scale),
-				(int)(m_cal_data.pos_1_tl.width*l_scale),
-				(int)(m_cal_data.pos_1_tl.height*l_scale)
+	    		(int)(m_cal_data.pos_1_tl_det_spot.x*l_scale),
+				(int)(m_cal_data.pos_1_tl_det_spot.y*l_scale),
+				(int)(m_cal_data.pos_1_tl_det_spot.width*l_scale),
+				(int)(m_cal_data.pos_1_tl_det_spot.height*l_scale)
 	    		);
 	    g.drawRect(
-	    		(int)(m_cal_data.pos_1_tl.x*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_tl.y*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_tl.width*l_scale+m_cal_data.detection_box*l_scale),
-				(int)(m_cal_data.pos_1_tl.height*l_scale+m_cal_data.detection_box*l_scale)
+	    		(int)(m_cal_data.pos_1_tl_det_spot.x*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_tl_det_spot.y*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_tl_det_spot.width*l_scale+m_cal_data.detection_box*l_scale),
+				(int)(m_cal_data.pos_1_tl_det_spot.height*l_scale+m_cal_data.detection_box*l_scale)
 	    		);
 	    g.drawOval(
-	    		(int)(m_cal_data.pos_1_tr.x*l_scale),
-				(int)(m_cal_data.pos_1_tr.y*l_scale),
-				(int)(m_cal_data.pos_1_tr.width*l_scale),
-				(int)(m_cal_data.pos_1_tr.height*l_scale)
+	    		(int)(m_cal_data.pos_1_tr_det_spot.x*l_scale),
+				(int)(m_cal_data.pos_1_tr_det_spot.y*l_scale),
+				(int)(m_cal_data.pos_1_tr_det_spot.width*l_scale),
+				(int)(m_cal_data.pos_1_tr_det_spot.height*l_scale)
 	    		);
 	    g.drawRect(
-	    		(int)(m_cal_data.pos_1_tr.x*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_tr.y*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_tr.width*l_scale+m_cal_data.detection_box*l_scale),
-				(int)(m_cal_data.pos_1_tr.height*l_scale+m_cal_data.detection_box*l_scale)
+	    		(int)(m_cal_data.pos_1_tr_det_spot.x*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_tr_det_spot.y*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_tr_det_spot.width*l_scale+m_cal_data.detection_box*l_scale),
+				(int)(m_cal_data.pos_1_tr_det_spot.height*l_scale+m_cal_data.detection_box*l_scale)
 	    		);
 	    g.drawOval(
-	    		(int)(m_cal_data.pos_1_bl.x*l_scale),
-				(int)(m_cal_data.pos_1_bl.y*l_scale),
-				(int)(m_cal_data.pos_1_bl.width*l_scale),
-				(int)(m_cal_data.pos_1_bl.height*l_scale)
+	    		(int)(m_cal_data.pos_1_bl_det_spot.x*l_scale),
+				(int)(m_cal_data.pos_1_bl_det_spot.y*l_scale),
+				(int)(m_cal_data.pos_1_bl_det_spot.width*l_scale),
+				(int)(m_cal_data.pos_1_bl_det_spot.height*l_scale)
 	    		);
 	    g.drawRect(
-	    		(int)(m_cal_data.pos_1_bl.x*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_bl.y*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_bl.width*l_scale+m_cal_data.detection_box*l_scale),
-				(int)(m_cal_data.pos_1_bl.height*l_scale+m_cal_data.detection_box*l_scale)
+	    		(int)(m_cal_data.pos_1_bl_det_spot.x*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_bl_det_spot.y*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_bl_det_spot.width*l_scale+m_cal_data.detection_box*l_scale),
+				(int)(m_cal_data.pos_1_bl_det_spot.height*l_scale+m_cal_data.detection_box*l_scale)
 	    		);
 	    g.drawOval(
-	    		(int)(m_cal_data.pos_1_br.x*l_scale),
-				(int)(m_cal_data.pos_1_br.y*l_scale),
-				(int)(m_cal_data.pos_1_br.width*l_scale),
-				(int)(m_cal_data.pos_1_br.height*l_scale)
+	    		(int)(m_cal_data.pos_1_br_det_spot.x*l_scale),
+				(int)(m_cal_data.pos_1_br_det_spot.y*l_scale),
+				(int)(m_cal_data.pos_1_br_det_spot.width*l_scale),
+				(int)(m_cal_data.pos_1_br_det_spot.height*l_scale)
 	    		);
 	    g.drawRect(
-	    		(int)(m_cal_data.pos_1_br.x*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_br.y*l_scale-m_cal_data.detection_box*l_scale/2),
-				(int)(m_cal_data.pos_1_br.width*l_scale+m_cal_data.detection_box*l_scale),
-				(int)(m_cal_data.pos_1_br.height*l_scale+m_cal_data.detection_box*l_scale)
+	    		(int)(m_cal_data.pos_1_br_det_spot.x*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_br_det_spot.y*l_scale-m_cal_data.detection_box*l_scale/2),
+				(int)(m_cal_data.pos_1_br_det_spot.width*l_scale+m_cal_data.detection_box*l_scale),
+				(int)(m_cal_data.pos_1_br_det_spot.height*l_scale+m_cal_data.detection_box*l_scale)
 	    		);
     }
 /*    else if(pos==2)

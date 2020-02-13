@@ -414,9 +414,9 @@ class PointCloudObject implements Runnable {
 			        	{
 			        		Vector3f v = new Vector3f(m_points.get(j).get(i).m_x, m_points.get(j).get(i).m_y, m_points.get(j).get(i).m_z);
 			        		modelM.transformPosition(v);
-				        	writer.write(((float)v.x)+" ");
-				        	writer.write(((float)v.y)+" ");
-				        	writer.write(((float)v.z)+" ");
+				        	writer.write(((float)v.x)*m_pix_to_mm+" ");
+				        	writer.write(((float)v.y)*m_pix_to_mm+" ");
+				        	writer.write(((float)v.z)*m_pix_to_mm+" ");
 				        	writer.write(m_points.get(j).get(i).m_r+" ");
 				        	writer.write(m_points.get(j).get(i).m_g+" ");
 				        	writer.write(m_points.get(j).get(i).m_b+"\n");
