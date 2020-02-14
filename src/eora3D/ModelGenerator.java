@@ -63,6 +63,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfZrotoff;
 	private JTextField tfXrotoff;
 //	private JTextField tfTTrot;
+	
 	private JScrollPane imageScrollPane;
 	private JTextField tfMinpointsperlaser;
 	
@@ -81,11 +82,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d = a_e3d;
 		setTitle("Generate Model");
 		getContentPane().setLayout(null);
-		setSize(824,792);
+		setSize(830,836);
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Laser Detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel.setBounds(6, 0, 141, 646);
+		panel.setBounds(6, 0, 141, 678);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
@@ -455,7 +456,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	
 	@Override
 	public void actionPerformed(ActionEvent ae) {
-		System.out.println(ae.getActionCommand());
+//		System.out.println(ae.getActionCommand());
 		if(ae.getActionCommand() == "Generate")
 		{
 			if(m_detect_thread==null)

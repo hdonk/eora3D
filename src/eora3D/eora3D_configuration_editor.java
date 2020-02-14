@@ -581,7 +581,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 					l_fis.close();
 					l_config.sm_config_file = l_file;
 					setFromConfig(l_config);
-					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
+//					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
 					System.out.println("Serialized data loaded from " + l_file);
 				} catch (Exception ioe) {
 					ioe.printStackTrace();
