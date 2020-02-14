@@ -159,7 +159,16 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(m_e3D_bluetooth == null) m_e3D_bluetooth = new eora3D_bluetooth();
 		
 		getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		m_e3D_bluetooth.discover();
+		try
+		{
+			m_e3D_bluetooth.discover();
+		} catch(Exception e)
+		{
+			getContentPane().setCursor(Cursor.getDefaultCursor());
+			laser_selector.setText("Not found");
+			turntable_selector.setText("Not found");
+			return;
+		}
 		getContentPane().setCursor(Cursor.getDefaultCursor());
 		laser_selector.setText("Not found");
 		turntable_selector.setText("Not found");
@@ -275,7 +284,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			if(m_laser==null)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Error", JOptionPane.ERROR_MESSAGE);
-				//return;
+				return;
 			}
 			new eora3D_calibration(this).setVisible(true);
 		}
