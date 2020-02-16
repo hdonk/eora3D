@@ -290,7 +290,17 @@ public class eora3D_bluetooth {
     		turntable.disconnect();
     	turntable = a_turntable;
     	if(turntable != null)
-    		turntable.connect();
+    	{
+    		try
+    		{
+    			turntable.connect();
+    		} catch(Exception e)
+    		{
+    			e.printStackTrace();
+                turntable = null;
+        		return false;
+    		}
+    	}
     	turntableServices = turntable.getServices();
     	if(turntableServices==null)
 		{
