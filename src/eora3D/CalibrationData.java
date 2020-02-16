@@ -77,12 +77,12 @@ class CalibrationData
 		}
 		pos_1_board_pix = new Rectangle();
 		pos_1_board_pix.height = (int)cal_board_target_h_pix;
-		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==0 || Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==180)
+/*		if(Eora3D_MainWindow.m_e3d_config.sm_camera_res_w>=Eora3D_MainWindow.m_e3d_config.sm_camera_res_h)
 		{
 			System.out.println("cw "+capture_w_pix+" tw "+cal_board_target_w_pix);
 			v_offset_minmax = (capture_w_pix - (int)cal_board_target_w_pix)/2;
 		}
-		else
+		else*/
 		{
 			System.out.println("ch "+capture_h_pix+" th "+cal_board_target_h_pix);
 			v_offset_minmax = (capture_h_pix - (int)cal_board_target_h_pix)/2;

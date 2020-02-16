@@ -47,6 +47,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfCameraHeight;
 	private JTextField tfMaxPointsPerLine;
 	private JTextField tfMinpointsperlaser;
+	private JTextField tfLatencyframes;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -222,7 +223,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBorder(new TitledBorder(null, "Camera", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(181, 0, 123, 161);
+		panel_3.setBounds(181, 0, 123, 204);
 		getContentPane().add(panel_3);
 		panel_3.setLayout(null);
 		
@@ -258,10 +259,21 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfCameraHeight.setColumns(10);
 		tfCameraHeight.addActionListener(this);
 		
+		JLabel lblLatencyFrames = new JLabel("Latency frames");
+		lblLatencyFrames.setBounds(6, 143, 107, 15);
+		panel_3.add(lblLatencyFrames);
+		
+		tfLatencyframes = new JTextField();
+		tfLatencyframes.setBounds(6, 158, 111, 27);
+		panel_3.add(tfLatencyframes);
+		tfLatencyframes.setText("0");
+		tfLatencyframes.setColumns(10);
+		tfLatencyframes.addActionListener(this);
+		
 		JPanel panel_4 = new JPanel();
 		panel_4.setLayout(null);
 		panel_4.setBorder(new TitledBorder(null, "Scan", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(59, 59, 59)));
-		panel_4.setBounds(181, 173, 136, 171);
+		panel_4.setBounds(182, 204, 136, 171);
 		getContentPane().add(panel_4);
 		
 		JLabel lblStartPosition = new JLabel("Start position");
@@ -341,7 +353,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_6 = new JPanel();
 		panel_6.setBorder(new TitledBorder(null, "Turntable", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_6.setBounds(180, 345, 150, 88);
+		panel_6.setBounds(181, 376, 150, 88);
 		getContentPane().add(panel_6);
 		panel_6.setLayout(null);
 		
@@ -381,6 +393,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfTurntableStepSize.setText(""+a_cfg.sm_turntable_step_size);
 		tfCameraWidth.setText(""+a_cfg.sm_camera_res_w);
 		tfCameraHeight.setText(""+a_cfg.sm_camera_res_h);
+		tfLatencyframes.setText(""+a_cfg.sm_camera_latency_frames);
 		if(a_cfg.sm_laser_detection_threshold_logic.equals("Or"))
 		{
 			cbAlgorithm.setSelectedIndex(0);
@@ -437,8 +450,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.sm_turntable_step_size = Integer.parseInt(tfTurntableStepSize.getText());
 		a_cfg.sm_camera_res_w = Integer.parseInt(tfCameraWidth.getText());
 		a_cfg.sm_camera_res_h = Integer.parseInt(tfCameraHeight.getText());
-		
-		a_cfg.sm_camera_res_h = Integer.parseInt(tfCameraHeight.getText());
+		a_cfg.sm_camera_latency_frames = Integer.parseInt(tfLatencyframes.getText());
 		
 		switch(cbAlgorithm.getSelectedIndex())
 		{
