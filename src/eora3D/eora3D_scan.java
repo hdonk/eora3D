@@ -18,6 +18,7 @@ import javax.swing.JDialog;
 import javax.swing.border.BevelBorder;
 import java.awt.Dimension;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 
 class ExtensionFilter implements FilenameFilter
 {
@@ -36,7 +37,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 	private JTextField tfScanStartAngle;
 	private JTextField tfScanEndAngle;
 	private JTextField tfScanStepSize;
-	private JTextField tfTurntableStepSize;
+	private JComboBox<String> cbTurntableStops;
 	private PaintImage imagePanel;
 	private JButton btnLaserTestStart;
 	private JButton btnLaserTestEnd;
@@ -109,14 +110,18 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		getContentPane().add(btnStartTurntableScan);
 		btnStartTurntableScan.addActionListener(this);
 		
-		JLabel lblTurntableStepSize = new JLabel("Turntable stepsize (18/deg)");
-		lblTurntableStepSize.setBounds(16, 345, 194, 15);
-		getContentPane().add(lblTurntableStepSize);
+		JLabel lblTurntableStops = new JLabel("Turntable stops");
+		lblTurntableStops.setBounds(16, 345, 194, 15);
+		getContentPane().add(lblTurntableStops);
 		
-		tfTurntableStepSize = new JTextField();
-		tfTurntableStepSize.setBounds(16, 372, 122, 27);
-		getContentPane().add(tfTurntableStepSize);
-		tfTurntableStepSize.setColumns(10);
+		cbTurntableStops = new JComboBox<String>();
+		cbTurntableStops.setBounds(16, 372, 122, 27);
+		cbTurntableStops.addItem("18");
+		cbTurntableStops.addItem("12");
+		cbTurntableStops.addItem("6");
+		cbTurntableStops.addItem("4");
+		cbTurntableStops.addItem("2");
+		getContentPane().add(cbTurntableStops);
 		
 		JButton btnConfig = new JButton("Config");
 		btnConfig.setBounds(16, 1003, 100, 27);
@@ -326,6 +331,8 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 			e1.printStackTrace();
 			return;
 		}
+		imagePanel.m_image = l_image;
+		imagePanel.repaint();
 		
 		if(chckbxPauseToTurn.isSelected())
 		{
@@ -359,6 +366,8 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 				e1.printStackTrace();
 				return false;
 			}
+			imagePanel.m_image = l_image;
+			imagePanel.repaint();
 			if(!m_e3d.m_e3D_bluetooth.setTurntableMotorPos(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size))
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "OK", "Failed to set turntable position", JOptionPane.ERROR_MESSAGE);
@@ -428,7 +437,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		tfScanStartAngle.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle);
 		tfScanEndAngle.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle);
 		tfScanStepSize.setText(""+Eora3D_MainWindow.m_e3d_config.sm_scan_step_size);
-		tfTurntableStepSize.setText(""+Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size);
+		cbTurntableStops.setSelectedItem(""+(6516/Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size));
 	}
 	
 	void putToConfig()
@@ -437,7 +446,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle = Integer.parseInt(tfScanStartAngle.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle = Integer.parseInt(tfScanEndAngle.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_scan_step_size = Integer.parseInt(tfScanStepSize.getText());
-		Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size = Integer.parseInt(tfTurntableStepSize.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size = (6516/Integer.parseInt(cbTurntableStops.getSelectedItem().toString()));
 		
 		m_config_verify = true;
 		Eora3D_MainWindow.m_e3d_config.verify();
@@ -449,14 +458,26 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		while(!m_stop_camera)
 		{
 			BufferedImage l_image = m_e3d.getImage();
-			imagePanel.m_image = l_image;
-			imagePanel.m_overlay = new BufferedImage(l_image.getWidth(), l_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			for(int y=0; y<l_image.getHeight(); ++y)
+			if(l_image != null)
 			{
-				imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xffff0000);
+				imagePanel.m_image = l_image;
+				imagePanel.m_overlay = new BufferedImage(l_image.getWidth(), l_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
+				for(int y=0; y<l_image.getHeight(); ++y)
+				{
+					imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xffff0000);
+				}
+				imagePanel.m_overlay.flush();
+				imagePanel.repaint();
 			}
-			imagePanel.m_overlay.flush();
-			imagePanel.repaint();
+			else
+			{
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
+			}
 		}
 		m_stop_camera = false;
 	}
