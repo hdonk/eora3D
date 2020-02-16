@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.MalformedURLException;
 import java.util.List;
 
 import javax.swing.JComboBox;
@@ -26,12 +27,17 @@ import eora3D.eora3D_bluetooth;
 import tinyb.BluetoothDevice;
 
 import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver;
+import com.github.sarxos.webcam.ds.ipcam.IpCamDeviceRegistry;
+import com.github.sarxos.webcam.ds.ipcam.IpCamDriver;
+import com.github.sarxos.webcam.ds.ipcam.IpCamMode;
 
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.JMenu;
+import javax.swing.JTextField;
 
 class extensionFileFilter extends javax.swing.filechooser.FileFilter {
 
@@ -70,6 +76,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	public Webcam m_camera = null;
 	static eora3D_configuration_data_v1 m_e3d_config;
 	public CalibrationData m_cal_data = null;
+	private JTextField tfIPcameraurl;
 	
 	public Eora3D_MainWindow()
 	{
@@ -140,7 +147,24 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
 		
-		setSize(457, 473);
+		JButton btnTtt = new JButton("TTT");
+		btnTtt.setBounds(301, 293, 100, 27);
+		getContentPane().add(btnTtt);
+		btnTtt.addActionListener(this);
+		
+		tfIPcameraurl = new JTextField();
+		tfIPcameraurl.setBounds(4, 152, 394, 27);
+		getContentPane().add(tfIPcameraurl);
+		tfIPcameraurl.setText(m_e3d_config.sm_IP_webcam);
+		tfIPcameraurl.setColumns(10);
+		tfIPcameraurl.addActionListener(this);
+		
+		JLabel lblIpCameraUrl = new JLabel("IP Camera URL");
+		lblIpCameraUrl.setBounds(10, 135, 99, 15);
+		getContentPane().add(lblIpCameraUrl);
+		
+		
+		setSize(412, 365);
 		
 		addWindowListener(this);
 		
@@ -226,12 +250,13 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		}
 		camera_selector.removeActionListener(this);
 		camera_selector.removeAllItems();
-		camera_selector.addActionListener(this);
 		m_webcams = Webcam.getWebcams();
 		for(Webcam webcam : m_webcams)
 		{
 			camera_selector.addItem(webcam.getName());
 		}
+		camera_selector.addItem(new String("IPCamera"));
+		camera_selector.addActionListener(this);
 		camera_selector.setSelectedItem(0);
 		if(m_webcams.size()==0)
 		{
@@ -256,22 +281,35 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		{
 			if(m_camera!=null)
 				m_camera.close();
-			m_camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
-			Dimension l_res[] = new Dimension[] {new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h)};
-			m_camera.setCustomViewSizes(l_res);
-			m_camera.setViewSize(new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h));
-			try
+			System.out.println("Selected camera "+camera_selector.getSelectedItem().toString());
+			if(camera_selector.getSelectedItem().toString().equals("IPCamera"))
 			{
-				m_camera.open();
-				BufferedImage l_image = m_camera.getImage();
-				m_e3d_config.sm_camera_res_w = l_image.getWidth();
-				m_e3d_config.sm_camera_res_h = l_image.getHeight();
+				setupIPCamera();
 			}
-			catch(Exception e1)
+			else
 			{
-				e1.printStackTrace();
-				m_camera = null;
+				Webcam.setDriver(new WebcamDefaultDriver());
+				m_camera  = Webcam.getWebcamByName(camera_selector.getSelectedItem().toString());
+				Dimension l_res[] = new Dimension[] {new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h)};
+				m_camera.setCustomViewSizes(l_res);
+				m_camera.setViewSize(new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h));
+				try
+				{
+					m_camera.open();
+					BufferedImage l_image = m_camera.getImage();
+					m_e3d_config.sm_camera_res_w = l_image.getWidth();
+					m_e3d_config.sm_camera_res_h = l_image.getHeight();
+				}
+				catch(Exception e1)
+				{
+					e1.printStackTrace();
+					m_camera = null;
+				}
 			}
+		} else
+		if(e.getSource().equals(this.tfIPcameraurl))
+		{
+			setupIPCamera();
 		} else
 		if(e.getActionCommand()=="Calibrate")
 		{
@@ -314,7 +352,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		{
 			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(this);
 			l_editor.setVisible(true);
-		}
+		} else
 /*		else
 		if(e.getActionCommand()=="Load config")
 		{
@@ -382,8 +420,41 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				}
 			}
 		}*/
+		if(e.getActionCommand()=="TTT")
+		{
+			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
+		}
 	}
 
+	void setupIPCamera()
+	{
+		m_e3d_config.sm_IP_webcam = tfIPcameraurl.getText();
+		Webcam.setDriver(new IpCamDriver());
+		
+		try {
+			if(!IpCamDeviceRegistry.isRegistered("IPCamera"))
+			{
+				IpCamDeviceRegistry.register("IPCamera", m_e3d_config.sm_IP_webcam, IpCamMode.PUSH);
+			}
+			m_camera = Webcam.getWebcams().get(0);
+			System.out.println("Selected IP camera "+m_camera);
+			Dimension l_res[] = new Dimension[] {new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h)};
+			m_camera.setCustomViewSizes(l_res);
+			m_camera.setViewSize(new Dimension(m_e3d_config.sm_camera_res_w, m_e3d_config.sm_camera_res_h));
+			m_camera.open();
+			BufferedImage l_image;
+			l_image = m_camera.getImage();
+			l_image.flush();
+			m_e3d_config.sm_camera_res_w = l_image.getWidth();
+			m_e3d_config.sm_camera_res_h = l_image.getHeight();
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			m_camera = null;
+		}
+		
+	}
+	
 	@Override
 	public void windowOpened(WindowEvent e) {
 		// TODO Auto-generated method stub
@@ -425,5 +496,25 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	public void windowDeactivated(WindowEvent e) {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public BufferedImage getImage()
+	{
+		BufferedImage l_image = null;
+		if(m_camera == null) return null;
+/*		try {
+			Thread.sleep(m_e3d_config.sm_camera_latency_frames);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}*/
+		for(int i=0; i<m_e3d_config.sm_camera_latency_frames; ++i) m_camera.getImage();
+		l_image = m_camera.getImage();
+		l_image.flush();
+		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
+		{
+			l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
+		}
+		return l_image;
 	}
 }

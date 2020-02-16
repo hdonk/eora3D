@@ -41,5 +41,6 @@
 	<classpathentry kind="lib" path="libs/lwjgl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-sources.jar"/>
 	<classpathentry kind="lib" path="libs/joml-1.9.14.jar" sourcepath="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/joml-1.9.14-sources.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jPLY"/>
+	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/webcam-capture-driver-ipcam-0.3.12.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
