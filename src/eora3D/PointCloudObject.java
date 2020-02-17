@@ -303,7 +303,7 @@ public class PointCloudObject implements Runnable {
 	{
 		synchronized(this)
 		{
-			if(m_points.size()<=a_list)
+			while(m_points.size()<=a_list)
 			{
 				m_points.add(new ArrayList<RGB3DPoint>());
 				m_vertexcount.add(Integer.valueOf(0));
