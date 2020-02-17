@@ -19,6 +19,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public File sm_config_file = new File(System.getProperty("user.home")+File.separatorChar+"ScannerConfig.e3d");
 	public File sm_image_dir = new File(System.getProperty("user.home")+File.separatorChar+"e3d_caps");
+	public String sm_IP_webcam = "http://10.10.10.104:8080/photo.jpg";
 	
 	public int sm_circle_min_rad = 3;
 	public int sm_circle_max_rad = 10;
@@ -49,11 +50,12 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public int sm_threads = 8;
 	
+	public int sm_test_rotation = 0;
 	public int sm_test_frame = 4216;
 	
-	public int sm_turntable_step_size = 324;
+	public int sm_turntable_step_size = 362;
 	
-	public int sm_turntable_steps_per_rotation = 6480;
+	public int sm_turntable_steps_per_rotation = 6516;
 	
 	public int sm_leftfilter = -5000;
 	public int sm_rightfilter = 5000;
