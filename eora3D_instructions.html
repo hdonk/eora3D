@@ -1,23 +1,71 @@
-html>
+<html>
    <head>
       <title>Eora 3D open source replacement desktop software</title>
    </head>
 
    <body>
       <h1>Wordy bit</h1>
+First, an apology. I didn't write this software for you. I wrote it for myself. If it works for you, brilliant! Here's a link to my <a href="https://paypal.me/hdonk?locale.x=en_GB">tip jar</a>.
+If it doesn't - please raise an issue
+<a href="https://github.com/hdonk/eora3D/issues">here</a>. I might even look in to it. Even better, download the <a href="https://github.com/hdonk/eora3D/">source from here</a>,
+fix it, improve it, and create a pull request.<p>
+Secondly, I do hope it works for you. The Eora 3D is a good piece of equipment. It's a shame the laser line isn't a tad more focused, but it does work.<p>
+Finally, thanks for trying this app out. It's been fun and interesting to write, and I'm intending to find it useful myself :-)
       <h2>Design philosophy</h2>
-      <hr>
-      <h1>Config</h1>
+The original software(s) provided by Eora were designed to run on a mobile phone, which makes sense as the hardware was designed to hold a phone as the camera, and use the phone's
+bluetooth to communicated with the lase turret and the turntable.<p>
+However, the limitations are too much for me. It makes it a lot harder to write 'platform independent' software, and it limits to how much of the interim data you can store. With a full scan's
+images weighing in at multiple gigabytes, storing them on a phone makes little sense (yes, this could be improved, such as by using jpg/whatever, or single colour channel storage - I may
+play with that later). So that's why I've written it for PC - Linux currently, fingers crossed Windows 10 next.<p>
+I've written the software to work in three phases, as documented further down. I've also exposed nearly all the parameters used in the application in to the configuration file and configuration
+editor. This allows changes to be made after the initial scan in analysing the data if you're not happy with the result. This also means although it becomes a multi pass process, you can
+end up with a good model despite initial poor results, without having to run the scan <b>again</b><p>
       <hr>
       <h1>Startup</h1>
+The application is released as a compressed tar file for Linux. Just extract it in to your chosen directory, and run:<br>
+run_eora3D_4k.sh - Scaled main app for 4k displays<br>
+run_eora3D.sh - Normal main app<br>
+run_pointcloudviewer.sh - The point cloud viewer, which the main app send the data to, to display<p>
+Keep an eye on the console output - I've not created error/message dialogs for all the problem situations.<p>
+      <hr>
+      <h1>Main window</h1>
+On startup the app will kick off a BLE scan. I'm finding on Linux/bluez, the turntable & turret will be detected if present, but you have to rescan to get a successful connection. So you may have to
+rescan a couple of times.<p>
+If you plug/unplug a camera, you may have to rescan the cameras<p>
+The IP Camera option will use the URL to retrieve a single image from your camera. I'm using 'IP Camera' from the Android app store, which works well. It allows you to manually kick off
+the focus, so you can force focus on the object you're scanning.<p>
+The app will request the resolution in the config, but will update to what is provided by the camera in the config afterwards.<p>
+      <hr>
+      <h1>Config</h1>
+Nearly all the values used within the app are exposed in this dialog. The data is duplicated in to the dialogs that use it. If it doesn't cross-update, it's a bug :) <p>
+It is also accessible from all the sub menus. You can save and load the data from this menu. Any changes, or a load, will not be applied unless you click apply!
       <hr>
       <h1>Calibration</h1>
+The calibration process is used to determine the focal length of the lens on your phone. It'll depend on the resolution you're scanning in as well. Use the Eora calibration card for this. Get it
+ligned up so that all four corner spots are green, then click the Calibrate button. The app will then measure the angle at which the dots are detected by the camera/laser.
       <hr>
       <h1>Scan</h1>
+The scan process will take a colour map photo - with a pause to turn the lights off afterwards if desired. Then it takes a base photo to compare to the laser capture photos. The laser capture
+photos then take, between the start and end laser position, and every selected laser stop point. There's 80 of these per degree. You can test the start and stop points to ensure the laser will
+cover the angles you want, and not waste time and storage.<p>
+The turntable scan does the same as the single scan, but uses the turntable to scan multiple times at different angles. The app does a full turn of the model to get the colour map, before giving
+the lights off option, hence the reason there are only limited stops that give a full 360 degree turn to the table.<p>
+Some of this is more are than science - it appears plastics that flouresce under laser light give weird scans, but reflective materials can give good scans with some noise<p>
       <hr>
       <h1>Model generation</h1>
+This is where all the magic occurs. By using the calibration angles, and the scanned images, and some maths, the 3D coordinates of the object you're scanning can be determined.<p>
+If you're running the point cloud viewer, the data will be sent across and displayed as you run the model generation. If you run the turntable model generation, the whole model is sent, in
+different layers. You can then use the Z offset to get the correct rotation point to do the merge rotation. If you find you need more than 1 point on the X axis, it probably means something's gone
+wrong with the horizontal camera resolution in the config. It should match the width of the captured images. Yes, I really should fix it to be updated when the images are loaded...<p>
+When the analysis is complete, I'd suggest you hit the export button. This'll create .ply files with each layer in the e3d_caps directory. This can then be re-imported in to the app to<p>
+play with the Z, X & Y offset.<p>
+When you're happy and want a single translated, rotated & merged ply file, use the Export merged button<p>
       <hr>
       <h1>Last thoughts</h1>
+I'm going to be making further changes (I suspected) to the app as I use it and figure our better ways of laser detection, etc. I'm also planning on working on Windows 10 ble support next<p>
+- everything should currently work currently in Windows 10 except that.<p>
+I'll also (probably) keep improving this doc.<p>
+So, best of luck in your scanning. And please post any results (good or bad!) to the Facebook group.
       <hr>
    </body>
 
