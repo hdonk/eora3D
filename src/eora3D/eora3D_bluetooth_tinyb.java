@@ -64,37 +64,7 @@ class ValueNotification implements BluetoothNotification<byte[]> {
 }
 
 
-/*
- * EORA3D - TURRET
- * * SLASER SERVICE
- * LASER STATUS - READ,WRITE_NO_RESPONSE,8 bits (00 laser off, 01 laser on)
- * * SMOTOR SERVICE
-
- * MOTOR CPOS - READ, 32 bits, default 0
- * MOTOR IPOS - WRITE_NOT_RESPONSE (Move to position. 00 scan right, then back to left endstop. Invert bytes! End is at 0x2300 ish)
- * MOTOR MMODE - READ, NOTIFY, 8bits - default 1
- * MOTOR SMODE - READ, WRITE_NO_RESPONSE, 8bits - default 1
- * MOTOR SPEED - READ, WRITE, 8 bits - default 0 (bigger is slower)
-
- * * SLED SERVICE
- * LED TYPE - READ, NOTIFY, WRITE_NO_RESPONSE, 8 bits, default 0xf6484700 (RGBI)
- * 
- * EORA3D - TTABLE
- * * TIO SERVICE
- * IO INPUT - WRITE_NO_RESPONSE
- * IO OUTPUT - READ, NOTIFY
-
- * * TMOTOR SERVICE
- * MOTOR CPOS - READ, NOTIFY
- * MOTOR IPOS - READ, WRITE_NO_RESPONSE
- * MOTOR MMODE - READ, NOTIFY
- * MOTOR SMODE - READ, WRITE_NO_RESPONSE
- * MOTOR SPEED - READ, WRITE_NO_RESPONSE
- * MOTOR ACCEL - READ, WRITE_NO_RESPONSE
-
- */
-
-public class eora3D_bluetooth {
+public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
 
     private BluetoothManager manager;
     public List<BluetoothDevice> devices = null;
@@ -103,37 +73,12 @@ public class eora3D_bluetooth {
     List<BluetoothGattService> laserServices = null;    
     private BluetoothGattCharacteristic m_motorMMODE = null;
 	private ValueNotification m_motorNotification;
-    String UUID_laser_service = "534c4153-4552-2053-4552-564943452020";
-    String UUID_laser_status = "4c415345-5220-5354-4154-555320202020";
-    String UUID_laser_motor_service = "534d4f54-4f52-2053-4552-564943452020";
-    String UUID_laser_motor_cpos = "4d4f544f-5220-4350-4f53-202020202020";
-    String UUID_laser_motor_ipos = "4d4f544f-5220-4950-4f53-202020202020";
-    String UUID_laser_motor_mmode = "4d4f544f-5220-4d4d-4f44-452020202020";
-    String UUID_laser_motor_smode = "4d4f544f-5220-534d-4f44-452020202020";
-    String UUID_laser_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
-    String UUID_laser_sled_service = "534c4544-2053-4552-5649-434520202020";
-    String UUID_laser_led_type = "4c454420-5459-5045-2020-202020202020";
     
     BluetoothDevice turntable = null;
     List<BluetoothGattService> turntableServices = null;
     private BluetoothGattCharacteristic m_tmotorMMODE = null;
 	private ValueNotification m_tmotorNotification;
-    String UUID_turntable_tio_service = "54494f20-5345-5256-4943-452020202020";
-    String UUID_turntable_io_input = "494f2049-4e50-5554-2020-202020202020";
-    String UUID_turntable_io_output = "494f204f-5554-5055-5420-202020202020";
-    String UUID_turntable_tmotor_service = "544d4f54-4f52-2053-4552-564943452020";
-    String UUID_turntable_motor_cpos = "4d4f544f-5220-4350-4f53-202020202020";
-    String UUID_turntable_motor_ipos = "4d4f544f-5220-4950-4f53-202020202020";
-    String UUID_turntable_motor_mmode = "4d4f544f-5220-4d4d-4f44-452020202020";
-    String UUID_turntable_motor_smode = "4d4f544f-5220-534d-4f44-452020202020";
-    String UUID_turntable_motor_speed = "4d4f544f-5220-5350-4545-442020202020";
-    String UUID_turntable_motor_accel = "4d4f544f-5220-4143-4345-4c2020202020";
-    
-	
-    public eora3D_bluetooth()
-    {
-    }
-    
+
 	static void printDevice(BluetoothDevice device) {
         System.out.print("Address = " + device.getAddress());
         System.out.print(" Name = " + device.getName());
@@ -413,35 +358,37 @@ public class eora3D_bluetooth {
         return true;
 	}
 
-	public void setMotorSpeed(int a_speed) {
+	public boolean setMotorSpeed(int a_speed) {
     	byte[] l_speed = { (byte) a_speed};
-    	if(laser == null) return;
+    	if(laser == null) return false;
         BluetoothGattCharacteristic motorSpeed = getLaserCharacteristic(UUID_laser_motor_service, UUID_laser_motor_speed);
 
         if (motorSpeed==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the motor speed characteristic");
         motorSpeed.writeValue(l_speed);
+        return true;
 	}
 
-	public void setTurntableMotorSpeed(int a_speed) {
+	public boolean setTurntableMotorSpeed(int a_speed) {
     	byte[] l_speed = { (byte) a_speed};
-    	if(turntable == null) return;
+    	if(turntable == null) return false;
         BluetoothGattCharacteristic motorSpeed = getTurntableCharacteristic(UUID_turntable_tmotor_service,
         			UUID_turntable_motor_speed);
 
         if (motorSpeed==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the motor speed characteristic");
         motorSpeed.writeValue(l_speed);
+        return true;
 	}
 
 	public boolean setTurntableMotorPos(int a_pos) {
@@ -469,20 +416,21 @@ public class eora3D_bluetooth {
         return true;
 }
 
-	public void setTurntableMotorAccel(int a_accel) {
+	public boolean setTurntableMotorAccel(int a_accel) {
     	byte[] l_accel = { (byte) a_accel};
-    	if(turntable == null) return;
+    	if(turntable == null) return false;
         BluetoothGattCharacteristic motorAccel = getTurntableCharacteristic(UUID_turntable_tmotor_service,
         			UUID_turntable_motor_accel);
 
         if (motorAccel==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the motor accel characteristic");
         motorAccel.writeValue(l_accel);
+        return true;
 	}
 
 	public void cleanup() {

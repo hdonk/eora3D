@@ -25,7 +25,7 @@ import java.util.List;
 import javax.swing.JComboBox;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
-import eora3D.eora3D_bluetooth;
+import eora3D.eora3D_bluetooth_tinyb;
 import tinyb.BluetoothDevice;
 
 import com.github.sarxos.webcam.Webcam;
@@ -183,7 +183,19 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	void Bluetooth_Rescan()
 	{
-		if(m_e3D_bluetooth == null) m_e3D_bluetooth = new eora3D_bluetooth();
+		if(m_e3D_bluetooth == null)
+		{
+			if(System.getProperty("os.name").contentEquals("Windows 10"))
+			{
+				System.out.println("Using javelin for BLE");
+				m_e3D_bluetooth = new eora3D_bluetooth_javelin();
+			}
+			else
+			{
+				System.out.println("Using tinyb for BLE");
+				m_e3D_bluetooth = new eora3D_bluetooth_tinyb();
+			}
+		}
 		
 		getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try
@@ -199,7 +211,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		getContentPane().setCursor(Cursor.getDefaultCursor());
 		laser_selector.setText("Not found");
 		turntable_selector.setText("Not found");
-		if(m_e3D_bluetooth.devices!=null)
+/*		if(m_e3D_bluetooth.devices!=null)
 		{
 			for (BluetoothDevice device : m_e3D_bluetooth.devices) {
 				if(device.getName().substring(0, 4).equals("E3DS"))
@@ -215,7 +227,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 					else
 					{
 						System.out.print("Found laser: ");
-						eora3D_bluetooth.printDevice(m_laser);
+						eora3D_bluetooth_tinyb.printDevice(m_laser);
 					}
 					break;
 				}
@@ -235,12 +247,13 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 					else
 					{
 						System.out.print("Found turntable: ");
-						eora3D_bluetooth.printDevice(turntable);
+						eora3D_bluetooth_tinyb.printDevice(turntable);
 					}
 					break;
 				}
 			}
-		}
+			
+		}*/
 	}
 	
 	void Camera_Rescan()

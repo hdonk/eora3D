@@ -1,46 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="jPLY/|jPLY/bin/org/" kind="src" path="src"/>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/slf4j-simple-2.0.0-alpha1.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/tinyb.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/nickh/eclipse/workspace/eora3D/libs"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/webcam-capture-0.3.12.jar"/>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl-sources.jar">
+	<classpathentry kind="lib" path="libs/slf4j-simple-2.0.0-alpha1.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl-javadoc.jar!/"/>
+			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-opengles.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-egl-sources.jar">
+	<classpathentry kind="lib" path="libs/tinyb.jar">
 		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-opengles-javadoc.jar!/"/>
+			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-glfw.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-glfw-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-glfw-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-sources.jar">
-		<attributes>
-			<attribute name="javadoc_location" value="jar:file:/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/lwjgl-javadoc.jar!/"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="libs/lwjgl.jar" sourcepath="/home/nickh/eclipse/workspace/eora3D/libs/lwjgl-sources.jar"/>
 	<classpathentry kind="lib" path="libs/joml-1.9.14.jar" sourcepath="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/joml-1.9.14-sources.jar"/>
+	<classpathentry kind="lib" path="libs/webcam-capture-driver-ipcam-0.3.12.jar"/>
+	<classpathentry kind="lib" path="libs/webcam-capture-0.3.12.jar"/>
+	<classpathentry kind="lib" path="libs/lwjgl-egl.jar"/>
+	<classpathentry kind="lib" path="libs/lwjgl-glfw.jar"/>
+	<classpathentry kind="lib" path="libs/lwjgl-opengles.jar"/>
+	<classpathentry kind="lib" path="libs/lwjgl.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/jPLY"/>
-	<classpathentry kind="lib" path="/home/nickh/eclipse/workspace/eora3D/libs/webcam-capture-driver-ipcam-0.3.12.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

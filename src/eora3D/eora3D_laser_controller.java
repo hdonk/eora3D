@@ -11,14 +11,14 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 public class eora3D_laser_controller extends JDialog implements ActionListener {
-	eora3D_bluetooth m_eora3D_bluetooth = null;
+	eora3D_bluetooth_tinyb m_eora3D_bluetooth = null;
 	private JTextField motorPos;
 	private JTextField ledRed;
 	private JTextField ledGreen;
 	private JTextField ledBlue;
 	private JTextField motorSpeed;
 	
-	eora3D_laser_controller(eora3D_bluetooth a_eora3D_bluetooth)
+	eora3D_laser_controller(eora3D_bluetooth_tinyb a_eora3D_bluetooth)
 	{
 		getContentPane().setLayout(null);
 		
