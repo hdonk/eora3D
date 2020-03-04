@@ -81,8 +81,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	private JTextField tfIPcameraurl;
 	private boolean m_use_IPCamera;
 	
+	public boolean m_is_windows10 = false;
+	
 	public Eora3D_MainWindow()
 	{
+		if(System.getProperty("os.name").contentEquals("Windows 10")) m_is_windows10 = true;
+
 		m_e3d_config = new eora3D_configuration_data_v1();
 		m_cal_data = new CalibrationData();
 		
@@ -185,7 +189,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	{
 		if(m_e3D_bluetooth == null)
 		{
-			if(System.getProperty("os.name").contentEquals("Windows 10"))
+			if(m_is_windows10)
 			{
 				System.out.println("Using javelin for BLE");
 				m_e3D_bluetooth = new eora3D_bluetooth_javelin();
