@@ -117,4 +117,20 @@ public class eora3D_bluetooth {
 	{
  
 	}
+
+	public boolean laserOk() {
+		return false;
+	}
+
+	public boolean turntableOk() {
+		return false;
+	}
+
+	public String getLaserName() {
+		return "Not found";
+	}
+
+	public String getTurntableName() {
+		return "Not found";
+	}
 }

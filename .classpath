@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry excluding="jPLY/|jPLY/bin/org/" kind="src" path="src"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/jPLY"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -23,7 +25,5 @@
 	<classpathentry kind="lib" path="libs/lwjgl-glfw.jar"/>
 	<classpathentry kind="lib" path="libs/lwjgl-opengles.jar"/>
 	<classpathentry kind="lib" path="libs/lwjgl.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/jPLY"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

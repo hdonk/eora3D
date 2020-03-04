@@ -26,7 +26,6 @@ import javax.swing.JComboBox;
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import eora3D.eora3D_bluetooth_tinyb;
-import tinyb.BluetoothDevice;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver;
@@ -69,9 +68,7 @@ class extensionFileFilter extends javax.swing.filechooser.FileFilter {
 public class Eora3D_MainWindow extends JDialog implements ActionListener, WindowListener {
 	static public eora3D_bluetooth m_e3D_bluetooth;
 	private JLabel laser_selector;
-	private BluetoothDevice m_laser = null;
 	private JLabel turntable_selector;
-	private BluetoothDevice turntable = null;
 	private JComboBox<String> camera_selector;
 	
 	List<Webcam> m_webcams = null;
@@ -187,77 +184,43 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	void Bluetooth_Rescan()
 	{
-		if(m_e3D_bluetooth == null)
+		synchronized(this)
 		{
-			if(m_is_windows10)
+			if(m_e3D_bluetooth == null)
 			{
-				System.out.println("Using javelin for BLE");
-				m_e3D_bluetooth = new eora3D_bluetooth_javelin();
-			}
-			else
-			{
-				System.out.println("Using tinyb for BLE");
-				m_e3D_bluetooth = new eora3D_bluetooth_tinyb();
-			}
-		}
-		
-		getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		try
-		{
-			m_e3D_bluetooth.discover();
-		} catch(Exception e)
-		{
-			getContentPane().setCursor(Cursor.getDefaultCursor());
-			laser_selector.setText("Not found");
-			turntable_selector.setText("Not found");
-			return;
-		}
-		getContentPane().setCursor(Cursor.getDefaultCursor());
-		laser_selector.setText("Not found");
-		turntable_selector.setText("Not found");
-/*		if(m_e3D_bluetooth.devices!=null)
-		{
-			for (BluetoothDevice device : m_e3D_bluetooth.devices) {
-				if(device.getName().substring(0, 4).equals("E3DS"))
+				if(m_is_windows10)
 				{
-					laser_selector.setText(device.getName());
-					m_laser = device;
-					if(!m_e3D_bluetooth.setLaser(m_laser))
-					{
-						System.out.println("Not connected to laser successfully");
-						laser_selector.setText("Not found");
-						m_laser = null;
-					}
-					else
-					{
-						System.out.print("Found laser: ");
-						eora3D_bluetooth_tinyb.printDevice(m_laser);
-					}
-					break;
+					System.out.println("Using javelin for BLE");
+					m_e3D_bluetooth = new eora3D_bluetooth_javelin();
 				}
-			}
-			for (BluetoothDevice device : m_e3D_bluetooth.devices) {
-				System.out.println("Looking for turntable at "+device.getName());
-				if(device.getName().substring(0, 4).equals("E3DT"))
+				else
 				{
-					turntable_selector.setText(device.getName());
-					turntable = device;
-					if(!m_e3D_bluetooth.setTurntable(turntable))
-					{
-						System.out.println("Not connected to turntable successfully");
-						turntable_selector.setText("Not found");
-						m_laser = null;
-					}
-					else
-					{
-						System.out.print("Found turntable: ");
-						eora3D_bluetooth_tinyb.printDevice(turntable);
-					}
-					break;
+					System.out.println("Using tinyb for BLE");
+					m_e3D_bluetooth = new eora3D_bluetooth_tinyb();
 				}
 			}
 			
-		}*/
+			getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			laser_selector.setText("Not found");
+			turntable_selector.setText("Not found");
+			try
+			{
+				m_e3D_bluetooth.discover();
+			} catch(Exception e)
+			{
+				getContentPane().setCursor(Cursor.getDefaultCursor());
+				return;
+			}
+			getContentPane().setCursor(Cursor.getDefaultCursor());
+			if(m_e3D_bluetooth.laserOk())
+			{
+				laser_selector.setText(m_e3D_bluetooth.getLaserName());
+			}
+			if(m_e3D_bluetooth.turntableOk())
+			{
+				turntable_selector.setText(m_e3D_bluetooth.getTurntableName());
+			}
+		}
 	}
 	
 	void Camera_Rescan()
@@ -343,7 +306,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(m_laser==null)
+			if(!m_e3D_bluetooth.laserOk())
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
@@ -359,7 +322,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Camera needed", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(m_laser==null)
+			if(!m_e3D_bluetooth.laserOk())
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Laser needed", JOptionPane.ERROR_MESSAGE);
 				return;
