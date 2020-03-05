@@ -8,16 +8,6 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/slf4j-simple-2.0.0-alpha1.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="libs/tinyb.jar">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
 	<classpathentry kind="lib" path="libs/joml-1.9.14.jar" sourcepath="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/joml-1.9.14-sources.jar"/>
 	<classpathentry kind="lib" path="libs/webcam-capture-driver-ipcam-0.3.12.jar"/>
 	<classpathentry kind="lib" path="libs/webcam-capture-0.3.12.jar"/>
@@ -25,5 +15,9 @@
 	<classpathentry kind="lib" path="libs/lwjgl-glfw.jar"/>
 	<classpathentry kind="lib" path="libs/lwjgl-opengles.jar"/>
 	<classpathentry kind="lib" path="libs/lwjgl.jar"/>
+	<classpathentry kind="lib" path="libs/bridj-0.7.0.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-api-2.0.0-alpha1.jar"/>
+	<classpathentry kind="lib" path="libs/slf4j-simple-2.0.0-alpha1.jar"/>
+	<classpathentry kind="lib" path="libs/tinyb.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

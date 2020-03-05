@@ -271,9 +271,9 @@ public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
         return true;
     }
     
-    void setLaserStatus(boolean on)
+    public boolean setLaserStatus(boolean on)
     {
-    	if(laser == null) return;
+    	if(laser == null) return false;
         
 /*        BluetoothGattService laserService = null;
         
@@ -297,7 +297,7 @@ public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
         if (laserStatus==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the laser status characteristic");
@@ -316,21 +316,23 @@ public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
         	byte[] config = { 0x00 };
         	laserStatus.writeValue(config);
         }
+        return true;
     }
 
-	public void setLEDColour(int red, int green, int blue) {
+	public boolean setLEDColour(int red, int green, int blue) {
     	byte[] colour = { (byte) red, (byte) green, (byte) blue, 0 };
-    	if(laser == null) return;
+    	if(laser == null) return false;
         BluetoothGattCharacteristic ledStatus = getLaserCharacteristic(UUID_laser_sled_service, UUID_laser_led_type);
 
         if (ledStatus==null)
         {
             System.err.println("Could not find the correct characteristic.");
-            return;
+            return false;
         }
 
         System.out.println("Found the led status characteristic");
         ledStatus.writeValue(colour);
+        return true;
 	}
 
 	public boolean setMotorPos(int a_pos) {

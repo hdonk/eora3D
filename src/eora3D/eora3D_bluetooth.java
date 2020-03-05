@@ -77,13 +77,14 @@ public class eora3D_bluetooth {
     }
     
  
-    void setLaserStatus(boolean on)
+    public boolean setLaserStatus(boolean on)
     {
-
+    	return false;
     }
 
-	public void setLEDColour(int red, int green, int blue)
+	public boolean setLEDColour(int red, int green, int blue)
 	{
+		return false;
 	}
 
 	public boolean setMotorPos(int a_pos)
