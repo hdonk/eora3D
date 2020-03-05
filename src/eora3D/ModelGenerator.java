@@ -76,6 +76,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfBackFilter;
 	private JTextField tfYDisplayOffset;
 	private JTextField tfTestrotation;
+	private Thread m_pco_thread;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -524,16 +525,19 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		if(ae.getActionCommand() == "Import")
 		{
 			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
-			m_pco.load(l_file, 18*360);
+			m_pco.load(l_file, Eora3D_MainWindow.m_e3d_config.sm_turntable_steps_per_rotation);
 
 			DataOutputStream l_dos = null;
 		    DataInputStream l_dis = null;
-			try {
-				m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				//e.printStackTrace();
-				m_socket = null;
+		    if(!m_e3d.m_is_windows10)
+		    {
+				try {
+					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					//e.printStackTrace();
+					m_socket = null;
+				}
 			}
 			if(m_socket!=null)
 			{
@@ -723,13 +727,23 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			{
 			    DataOutputStream l_dos = null;
 			    
-				try {
+			    if(!m_e3d.m_is_windows10) try {
 					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 					m_socket = null;
 				}
+				m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f,
+						Integer.parseInt(tfZrotoff.getText()),
+						Integer.parseInt(tfXrotoff.getText()),
+						Integer.parseInt(tfYDisplayOffset.getText()),
+						Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
+						Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
+						Eora3D_MainWindow.m_e3d_config.sm_topfilter,
+						Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
+						Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
+						Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 				if(m_socket!=null)
 				{
 					try {
@@ -748,16 +762,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_frontfilter);
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 					    l_dos.flush();
-						m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f,
-								Integer.parseInt(tfZrotoff.getText()),
-								Integer.parseInt(tfXrotoff.getText()),
-								Integer.parseInt(tfYDisplayOffset.getText()),
-								Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
-								Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
-								Eora3D_MainWindow.m_e3d_config.sm_topfilter,
-								Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
-								Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
-								Eora3D_MainWindow.m_e3d_config.sm_backfilter);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -797,8 +801,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	    DataOutputStream l_dos = null;
 	    DataInputStream l_dis = null;
 	    m_pco.clear();
-		
-		try {
+	    if(m_e3d.m_is_windows10 && m_pco_thread==null)
+    	{
+	    	m_pco_thread = new Thread(m_pco);
+	    	m_pco_thread.start();
+    	}
+	    if(!m_e3d.m_is_windows10) try {
 			m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -899,7 +907,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				{
 					e.printStackTrace();
 					m_detect_thread=null;
-					try {
+					if(m_socket!=null) try {
 						m_socket.close();
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -919,7 +927,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				} catch (IOException e1) {
 					e1.printStackTrace();
 					m_detect_thread=null;
-					try {
+					if(m_socket!=null) try {
 						m_socket.close();
 					} catch (IOException e2) {
 						// TODO Auto-generated catch block

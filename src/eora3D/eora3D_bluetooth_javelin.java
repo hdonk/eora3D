@@ -15,11 +15,22 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 	public eora3D_bluetooth_javelin()
 	{
 		System.out.println("Loading dlls");
-		System.loadLibrary("msvcp140d_app");
-		System.loadLibrary("vcruntime140_1d_app");
-		System.loadLibrary("VCRUNTIME140D_APP");
-		System.loadLibrary("CONCRT140D_APP");
-		System.loadLibrary("ucrtbased");
+		if(false)
+		{
+			System.loadLibrary("msvcp140d_app");
+			System.loadLibrary("vcruntime140_1d_app");
+			System.loadLibrary("VCRUNTIME140D_APP");
+			System.loadLibrary("CONCRT140D_APP");
+			System.loadLibrary("ucrtbased");
+		}
+		else
+		{
+			System.loadLibrary("msvcp140_app");
+			System.loadLibrary("vcruntime140_1_app");
+			System.loadLibrary("VCRUNTIME140_APP");
+			System.loadLibrary("CONCRT140_APP");
+			System.loadLibrary("ucrtbase");			
+		}
 		System.loadLibrary("api-ms-win-core-synch-l1-2-0");
 		System.loadLibrary("api-ms-win-core-synch-l1-1-0");
 		System.loadLibrary("api-ms-win-core-processthreads-l1-1-0");
@@ -47,9 +58,9 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 		{
 			for(String l_device: l_devices)
 			{
-				System.out.println(" "+l_device);
+				//System.out.println(" "+l_device);
 				String l_name = javelin.getBLEDeviceName(l_device);
-				System.out.println("  Name: "+l_name);
+				//System.out.println("  Name: "+l_name);
 				if(l_name.startsWith("E3DT"))
 				{
 					System.out.println("Found turntable");
@@ -63,10 +74,10 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 						for(String l_service: m_turntable_services)
 						{
 							l_chars = javelin.listBLEServiceCharacteristics(l_device, l_service);
-							for(String l_char : l_chars)
+							/*for(String l_char : l_chars)
 							{
 								System.out.println("Char: "+l_char);
-							}
+							}*/
 						}
 					}
 				}
@@ -83,10 +94,10 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 						for(String l_service: m_laser_services)
 						{
 							l_chars = javelin.listBLEServiceCharacteristics(l_device, l_service);
-							for(String l_char : l_chars)
+							/*for(String l_char : l_chars)
 							{
 								System.out.println("Char: "+l_char);
-							}
+							}*/
 						}
 }
 				}

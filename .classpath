@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry excluding="jPLY/|jPLY/bin/org/" kind="src" path="src"/>
+	<classpathentry excluding="jPLY/|jPLY/bin/org/" kind="src" path="src">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="G:/Data/javelin/javelin/x64/Release/javelin"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/jPLY"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">

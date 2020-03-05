@@ -186,6 +186,9 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	{
 		synchronized(this)
 		{
+			JOptionPane.showMessageDialog(getContentPane(), "This will take around 32 seconds",
+					"Bluetooth scan", JOptionPane.WARNING_MESSAGE);
+			
 			if(m_e3D_bluetooth == null)
 			{
 				if(m_is_windows10)
