@@ -296,7 +296,7 @@ public class PointCloudObject implements Runnable {
 				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(l_point);
-			//m_refresh = true;
+			m_refresh = true;
 		}
 	}
 	public void addPoint(int a_list, RGB3DPoint a_point)
@@ -311,7 +311,7 @@ public class PointCloudObject implements Runnable {
 				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(a_point);
-			//m_refresh = true;
+			m_refresh = true;
 		}
 	}
 
@@ -550,8 +550,8 @@ public class PointCloudObject implements Runnable {
 			Path currentRelativePath = Paths.get("");
 			String s = currentRelativePath.toAbsolutePath().toString();
 			System.out.println("Current relative path is: " + s);
-			vertexShader = readFileAsString("src/pointCloudViewer/" + vsn);
-			fragmentShader = readFileAsString("src/pointCloudViewer/" + fsn);
+			vertexShader = readFileAsString("src/eora3D/" + vsn);
+			fragmentShader = readFileAsString("src/eora3D/" + fsn);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return -1;

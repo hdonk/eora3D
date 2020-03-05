@@ -82,7 +82,12 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	public Eora3D_MainWindow()
 	{
-		if(System.getProperty("os.name").contentEquals("Windows 10")) m_is_windows10 = true;
+		if(System.getProperty("os.name").contentEquals("Windows 10"))
+		{
+			m_is_windows10 = true;
+			System.loadLibrary("libGLESv2");
+			System.loadLibrary("libEGL");
+		}
 
 		m_e3d_config = new eora3D_configuration_data_v1();
 		m_cal_data = new CalibrationData();
@@ -177,7 +182,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 
 		setVisible(true);
 		
-		Bluetooth_Rescan();
+//		Bluetooth_Rescan();
 		Camera_Rescan();
 		
 	}
@@ -186,9 +191,6 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	{
 		synchronized(this)
 		{
-			JOptionPane.showMessageDialog(getContentPane(), "This will take around 32 seconds",
-					"Bluetooth scan", JOptionPane.WARNING_MESSAGE);
-			
 			if(m_e3D_bluetooth == null)
 			{
 				if(m_is_windows10)
@@ -325,7 +327,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Camera needed", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(!m_e3D_bluetooth.laserOk())
+			if(m_e3D_bluetooth == null || !m_e3D_bluetooth.laserOk())
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Laser needed", JOptionPane.ERROR_MESSAGE);
 				return;

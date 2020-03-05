@@ -888,7 +888,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
 			File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
 			int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
-			int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*45;
+			int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
 			if(a_frame != -1)
 			{
 				l_start = a_frame;
@@ -962,9 +962,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 								l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
 								//l_point.m_x -= l_baseimage.getWidth();
 								//l_point.m_x = -l_point.m_x;
-								//System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
+								System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 								//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
-	//							System.out.println("Z calculated as "+l_x_points[i]+" -> "+m_cal_data.getZoffset(l_pos, l_x_points[i]));
 								if(Math.abs(l_point.m_x)<=10000 &&
 										Math.abs(l_point.m_y)<=10000 &&
 										Math.abs(l_point.m_z)<=10000)
@@ -1378,7 +1377,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 		    DataOutputStream l_dos = null;
 
-			try {
+			if(!m_e3d.m_is_windows10) try {
 				m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
