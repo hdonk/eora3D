@@ -81,25 +81,25 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		getContentPane().setLayout(null);
 		
 		image = new PaintImage(true);
-		image.setBounds(271, 12, 627, 846);
+		image.setBounds(251, 12, 421, 626);
 		image.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		getContentPane().add(image);
 		
 		JButton btnCalibrate = new JButton("Calibrate");
-		btnCalibrate.setBounds(910, 291, 153, 25);
+		btnCalibrate.setBounds(684, 283, 153, 25);
 		getContentPane().add(btnCalibrate);
 		btnCalibrate.addActionListener(this);
 		
 		ButtonGroup calibrationPositionGroup = new ButtonGroup();
 		
 		JButton btnConfig = new JButton("Config");
-		btnConfig.setBounds(6, 877, 117, 25);
+		btnConfig.setBounds(12, 613, 117, 25);
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Circle detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel.setBounds(24, 12, 235, 231);
+		panel.setBounds(12, 12, 235, 231);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
@@ -154,7 +154,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(910, 12, 161, 267);
+		panel_1.setBounds(684, 12, 161, 267);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -233,7 +233,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Detected positions", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(910, 340, 153, 131);
+		panel_2.setBounds(684, 321, 153, 131);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -258,14 +258,14 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		txtToprightmotorpos.setColumns(10);
 		
 		JButton btnFinish = new JButton("Finish");
-		btnFinish.setBounds(936, 501, 100, 27);
+		btnFinish.setBounds(737, 611, 100, 27);
 		getContentPane().add(btnFinish);
 		btnFinish.addActionListener(this);
 		
 
 		m_camera = m_e3d.m_camera;
 		
-		setSize(1100,950);
+		setSize(879,690);
 		
 		setModal(true);
 		

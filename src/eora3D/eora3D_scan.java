@@ -52,7 +52,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 	
 	public eora3D_scan(Eora3D_MainWindow a_e3d) {
 		super();
-		setSize(new Dimension(1371, 1127));
+		setSize(new Dimension(804, 690));
 		setModal(true);
 		setResizable(false);
 		getContentPane().setLayout(null);
@@ -96,17 +96,17 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		
 		imagePanel = new PaintImage(true);
 		imagePanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		imagePanel.setBounds(252, 33, 730, 940);
+		imagePanel.setBounds(250, 6, 358, 644);
 		imagePanel.pos = 0;
 		getContentPane().add(imagePanel);
 		
 		JButton btnStartScan = new JButton("Start scan");
-		btnStartScan.setBounds(1009, 45, 100, 27);
+		btnStartScan.setBounds(620, 198, 100, 27);
 		getContentPane().add(btnStartScan);
 		btnStartScan.addActionListener(this);
 		
 		JButton btnStartTurntableScan = new JButton("Start turntable scan");
-		btnStartTurntableScan.setBounds(1009, 339, 168, 27);
+		btnStartTurntableScan.setBounds(620, 372, 168, 27);
 		getContentPane().add(btnStartTurntableScan);
 		btnStartTurntableScan.addActionListener(this);
 		
@@ -124,12 +124,12 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		getContentPane().add(cbTurntableStops);
 		
 		JButton btnConfig = new JButton("Config");
-		btnConfig.setBounds(16, 1003, 100, 27);
+		btnConfig.setBounds(10, 420, 100, 27);
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
 		
 		JButton btnFinish = new JButton("Finish");
-		btnFinish.setBounds(1233, 1003, 100, 27);
+		btnFinish.setBounds(620, 623, 100, 27);
 		getContentPane().add(btnFinish);
 		btnFinish.addActionListener(this);
 		
@@ -147,6 +147,8 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		getContentPane().add(chckbxPauseToTurn);
 		chckbxPauseToTurn.addActionListener(this);
 
+		imagePanel.m_centerline = true;
+		
 		setFromConfig();
 		
 		m_e3d = a_e3d;
@@ -231,12 +233,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		{
 			BufferedImage l_image = m_e3d.getImage();
 			imagePanel.m_image = l_image;
-			imagePanel.m_overlay = new BufferedImage(l_image.getWidth(), l_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-			for(int y=0; y<l_image.getHeight(); ++y)
-			{
-				imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xffff0000);
-			}
-			imagePanel.m_overlay.flush();
+			imagePanel.m_overlay = null;
 			imagePanel.repaint();
 		}
 		else
@@ -461,12 +458,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 			if(l_image != null)
 			{
 				imagePanel.m_image = l_image;
-				imagePanel.m_overlay = new BufferedImage(l_image.getWidth(), l_image.getHeight(), BufferedImage.TYPE_INT_ARGB);
-				for(int y=0; y<l_image.getHeight(); ++y)
-				{
-					imagePanel.m_overlay.setRGB(imagePanel.m_overlay.getWidth()/2, y, 0xffff0000);
-				}
-				imagePanel.m_overlay.flush();
+				imagePanel.m_overlay = null;
 				imagePanel.repaint();
 			}
 			else

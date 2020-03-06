@@ -84,60 +84,60 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d = a_e3d;
 		setTitle("Generate Model");
 		getContentPane().setLayout(null);
-		setSize(830,836);
+		setSize(939,670);
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Laser Detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel.setBounds(6, 0, 141, 678);
+		panel.setBounds(6, 0, 141, 621);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
 		JLabel label_1 = new JLabel("Detection method");
-		label_1.setBounds(6, 33, 122, 15);
+		label_1.setBounds(6, 22, 122, 15);
 		panel.add(label_1);
 		
 		JLabel label_2 = new JLabel("Red threshold");
-		label_2.setBounds(6, 97, 106, 15);
+		label_2.setBounds(6, 73, 106, 15);
 		panel.add(label_2);
 		
 		tfRedthreshold = new JTextField();
 		tfRedthreshold.setEnabled(false);
 		tfRedthreshold.setColumns(10);
-		tfRedthreshold.setBounds(6, 124, 122, 27);
+		tfRedthreshold.setBounds(6, 88, 122, 27);
 		panel.add(tfRedthreshold);
 		
 		JLabel label_3 = new JLabel("Green threshold");
-		label_3.setBounds(6, 163, 106, 15);
+		label_3.setBounds(6, 126, 106, 15);
 		panel.add(label_3);
 		
 		tfGreenthreshold = new JTextField();
 		tfGreenthreshold.setEnabled(false);
 		tfGreenthreshold.setColumns(10);
-		tfGreenthreshold.setBounds(6, 190, 122, 27);
+		tfGreenthreshold.setBounds(6, 143, 122, 27);
 		panel.add(tfGreenthreshold);
 		
 		JLabel label_4 = new JLabel("Blue threshold");
-		label_4.setBounds(6, 229, 106, 15);
+		label_4.setBounds(6, 181, 106, 15);
 		panel.add(label_4);
 		
 		tfBluethreshold = new JTextField();
 		tfBluethreshold.setEnabled(false);
 		tfBluethreshold.setColumns(10);
-		tfBluethreshold.setBounds(6, 256, 122, 27);
+		tfBluethreshold.setBounds(6, 199, 122, 27);
 		panel.add(tfBluethreshold);
 		
 		JLabel label_5 = new JLabel("% change");
-		label_5.setBounds(6, 295, 106, 15);
+		label_5.setBounds(6, 237, 106, 15);
 		panel.add(label_5);
 		
 		tfPercentagechange = new JTextField();
 		tfPercentagechange.setEnabled(false);
 		tfPercentagechange.setColumns(10);
-		tfPercentagechange.setBounds(6, 322, 122, 27);
+		tfPercentagechange.setBounds(6, 256, 122, 27);
 		panel.add(tfPercentagechange);
 		
 		cbDetectionmethod = new JComboBox();
-		cbDetectionmethod.setBounds(6, 60, 106, 25);
+		cbDetectionmethod.setBounds(6, 37, 106, 25);
 		panel.add(cbDetectionmethod);
 		cbDetectionmethod.addItem("Or");
 		cbDetectionmethod.addItem("And");
@@ -146,56 +146,56 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		cbDetectionmethod.addActionListener(this);
 		
 		JButton btnTest = new JButton("Test");
-		btnTest.setBounds(13, 544, 100, 27);
+		btnTest.setBounds(6, 492, 100, 27);
 		panel.add(btnTest);
 		btnTest.addActionListener(this);
 		
 		tfTestframe = new JTextField();
-		tfTestframe.setBounds(6, 505, 122, 27);
+		tfTestframe.setBounds(6, 454, 122, 27);
 		panel.add(tfTestframe);
 		tfTestframe.setColumns(10);
 		
 		JLabel lblTestFrame = new JLabel("Test frame");
-		lblTestFrame.setBounds(6, 488, 72, 15);
+		lblTestFrame.setBounds(6, 436, 72, 15);
 		panel.add(lblTestFrame);
 		
 		JButton btnClear = new JButton("Base");
-		btnClear.setBounds(13, 604, 100, 27);
+		btnClear.setBounds(6, 552, 100, 27);
 		panel.add(btnClear);
 		btnClear.addActionListener(this);
 		
 		JButton btnLasered = new JButton("Lasered");
-		btnLasered.setBounds(13, 634, 100, 27);
+		btnLasered.setBounds(6, 582, 100, 27);
 		panel.add(btnLasered);
 		btnLasered.addActionListener(this);
 		
 		JButton btnColourmap = new JButton("Colourmap");
-		btnColourmap.setBounds(13, 575, 100, 27);
+		btnColourmap.setBounds(6, 523, 100, 27);
 		panel.add(btnColourmap);
 		btnColourmap.addActionListener(this);
 		
 		chckbxTurntableScan = new JCheckBox("Turntable scan");
-		chckbxTurntableScan.setBounds(6, 410, 115, 18);
+		chckbxTurntableScan.setBounds(6, 345, 115, 18);
 		panel.add(chckbxTurntableScan);
 		
 		JLabel lblMinLaserBand = new JLabel("Min laser band pts");
-		lblMinLaserBand.setBounds(6, 351, 129, 15);
+		lblMinLaserBand.setBounds(6, 294, 129, 15);
 		panel.add(lblMinLaserBand);
 		
 		tfMinpointsperlaser = new JTextField();
 		tfMinpointsperlaser.setText("3");
-		tfMinpointsperlaser.setBounds(6, 371, 122, 27);
+		tfMinpointsperlaser.setBounds(6, 311, 122, 27);
 		panel.add(tfMinpointsperlaser);
 		tfMinpointsperlaser.setColumns(10);
 		tfMinpointsperlaser.addActionListener(this);
 		
 		JLabel lblTestRotation = new JLabel("Test rotation");
-		lblTestRotation.setBounds(6, 440, 106, 15);
+		lblTestRotation.setBounds(6, 388, 106, 15);
 		panel.add(lblTestRotation);
 		
 		tfTestrotation = new JTextField();
 		tfTestrotation.setText("0");
-		tfTestrotation.setBounds(6, 456, 122, 27);
+		tfTestrotation.setBounds(6, 404, 122, 27);
 		panel.add(tfTestrotation);
 		tfTestrotation.setColumns(10);
 		tfTestrotation.addActionListener(this);
@@ -211,23 +211,23 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		getContentPane().add(imageScrollPane);
 		
 		JButton btnGenerate = new JButton("Generate");
-		btnGenerate.setBounds(669, 0, 129, 27);
+		btnGenerate.setBounds(626, 11, 129, 27);
 		getContentPane().add(btnGenerate);
 		btnGenerate.addActionListener(this);
 		
 		JButton btnExport = new JButton("Export");
-		btnExport.setBounds(669, 33, 129, 27);
+		btnExport.setBounds(626, 44, 129, 27);
 		getContentPane().add(btnExport);
 		btnExport.addActionListener(this);
 		
 		JButton btnFinish = new JButton("Finish");
-		btnFinish.setBounds(669, 96, 129, 27);
+		btnFinish.setBounds(736, 594, 129, 27);
 		getContentPane().add(btnFinish);
 		btnFinish.addActionListener(this);
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "3D Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(648, 481, 150, 272);
+		panel_1.setBounds(773, 17, 150, 272);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -307,23 +307,23 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		
 		JButton btnExportMerged = new JButton("Export merged");
-		btnExportMerged.setBounds(669, 67, 129, 27);
+		btnExportMerged.setBounds(626, 78, 129, 27);
 		getContentPane().add(btnExportMerged);
 		btnExportMerged.addActionListener(this);
 		
 		JButton btnConfig = new JButton("Config");
-		btnConfig.setBounds(6, 688, 100, 27);
+		btnConfig.setBounds(626, 594, 100, 27);
 		getContentPane().add(btnConfig);
 		btnConfig.addActionListener(this);
 		
 		JButton btnImport = new JButton("Import");
-		btnImport.setBounds(669, 129, 129, 27);
+		btnImport.setBounds(626, 116, 129, 27);
 		getContentPane().add(btnImport);
 		btnImport.addActionListener(this);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Filters", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(648, 181, 150, 300);
+		panel_2.setBounds(626, 181, 150, 300);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		

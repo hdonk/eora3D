@@ -17,6 +17,8 @@ class PaintImage extends JPanel
   public int pos = 1;
   boolean m_scale_to_fit = false;
   
+  public boolean m_centerline = false;
+  
   public PaintImage (boolean a_scale_to_fit)
   {
 	  super();
@@ -52,7 +54,11 @@ class PaintImage extends JPanel
 
     g.drawImage(l_image, 0, 0, (int)(l_image.getWidth()*l_scale), (int)(l_image.getHeight()*l_scale), null);
     if(m_overlay != null) g.drawImage(m_overlay, 0, 0, (int)(l_image.getWidth()*l_scale), (int)(l_image.getHeight()*l_scale), null);
-    
+    if(m_centerline)
+    {
+    	g.setColor(Color.red);
+    	g.drawLine(getWidth()/2, 0, getWidth()/2, getHeight());
+    }
     g.setColor(Color.blue);
     if(pos==1)
     {

@@ -48,6 +48,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfMaxPointsPerLine;
 	private JTextField tfMinpointsperlaser;
 	private JTextField tfLatencyframes;
+	private JTextField tfIPCameraURL;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -55,7 +56,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		m_e3d = a_e3d;
 		setResizable(false);
 		setModal(true);
-		setSize(495, 847);
+		setSize(692, 549);
 		setTitle("Configuration");
 		getContentPane().setLayout(null);
 		
@@ -143,7 +144,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(6, 465, 335, 241);
+		panel_2.setBounds(342, 223, 335, 241);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -223,7 +224,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBorder(new TitledBorder(null, "Camera", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(181, 0, 123, 204);
+		panel_3.setBounds(181, 0, 309, 204);
 		getContentPane().add(panel_3);
 		panel_3.setLayout(null);
 		
@@ -260,15 +261,25 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfCameraHeight.addActionListener(this);
 		
 		JLabel lblLatencyFrames = new JLabel("Latency frames");
-		lblLatencyFrames.setBounds(6, 143, 107, 15);
+		lblLatencyFrames.setBounds(123, 31, 107, 15);
 		panel_3.add(lblLatencyFrames);
 		
 		tfLatencyframes = new JTextField();
-		tfLatencyframes.setBounds(6, 158, 111, 27);
+		tfLatencyframes.setBounds(123, 46, 111, 27);
 		panel_3.add(tfLatencyframes);
 		tfLatencyframes.setText("0");
 		tfLatencyframes.setColumns(10);
 		tfLatencyframes.addActionListener(this);
+		
+		JLabel lblNewLabel = new JLabel("IP Camera URL");
+		lblNewLabel.setBounds(6, 143, 107, 14);
+		panel_3.add(lblNewLabel);
+		
+		tfIPCameraURL = new JTextField();
+		tfIPCameraURL.setBounds(6, 160, 293, 27);
+		panel_3.add(tfIPCameraURL);
+		tfIPCameraURL.setColumns(10);
+		tfIPCameraURL.addActionListener(this);
 		
 		JPanel panel_4 = new JPanel();
 		panel_4.setLayout(null);
@@ -309,7 +320,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		JPanel panel_5 = new JPanel();
 		panel_5.setLayout(null);
 		panel_5.setBorder(new TitledBorder(null, "Model generation", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(59, 59, 59)));
-		panel_5.setBounds(316, 0, 163, 116);
+		panel_5.setBounds(511, 107, 163, 116);
 		getContentPane().add(panel_5);
 		
 		JLabel lblThreads = new JLabel("Threads");
@@ -333,22 +344,22 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfTestframe.addActionListener(this);
 		
 		JButton btnCancel = new JButton("Cancel");
-		btnCancel.setBounds(6, 737, 100, 27);
+		btnCancel.setBounds(10, 477, 100, 27);
 		getContentPane().add(btnCancel);
 		btnCancel.addActionListener(this);
 		
 		JButton btnApply = new JButton("Apply");
-		btnApply.setBounds(118, 737, 100, 27);
+		btnApply.setBounds(122, 477, 100, 27);
 		getContentPane().add(btnApply);
 		btnApply.addActionListener(this);
 		
 		JButton btnLoad = new JButton("Load");
-		btnLoad.setBounds(230, 737, 100, 27);
+		btnLoad.setBounds(234, 477, 100, 27);
 		getContentPane().add(btnLoad);
 		btnLoad.addActionListener(this);
 		
 		JButton btnSave = new JButton("Save");
-		btnSave.setBounds(342, 737, 100, 27);
+		btnSave.setBounds(346, 477, 100, 27);
 		getContentPane().add(btnSave);
 		btnSave.addActionListener(this);
 		
@@ -397,6 +408,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfCameraWidth.setText(""+a_cfg.sm_camera_res_w);
 		tfCameraHeight.setText(""+a_cfg.sm_camera_res_h);
 		cbTurntableStops.setSelectedItem(""+(6516/a_cfg.sm_turntable_step_size));
+		tfIPCameraURL.setText(a_cfg.sm_IP_webcam);
 		
 		if(a_cfg.sm_laser_detection_threshold_logic.equals("Or"))
 		{
@@ -455,7 +467,9 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.sm_camera_res_w = Integer.parseInt(tfCameraWidth.getText());
 		a_cfg.sm_camera_res_h = Integer.parseInt(tfCameraHeight.getText());
 
-		a_cfg.sm_turntable_step_size = (6516/Integer.parseInt(cbTurntableStops.getSelectedItem().toString())); 
+		a_cfg.sm_turntable_step_size = (6516/Integer.parseInt(cbTurntableStops.getSelectedItem().toString()));
+		
+		a_cfg.sm_IP_webcam = tfIPCameraURL.getText();
 		
 		switch(cbAlgorithm.getSelectedIndex())
 		{
