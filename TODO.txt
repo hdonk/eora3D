@@ -1,6 +1,5 @@
-- Scan: Allow a separate colour snapshot, to allow in-dark scanning [DONE
-- Scan: Turntable scan [DONE]
-- Scan: Add pixel -> mm transform [DONE]
-- OS: Windows BLE support [NEXT]
+
+- OS: Windows BLE support [DONE]
 - Docs: Explain how to use the software [IN PROGRESS]
+- Add transformed layer export
 - Scan: Add camera lens center to laser pivot point offset
