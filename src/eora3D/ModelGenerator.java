@@ -39,6 +39,16 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
 
+final class RawPoint
+{
+	public int m_x;
+	public int m_y;
+	public int m_angle;
+	public byte m_r;
+	public byte m_g;
+	public byte m_b;
+}
+
 public class ModelGenerator extends JDialog implements ActionListener, WindowListener, AdjustmentListener {
 	Eora3D_MainWindow m_e3d;
 	private JTextField tfRedthreshold;
@@ -77,6 +87,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfYDisplayOffset;
 	private JTextField tfTestrotation;
 	private Thread m_pco_thread;
+	
+	long m_minx = 0;
+	long m_maxx = 0;
+	long m_miny = 0;
+	long m_maxy = 0;
+	long m_minz = 0;
+	long m_maxz = 0;
+	
+	private ArrayList<ArrayList<RawPoint>> m_raw_points;
+	private JCheckBox cbKeepDetectedPoints;	
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -238,9 +258,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		sbScaling = new JScrollBar();
 		sbScaling.setOrientation(JScrollBar.HORIZONTAL);
 		sbScaling.setBounds(6, 45, 122, 27);
-		sbScaling.setValue(10);
+		sbScaling.setValue(1000);
 		sbScaling.setMinimum(1);
-		sbScaling.setMaximum(40);
+		sbScaling.setMaximum(6000);
 		panel_1.add(sbScaling);
 		sbScaling.addAdjustmentListener(this);
 		
@@ -386,6 +406,15 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		JLabel lblBack = new JLabel("Back");
 		lblBack.setBounds(6, 247, 60, 15);
 		panel_2.add(lblBack);
+		
+		cbKeepDetectedPoints = new JCheckBox("Keep detected points");
+		cbKeepDetectedPoints.setBounds(628, 487, 237, 18);
+		getContentPane().add(cbKeepDetectedPoints);
+		
+		JButton btnReCalculate3D = new JButton("ReCalculate 3D");
+		btnReCalculate3D.setBounds(628, 509, 90, 28);
+		getContentPane().add(btnReCalculate3D);
+		btnReCalculate3D.addActionListener(this);
 		
 		m_pco = new PointCloudObject();
 		m_pco.m_finished = true;
@@ -709,6 +738,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		else
 		if(ae.getActionCommand()=="Config")
 		{
+			putToConfig();
 			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(m_e3d);
 			l_editor.setVisible(true);
 			setFromConfig();
@@ -726,6 +756,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			if(m_detect_thread == null)
 			{
 			    DataOutputStream l_dos = null;
+			    
+			    putToConfig();
 			    
 			    if(!m_e3d.m_is_windows10) try {
 					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
@@ -793,6 +825,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				}
 				System.out.println("Done");
 			}
+		} else
+		if(ae.getActionCommand()=="ReCalculate 3D")
+		{
+			reCalculate();
 		}
 	}
 
@@ -801,6 +837,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	    DataOutputStream l_dos = null;
 	    DataInputStream l_dis = null;
 	    m_pco.clear();
+	    m_raw_points = new ArrayList<>() ;
+		m_minx = 0;
+		m_maxx = 0;
+		m_miny = 0;
+		m_maxy = 0;
+		m_minz = 0;
+		m_maxz = 0;
 	    if(m_e3d.m_is_windows10 && m_pco_thread==null)
     	{
 	    	m_pco_thread = new Thread(m_pco);
@@ -962,12 +1005,35 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 								l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
 								//l_point.m_x -= l_baseimage.getWidth();
 								//l_point.m_x = -l_point.m_x;
-								System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
+//								System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
 								//System.out.println(l_point.m_r+":"+l_point.m_g+":"+l_point.m_b);
-								if(Math.abs(l_point.m_x)<=10000 &&
+/*								if(Math.abs(l_point.m_x)<=10000 &&
 										Math.abs(l_point.m_y)<=10000 &&
-										Math.abs(l_point.m_z)<=10000)
-									m_pco.addPoint(l_tt_point_f, l_point);
+										Math.abs(l_point.m_z)<=10000)*/
+								m_minx = Math.min(m_minx, l_point.m_x);
+								m_maxx = Math.max(m_maxx, l_point.m_x);
+								m_miny = Math.min(m_miny, l_point.m_y);
+								m_maxy = Math.max(m_maxy, l_point.m_y);
+								m_minz = Math.min(m_minz, l_point.m_z);
+								m_maxz = Math.max(m_maxz, l_point.m_z);
+								m_pco.addPoint(l_tt_point_f, l_point);
+								/*if(cbKeepDetectedPoints.isSelecte())*/ synchronized(m_raw_points)
+								{
+									if(m_raw_points.size()<=l_tt_point_f)
+									{
+										m_raw_points.add(new ArrayList<RawPoint>());
+									}
+									RawPoint l_raw_point = new RawPoint();
+									
+									l_raw_point.m_x = l_found_point.x;
+									l_raw_point.m_y = (l_baseimage.getHeight()-l_found_point.y)-1;
+									l_raw_point.m_angle = l_lambda_pos;
+									l_raw_point.m_r = (byte) l_point.m_r;
+									l_raw_point.m_g = (byte) l_point.m_g;
+									l_raw_point.m_b = (byte) l_point.m_b;
+									
+									m_raw_points.get(l_tt_point_f).add(l_raw_point);
+								}
 								synchronized(m_points)
 								{
 									m_points.add(l_point);
@@ -1031,8 +1097,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			}
 		}
 //		System.out.println("Found "+l_points+" points");
-		System.out.println("Min Z: "+m_e3d.m_cal_data.m_minz);
-		System.out.println("Max Z: "+m_e3d.m_cal_data.m_maxz);
+		System.out.println("Min X: "+m_minx);
+		System.out.println("Max X: "+m_maxx);
+		System.out.println("Min Y: "+m_miny);
+		System.out.println("Max Y: "+m_maxy);
+		System.out.println("Min Z: "+m_minz);
+		System.out.println("Max Z: "+m_maxz);
 		m_detect_thread=null;
 		if(m_socket != null)
 		{
@@ -1413,5 +1483,48 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				}
 			}
 		}
+	}
+	
+	void reCalculate()
+	{
+	    m_pco.clear();
+	    m_raw_points.clear();
+		m_minx = 0;
+		m_maxx = 0;
+		m_miny = 0;
+		m_maxy = 0;
+		m_minz = 0;
+		m_maxz = 0;
+		m_points = new ArrayList<RGB3DPoint>();
+
+		int l_tt_point = 0;
+		for(ArrayList<RawPoint> l_rpal : m_raw_points)
+		{
+			for(RawPoint l_rp : l_rpal)
+			{
+				RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_rp.m_angle, l_rp.m_x, l_rp.m_y);
+				l_point.m_r = l_rp.m_r;
+				l_point.m_g = l_rp.m_g;
+				l_point.m_b = l_rp.m_b;
+				System.out.println("Pt "+l_point.m_x+","+l_point.m_y+","+l_point.m_z);
+				
+				m_minx = Math.min(m_minx, l_point.m_x);
+				m_maxx = Math.max(m_maxx, l_point.m_x);
+				m_miny = Math.min(m_miny, l_point.m_y);
+				m_maxy = Math.max(m_maxy, l_point.m_y);
+				m_minz = Math.min(m_minz, l_point.m_z);
+				m_maxz = Math.max(m_maxz, l_point.m_z);
+				
+				m_pco.addPoint(l_tt_point, l_point);
+				m_points.add(l_point);
+			}
+			++l_tt_point;
+		}
+		System.out.println("Min X: "+m_minx);
+		System.out.println("Max X: "+m_maxx);
+		System.out.println("Min Y: "+m_miny);
+		System.out.println("Max Y: "+m_maxy);
+		System.out.println("Min Z: "+m_minz);
+		System.out.println("Max Z: "+m_maxz);
 	}
 }

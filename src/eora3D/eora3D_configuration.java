@@ -98,12 +98,12 @@ class eora3D_configuration_data_v1 implements Serializable
 		 sm_threads = checkIntRange( sm_threads, 1, 64);
 		 sm_test_frame = checkIntRange( sm_test_frame, 0, 9000);
 		 sm_test_frame = checkIntRange( sm_test_frame, 1, 6480);
-		 sm_leftfilter = checkIntRange( sm_leftfilter, -10000, +10000);
-		 sm_rightfilter = checkIntRange( sm_rightfilter, -10000, +10000);
-		 sm_topfilter = checkIntRange( sm_topfilter, -10000, +10000);
-		 sm_bottomfilter = checkIntRange( sm_bottomfilter, -10000, +10000);
-		 sm_frontfilter = checkIntRange( sm_frontfilter, -10000, +10000);
-		 sm_backfilter = checkIntRange( sm_backfilter, -10000, +10000);
+		 sm_leftfilter = checkIntRange( sm_leftfilter, -100000000, +100000000);
+		 sm_rightfilter = checkIntRange( sm_rightfilter, -100000000, +100000000);
+		 sm_topfilter = checkIntRange( sm_topfilter, -100000000, +100000000);
+		 sm_bottomfilter = checkIntRange( sm_bottomfilter, -100000000, +100000000);
+		 sm_frontfilter = checkIntRange( sm_frontfilter, -100000000, +100000000);
+		 sm_backfilter = checkIntRange( sm_backfilter, -100000000, +100000000);
 
 	}
 }

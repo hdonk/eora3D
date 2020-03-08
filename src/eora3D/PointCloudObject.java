@@ -780,7 +780,7 @@ public class PointCloudObject implements Runnable {
 		scaleLoc = glGetUniformLocation(l_program, "scale");
 		GLok("Retrieving scale uniform location");
 		//System.out.println("Scale to "+((float)sbScale.getValue()/10.0f));
-		glUniform1f(scaleLoc, (m_Scale/10.0f)); 
+		glUniform1f(scaleLoc, (m_Scale/1000.0f)); 
 		GLok("Set scale uniform");
 		int pointsizeLoc = glGetUniformLocation(l_program, "pointsize");
 		GLok("Retrieving pointsize uniform location");
