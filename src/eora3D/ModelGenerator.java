@@ -932,6 +932,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
 			int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
 			int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+			m_raw_points.add(new ArrayList<RawPoint>());
 			if(a_frame != -1)
 			{
 				l_start = a_frame;
@@ -992,10 +993,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					final int l_lambda_pos = l_pos;
 					Runnable l_task = () -> { 
 						ArrayList<Point> l_points;
+//						System.out.println("Thread "+l_lambda_thread);
 						// TBC correctify this!
 						int l_range_start = (l_baseimage.getHeight()/8)*l_lambda_thread;
 						int l_range_end = (l_baseimage.getHeight()/8)*(l_lambda_thread+1);
 						l_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
+//						System.out.println("Found count: "+l_points.size());
 						for(Point l_found_point: l_points)
 						{
 							{
@@ -1019,10 +1022,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 								m_pco.addPoint(l_tt_point_f, l_point);
 								/*if(cbKeepDetectedPoints.isSelecte())*/ synchronized(m_raw_points)
 								{
-									if(m_raw_points.size()<=l_tt_point_f)
-									{
-										m_raw_points.add(new ArrayList<RawPoint>());
-									}
 									RawPoint l_raw_point = new RawPoint();
 									
 									l_raw_point.m_x = l_found_point.x;
@@ -1031,7 +1030,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 									l_raw_point.m_r = (byte) l_point.m_r;
 									l_raw_point.m_g = (byte) l_point.m_g;
 									l_raw_point.m_b = (byte) l_point.m_b;
-									
 									m_raw_points.get(l_tt_point_f).add(l_raw_point);
 								}
 								synchronized(m_points)
@@ -1054,6 +1052,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					}
 				}
 				imagePanel.repaint();
+				System.out.println("Raw pts "+m_raw_points.get(l_tt_point_f).size());
 				// In linux, send the point off to the possible viewer
 		        if(m_socket != null)
 		        {
