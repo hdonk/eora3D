@@ -87,11 +87,23 @@ public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
     }
 
     void getDevices() throws InterruptedException {
+    	System.out.println("get devices");
     	devices = manager.getDevices();
 
         for (BluetoothDevice device : devices) {
             printDevice(device);
+            if(device.getName().startsWith("E3DS"))
+        	{
+            	setLaser(device);
+            	System.out.println("Found laser");
+        	}
+            if(device.getName().startsWith("E3DT"))
+        	{
+            	setTurntable(device);
+            	System.out.println("Found turntable");
+        	}
         }
+    	System.out.println("got devices");
     }
 
     static BluetoothGattService getService(BluetoothDevice device, String UUID) throws InterruptedException {
@@ -146,12 +158,12 @@ public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
         /*
          * After we find the devices we can stop looking for other devices.
          */
-        try {
+/*        try {
             manager.stopDiscovery();
             System.out.println("The discovery stopped");
         } catch (BluetoothException e) {
             System.err.println("Discovery could not be stopped.");
-        }
+        }*/
     }
     
     BluetoothGattCharacteristic getLaserCharacteristic(String serviceUUID, String characteristicUUID)
@@ -435,6 +447,26 @@ public class eora3D_bluetooth_tinyb extends eora3D_bluetooth {
         return true;
 	}
 
+	public boolean laserOk() {
+		if(laser!=null) return true;
+		return false;
+	}
+
+	public boolean turntableOk() {
+		if(turntable!=null) return true;
+		return false;
+	}
+
+	public String getLaserName() {
+		if(laserOk()) return laser.getName();
+		return "Not found";
+	}
+
+	public String getTurntableName() {
+		if(turntableOk()) return turntable.getName();
+		return "Not found";
+	}
+	
 	public void cleanup() {
         if(laser!=null) laser.disconnect();
         if(turntable!=null) turntable.disconnect();

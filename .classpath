@@ -6,7 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry combineaccessrules="false" kind="src" path="/jPLY"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
 		<attributes>
 			<attribute name="module" value="true"/>
@@ -38,9 +37,14 @@
 	<classpathentry kind="lib" path="libs/bridj-0.7.0.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-api-2.0.0-alpha1.jar"/>
 	<classpathentry kind="lib" path="libs/slf4j-simple-2.0.0-alpha1.jar"/>
-	<classpathentry kind="lib" path="libs/tinyb.jar"/>
+	<classpathentry kind="lib" path="libs/tinyb.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="eora3D/libs"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="libs/windows/lwjgl-glfw-natives-windows.jar"/>
 	<classpathentry kind="lib" path="libs/windows/lwjgl-natives-windows.jar"/>
 	<classpathentry kind="lib" path="libs/windows/lwjgl-opengles-natives-windows.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
