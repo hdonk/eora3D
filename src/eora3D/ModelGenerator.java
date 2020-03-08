@@ -44,9 +44,9 @@ final class RawPoint
 	public int m_x;
 	public int m_y;
 	public int m_angle;
-	public byte m_r;
-	public byte m_g;
-	public byte m_b;
+	public int m_r;
+	public int m_g;
+	public int m_b;
 }
 
 public class ModelGenerator extends JDialog implements ActionListener, WindowListener, AdjustmentListener {
@@ -96,7 +96,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	long m_maxz = 0;
 	
 	private ArrayList<ArrayList<RawPoint>> m_raw_points;
-	private JCheckBox cbKeepDetectedPoints;	
+	private JCheckBox cbKeepDetectedPoints;
+	private JCheckBox cbStopRotation;	
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -247,7 +248,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "3D Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(773, 17, 150, 272);
+		panel_1.setBounds(773, 17, 150, 286);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -312,6 +313,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(tfYDisplayOffset);
 		tfYDisplayOffset.setColumns(10);
 		tfYDisplayOffset.addActionListener(this);
+		
+		cbStopRotation = new JCheckBox("Stop rotation");
+		cbStopRotation.setBounds(6, 255, 104, 18);
+		panel_1.add(cbStopRotation);
+		cbStopRotation.addActionListener(this);
 		
 /*		JLabel lblTtRot = new JLabel("tt rot");
 		lblTtRot.setBounds(6, 292, 60, 15);
@@ -409,6 +415,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		cbKeepDetectedPoints = new JCheckBox("Keep detected points");
 		cbKeepDetectedPoints.setBounds(628, 487, 237, 18);
+		cbKeepDetectedPoints.setSelected(true);
 		getContentPane().add(cbKeepDetectedPoints);
 		
 		JButton btnReCalculate3D = new JButton("ReCalculate 3D");
@@ -622,6 +629,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Test")
 		{
+			m_e3d.m_cal_data.calculate();
+			m_e3d.m_cal_data.calculateBaseCoords();
+
 			Eora3D_MainWindow.m_e3d_config.sm_test_rotation= Integer.parseInt(tfTestrotation.getText());
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 			Detect(Eora3D_MainWindow.m_e3d_config.sm_test_frame, Eora3D_MainWindow.m_e3d_config.sm_test_rotation, true);
@@ -751,6 +761,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				|| ae.getSource().equals(tfFrontFilter)
 				|| ae.getSource().equals(tfBackFilter)
 				|| ae.getSource().equals(tfYDisplayOffset)
+				|| ae.getSource().equals(cbStopRotation)
 				)
 		{
 			if(m_detect_thread == null)
@@ -758,6 +769,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			    DataOutputStream l_dos = null;
 			    
 			    putToConfig();
+			    
+			    m_pco.m_stoprotation = cbStopRotation.isSelected();
 			    
 			    if(!m_e3d.m_is_windows10) try {
 					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
@@ -844,6 +857,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_maxy = 0;
 		m_minz = 0;
 		m_maxz = 0;
+
+		m_e3d.m_cal_data.calculate();
+		m_e3d.m_cal_data.calculateBaseCoords();
+
 	    if(m_e3d.m_is_windows10 && m_pco_thread==null)
     	{
 	    	m_pco_thread = new Thread(m_pco);
@@ -930,7 +947,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			if(chckbxTurntableScan.isSelected()) l_tt="tt"+l_tt_point+"_";
 			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
 			File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
-			int l_start = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset;
+			int l_start = 0;
 			int l_end = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
 			m_raw_points.add(new ArrayList<RawPoint>());
 			if(a_frame != -1)
@@ -995,8 +1012,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						ArrayList<Point> l_points;
 //						System.out.println("Thread "+l_lambda_thread);
 						// TBC correctify this!
-						int l_range_start = (l_baseimage.getHeight()/8)*l_lambda_thread;
-						int l_range_end = (l_baseimage.getHeight()/8)*(l_lambda_thread+1);
+						int l_range_start = (l_baseimage.getHeight()/Eora3D_MainWindow.m_e3d_config.sm_threads)*l_lambda_thread;
+						int l_range_end = (l_baseimage.getHeight()/Eora3D_MainWindow.m_e3d_config.sm_threads)*(l_lambda_thread+1);
+						if(l_lambda_thread == Eora3D_MainWindow.m_e3d_config.sm_threads-1) l_range_end = l_baseimage.getHeight()-1;
 						l_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
 //						System.out.println("Found count: "+l_points.size());
 						for(Point l_found_point: l_points)
@@ -1020,16 +1038,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 								m_minz = Math.min(m_minz, l_point.m_z);
 								m_maxz = Math.max(m_maxz, l_point.m_z);
 								m_pco.addPoint(l_tt_point_f, l_point);
-								/*if(cbKeepDetectedPoints.isSelecte())*/ synchronized(m_raw_points)
+								if(cbKeepDetectedPoints.isSelected()) synchronized(m_raw_points)
 								{
 									RawPoint l_raw_point = new RawPoint();
 									
 									l_raw_point.m_x = l_found_point.x;
 									l_raw_point.m_y = (l_baseimage.getHeight()-l_found_point.y)-1;
 									l_raw_point.m_angle = l_lambda_pos;
-									l_raw_point.m_r = (byte) l_point.m_r;
-									l_raw_point.m_g = (byte) l_point.m_g;
-									l_raw_point.m_b = (byte) l_point.m_b;
+									l_raw_point.m_r = l_point.m_r;
+									l_raw_point.m_g = l_point.m_g;
+									l_raw_point.m_b = l_point.m_b;
 									m_raw_points.get(l_tt_point_f).add(l_raw_point);
 								}
 								synchronized(m_points)
@@ -1487,7 +1505,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	void reCalculate()
 	{
 	    m_pco.clear();
-	    m_raw_points.clear();
 		m_minx = 0;
 		m_maxx = 0;
 		m_miny = 0;
@@ -1496,28 +1513,63 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_maxz = 0;
 		m_points = new ArrayList<RGB3DPoint>();
 
-		int l_tt_point = 0;
+		m_e3d.m_cal_data.calculate();
+		m_e3d.m_cal_data.calculateBaseCoords();
+		
+		final int l_tt_point = 0;
 		for(ArrayList<RawPoint> l_rpal : m_raw_points)
 		{
-			for(RawPoint l_rp : l_rpal)
+			int l_end = l_rpal.size();
+			int l_segment = l_end/Eora3D_MainWindow.m_e3d_config.sm_threads;
+			
+			
+			
+			
+			
+			Thread l_threads[] = new Thread[Eora3D_MainWindow.m_e3d_config.sm_threads];
+			for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
 			{
-				RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_rp.m_angle, l_rp.m_x, l_rp.m_y);
-				l_point.m_r = l_rp.m_r;
-				l_point.m_g = l_rp.m_g;
-				l_point.m_b = l_rp.m_b;
-				System.out.println("Pt "+l_point.m_x+","+l_point.m_y+","+l_point.m_z);
-				
-				m_minx = Math.min(m_minx, l_point.m_x);
-				m_maxx = Math.max(m_maxx, l_point.m_x);
-				m_miny = Math.min(m_miny, l_point.m_y);
-				m_maxy = Math.max(m_maxy, l_point.m_y);
-				m_minz = Math.min(m_minz, l_point.m_z);
-				m_maxz = Math.max(m_maxz, l_point.m_z);
-				
-				m_pco.addPoint(l_tt_point, l_point);
-				m_points.add(l_point);
+				final int l_lambda_thread = l_thread;
+				Runnable l_task = () -> {
+					int l_range_start = l_segment*l_lambda_thread;
+					int l_range_end = l_segment*(l_lambda_thread+1);
+					if(l_lambda_thread == Eora3D_MainWindow.m_e3d_config.sm_threads-1) l_range_end = l_end;
+
+					for(int i=l_range_start; i < l_range_end; ++i)
+					{
+						RawPoint l_rp = l_rpal.get(i);
+						RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_rp.m_angle, l_rp.m_x, l_rp.m_y);
+						l_point.m_r = l_rp.m_r;
+						l_point.m_g = l_rp.m_g;
+						l_point.m_b = l_rp.m_b;
+						
+						
+						m_pco.addPoint(l_tt_point, l_point);
+						synchronized(m_points)
+						{
+							m_points.add(l_point);
+							m_minx = Math.min(m_minx, l_point.m_x);
+							m_maxx = Math.max(m_maxx, l_point.m_x);
+							m_miny = Math.min(m_miny, l_point.m_y);
+							m_maxy = Math.max(m_maxy, l_point.m_y);
+							m_minz = Math.min(m_minz, l_point.m_z);
+							m_maxz = Math.max(m_maxz, l_point.m_z);
+						}
+					}
+
+				};
+				l_threads[l_thread] = new Thread(l_task);
+				l_threads[l_thread].start();
 			}
-			++l_tt_point;
+			for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
+			{
+				try {
+					l_threads[l_thread].join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 		System.out.println("Min X: "+m_minx);
 		System.out.println("Max X: "+m_maxx);
@@ -1525,5 +1577,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		System.out.println("Max Y: "+m_maxy);
 		System.out.println("Min Z: "+m_minz);
 		System.out.println("Max Z: "+m_maxz);
+		System.out.println("Recalculated "+m_points.size()+" points");
 	}
 }

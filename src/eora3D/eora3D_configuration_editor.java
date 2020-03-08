@@ -49,6 +49,13 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfMinpointsperlaser;
 	private JTextField tfLatencyframes;
 	private JTextField tfIPCameraURL;
+	private JTextField tfLeftFilter;
+	private JTextField tfRightFilter;
+	private JTextField tfTopFilter;
+	private JTextField tfBottomFilter;
+	private JTextField tfFrontFilter;
+	private JTextField tfBackFilter;
+	private JTextField tfOutputDir;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -56,7 +63,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		m_e3d = a_e3d;
 		setResizable(false);
 		setModal(true);
-		setSize(692, 549);
+		setSize(924, 549);
 		setTitle("Configuration");
 		getContentPane().setLayout(null);
 		
@@ -144,7 +151,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(342, 223, 335, 241);
+		panel_2.setBounds(342, 223, 305, 241);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -320,7 +327,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		JPanel panel_5 = new JPanel();
 		panel_5.setLayout(null);
 		panel_5.setBorder(new TitledBorder(null, "Model generation", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(59, 59, 59)));
-		panel_5.setBounds(511, 107, 163, 116);
+		panel_5.setBounds(511, 107, 136, 116);
 		getContentPane().add(panel_5);
 		
 		JLabel lblThreads = new JLabel("Threads");
@@ -382,6 +389,87 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		cbTurntableStops.addItem("2");
 		panel_6.add(cbTurntableStops);
 		
+		JPanel panel_7 = new JPanel();
+		panel_7.setBorder(new TitledBorder(null, "Output", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_7.setBounds(511, 0, 397, 108);
+		getContentPane().add(panel_7);
+		panel_7.setLayout(null);
+		
+		JLabel lblNewLabel_1 = new JLabel("Output dir");
+		lblNewLabel_1.setBounds(10, 11, 71, 14);
+		panel_7.add(lblNewLabel_1);
+		
+		tfOutputDir = new JTextField();
+		tfOutputDir.setBounds(10, 30, 363, 20);
+		panel_7.add(tfOutputDir);
+		tfOutputDir.setColumns(10);
+		
+		JPanel panel_8 = new JPanel();
+		panel_8.setBorder(new TitledBorder(null, "Filter", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_8.setBounds(657, 107, 251, 314);
+		getContentPane().add(panel_8);
+		panel_8.setLayout(null);
+		
+		JLabel lblLeft = new JLabel("Left");
+		lblLeft.setBounds(10, 23, 46, 14);
+		panel_8.add(lblLeft);
+		
+		tfLeftFilter = new JTextField();
+		tfLeftFilter.setText("-100000000");
+		tfLeftFilter.setBounds(10, 41, 86, 27);
+		panel_8.add(tfLeftFilter);
+		tfLeftFilter.setColumns(10);
+		
+		tfRightFilter = new JTextField();
+		tfRightFilter.setText("100000000");
+		tfRightFilter.setColumns(10);
+		tfRightFilter.setBounds(10, 84, 86, 27);
+		panel_8.add(tfRightFilter);
+		
+		JLabel lblRight = new JLabel("Right");
+		lblRight.setBounds(10, 66, 46, 14);
+		panel_8.add(lblRight);
+		
+		tfTopFilter = new JTextField();
+		tfTopFilter.setText("100000000");
+		tfTopFilter.setColumns(10);
+		tfTopFilter.setBounds(10, 129, 86, 27);
+		panel_8.add(tfTopFilter);
+		
+		JLabel lblTop = new JLabel("Top");
+		lblTop.setBounds(10, 111, 46, 14);
+		panel_8.add(lblTop);
+		
+		tfBottomFilter = new JTextField();
+		tfBottomFilter.setText("-100000000");
+		tfBottomFilter.setColumns(10);
+		tfBottomFilter.setBounds(10, 178, 86, 27);
+		panel_8.add(tfBottomFilter);
+		
+		JLabel lblBottom = new JLabel("Bottom");
+		lblBottom.setBounds(10, 160, 46, 14);
+		panel_8.add(lblBottom);
+		
+		tfFrontFilter = new JTextField();
+		tfFrontFilter.setText("-100000000");
+		tfFrontFilter.setColumns(10);
+		tfFrontFilter.setBounds(10, 227, 86, 27);
+		panel_8.add(tfFrontFilter);
+		
+		JLabel lblFront = new JLabel("Front");
+		lblFront.setBounds(10, 209, 46, 14);
+		panel_8.add(lblFront);
+		
+		tfBackFilter = new JTextField();
+		tfBackFilter.setText("100000000");
+		tfBackFilter.setColumns(10);
+		tfBackFilter.setBounds(10, 275, 86, 27);
+		panel_8.add(tfBackFilter);
+		
+		JLabel lblBack = new JLabel("Back");
+		lblBack.setBounds(10, 257, 46, 14);
+		panel_8.add(lblBack);
+		
 		setFromConfig(Eora3D_MainWindow.m_e3d_config);
 	}
 	
@@ -409,6 +497,15 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfCameraHeight.setText(""+a_cfg.sm_camera_res_h);
 		cbTurntableStops.setSelectedItem(""+(6516/a_cfg.sm_turntable_step_size));
 		tfIPCameraURL.setText(a_cfg.sm_IP_webcam);
+		
+		tfLeftFilter.setText(""+a_cfg.sm_leftfilter);
+		tfRightFilter.setText(""+a_cfg.sm_rightfilter); 
+		tfTopFilter.setText(""+a_cfg.sm_topfilter);
+		tfBottomFilter.setText(""+a_cfg.sm_bottomfilter); 
+		tfFrontFilter.setText(""+a_cfg.sm_frontfilter);
+		tfBackFilter.setText(""+a_cfg.sm_backfilter); 
+
+		tfOutputDir.setText(a_cfg.sm_image_dir.toString());
 		
 		if(a_cfg.sm_laser_detection_threshold_logic.equals("Or"))
 		{
@@ -470,6 +567,15 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.sm_turntable_step_size = (6516/Integer.parseInt(cbTurntableStops.getSelectedItem().toString()));
 		
 		a_cfg.sm_IP_webcam = tfIPCameraURL.getText();
+		
+		a_cfg.sm_leftfilter = Integer.parseInt(tfLeftFilter.getText());
+		a_cfg.sm_rightfilter = Integer.parseInt(tfRightFilter.getText()); 
+		a_cfg.sm_topfilter = Integer.parseInt(tfTopFilter.getText());
+		a_cfg.sm_bottomfilter = Integer.parseInt(tfBottomFilter.getText()); 
+		a_cfg.sm_frontfilter = Integer.parseInt(tfFrontFilter.getText());
+		a_cfg.sm_backfilter = Integer.parseInt(tfBackFilter.getText());
+		
+		a_cfg.sm_image_dir = new File(tfOutputDir.getText().toString());
 		
 		switch(cbAlgorithm.getSelectedIndex())
 		{
@@ -629,7 +735,8 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 			l_fc.setFileFilter(new extensionFileFilter("e3d"));
 			l_fc.setSelectedFile(m_e3d.m_e3d_config.sm_config_file);
 			int l_ret = l_fc.showSaveDialog(this);
-
+			System.out.println("Save left "+Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
+			System.out.println("Save left l_config "+l_config.sm_leftfilter);
 			if (l_ret == JFileChooser.APPROVE_OPTION)
 			{
 				File l_file = l_fc.getSelectedFile();

@@ -114,6 +114,7 @@ public class PointCloudObject implements Runnable {
 	private int m_backfilter = 5000;
 	
 	public double m_pix_to_mm = 1.0f;
+	public boolean m_stoprotation;
 	
 	public PointCloudObject()
 	{
@@ -715,7 +716,7 @@ public class PointCloudObject implements Runnable {
 				.setOrtho(-1000.0f/l_x_scale, 1000.0f/l_x_scale, -1000.0f/l_y_scale, 1000.0f/l_y_scale, -30000.0f, 30000.0f);
 		viewM.identity();
 		// Corner view
-		viewM.lookAt(-100.0f, 100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		viewM.lookAt(0.0f, 100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		// Top view
 		//viewM.lookAt(0.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		modelM.identity();
@@ -823,7 +824,7 @@ public class PointCloudObject implements Runnable {
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		m_rot += delta * 5f;
+		if(!m_stoprotation) m_rot += delta * 5f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
