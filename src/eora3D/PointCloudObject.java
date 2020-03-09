@@ -717,7 +717,8 @@ public class PointCloudObject implements Runnable {
 				.setOrtho(-1000.0f/l_x_scale, 1000.0f/l_x_scale, -1000.0f/l_y_scale, 1000.0f/l_y_scale, -30000.0f, 30000.0f);
 		viewM.identity();
 		// User controlled front view
-		viewM.lookAt(0.0f, (float)m_YViewOffset, 10000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		viewM.lookAt(0.0f, (float)m_YViewOffset, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		
 		// Corner view
 		//viewM.lookAt(0.0f, 100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		// Top view

@@ -337,7 +337,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblNewLabel_1);
 		
 		tfObjectRotation = new JTextField();
-		tfObjectRotation.setText("0");
 		tfObjectRotation.setBounds(6, 293, 96, 27);
 		panel_1.add(tfObjectRotation);
 		tfObjectRotation.setColumns(10);
