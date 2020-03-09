@@ -400,7 +400,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		panel_7.add(lblNewLabel_1);
 		
 		tfOutputDir = new JTextField();
-		tfOutputDir.setBounds(10, 30, 363, 20);
+		tfOutputDir.setBounds(10, 30, 363, 27);
 		panel_7.add(tfOutputDir);
 		tfOutputDir.setColumns(10);
 		
