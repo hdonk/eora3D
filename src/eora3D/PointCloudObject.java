@@ -1,22 +1,16 @@
 package eora3D;
 
-import static org.lwjgl.opengles.GLES20.GL_ARRAY_BUFFER;
-import static org.lwjgl.opengles.GLES20.GL_ELEMENT_ARRAY_BUFFER;
-import static org.lwjgl.opengles.GLES20.GL_FLOAT;
-import static org.lwjgl.opengles.GLES20.GL_NO_ERROR;
-import static org.lwjgl.opengles.GLES20.GL_POINTS;
-import static org.lwjgl.opengles.GLES20.GL_STATIC_DRAW;
-import static org.lwjgl.opengles.GLES20.GL_UNSIGNED_INT;
-import static org.lwjgl.opengles.GLES20.glBindBuffer;
-import static org.lwjgl.opengles.GLES20.glBufferData;
-import static org.lwjgl.opengles.GLES20.glDeleteBuffers;
-import static org.lwjgl.opengles.GLES20.glDrawElements;
-import static org.lwjgl.opengles.GLES20.glEnableVertexAttribArray;
-import static org.lwjgl.opengles.GLES20.glGenBuffers;
-import static org.lwjgl.opengles.GLES20.glGetError;
-import static org.lwjgl.opengles.GLES20.glVertexAttribPointer;
+import static org.lwjgl.opengles.GLES30.GL_RGBA8;
 import static org.lwjgl.opengles.GLES30.glBindVertexArray;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.AdjustmentEvent;
+import java.awt.event.AdjustmentListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -25,11 +19,15 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengles.GLES32;
@@ -54,7 +52,7 @@ import org.lwjgl.system.Platform;
 import org.lwjgl.system.*;
 import org.lwjgl.egl.*;
 import org.lwjgl.egl.EGLCapabilities;
-import org.lwjgl.glfw.*;
+//import org.lwjgl.glfw.*;
 //import org.lwjgl.opengl.GLUtil.*;
 
 import static org.lwjgl.glfw.Callbacks.*;
@@ -70,8 +68,14 @@ import eora3D.RGB3DPoint;
 import org.smurn.jply.util.RectBounds;
 import org.smurn.jply.*;
 import org.smurn.jply.util.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.TitledBorder;
+import javax.swing.JLabel;
+import javax.swing.JScrollBar;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
 
-public class PointCloudObject implements Runnable {
+public class PointCloudObject extends JFrame implements Runnable, AdjustmentListener, ActionListener, WindowListener {
 	EGLCapabilities m_egl;
 	GLESCapabilities m_gles;
 
@@ -116,10 +120,75 @@ public class PointCloudObject implements Runnable {
 	public double m_pix_to_mm = 1.0f;
 	public boolean m_stoprotation;
 	public int m_YViewOffset = 0;
+	private JTextField tfObjectYRotation;
+	private JScrollBar sbPointsize;
+	private JScrollBar sbScale;
+	private JCheckBox cbContinuousRotation;
+	private PaintImage glpanel;
+	boolean m_stop_gl_thread = false;
 	
 	public PointCloudObject()
 	{
+		getContentPane().setLayout(null);
+		
+		setResizable(false);
+		setSize(1024,690);
+		addWindowListener(this);
+		
+		glpanel = new PaintImage(false);
+		glpanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		glpanel.setBounds(6, 6, 492, 639);
+		getContentPane().add(glpanel);
+		
+		JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new TitledBorder(null, "Controls", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_1.setBounds(507, 6, 266, 504);
+		getContentPane().add(panel_1);
+		panel_1.setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("Scale");
+		lblNewLabel.setBounds(6, 23, 55, 16);
+		panel_1.add(lblNewLabel);
+		
+		sbScale = new JScrollBar();
+		sbScale.setOrientation(JScrollBar.HORIZONTAL);
+		sbScale.setBounds(16, 41, 230, 21);
+		sbScale.setValue(1000);
+		sbScale.setMinimum(1);
+		sbScale.setMaximum(6000);
+		panel_1.add(sbScale);
+		sbScale.addAdjustmentListener(this);
+		panel_1.add(sbScale);
+		
+		JLabel lblNewLabel_1 = new JLabel("Point size");
+		lblNewLabel_1.setBounds(6, 66, 55, 16);
+		panel_1.add(lblNewLabel_1);
+		
+		sbPointsize = new JScrollBar();
+		sbPointsize.setOrientation(JScrollBar.HORIZONTAL);
+		sbPointsize.setBounds(16, 85, 230, 21);
+		sbPointsize.setMinimum(10);
+		sbPointsize.setValue(10);
+		sbPointsize.setMaximum(80);
+		sbPointsize.addAdjustmentListener(this);
+		panel_1.add(sbPointsize);
+		
+		JLabel lblObjectRotation = new JLabel("Object rotation");
+		lblObjectRotation.setBounds(6, 118, 136, 16);
+		panel_1.add(lblObjectRotation);
+		
+		tfObjectYRotation = new JTextField();
+		tfObjectYRotation.setBounds(16, 142, 122, 28);
+		panel_1.add(tfObjectYRotation);
+		tfObjectYRotation.setColumns(10);
+		
+		cbContinuousRotation = new JCheckBox("Continuous");
+		cbContinuousRotation.setBounds(16, 176, 104, 18);
+		cbContinuousRotation.addActionListener(this);
+		panel_1.add(cbContinuousRotation);
 		clear();
+		
+		setVisible(true);
 	}
 	
 	public void clear()
@@ -837,15 +906,97 @@ public class PointCloudObject implements Runnable {
 		lastTime = thisTime;
 
 	}
-	@Override
+
+	int makeFBOTexture(int a_width, int a_height)
+	{
+		int l_fbo;
+		int l_FBOTexture;
+		int l_depthbuffer;
+		
+		l_fbo = glGenFramebuffers();
+		glBindFramebuffer(GL_FRAMEBUFFER, l_fbo);
+		if (!GLok("Bind Framebuffer"))
+			return 0;
+		
+		l_depthbuffer = glGenRenderbuffers();
+		if (!GLok("glGenRenderbuffers"))
+			return 0;
+		glBindRenderbuffer(GL_RENDERBUFFER, l_depthbuffer);
+		if (!GLok("l_depthbuffer"))
+			return 0;
+	
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, a_width, a_height);
+		if (!GLok("glRenderbufferStorage"))
+			return 0;
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, l_depthbuffer);
+		if (!GLok("glFramebufferRenderbuffer"))
+			return 0;
+
+		l_FBOTexture = glGenTextures();
+		if (!GLok("glGenTextures"))
+			return 0;
+		glBindTexture(GL_TEXTURE_2D, l_FBOTexture);
+		if (!GLok("glBindTexture"))
+			return 0;
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		if (!GLok("glTexParameterf"))
+			return 0;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, a_width, a_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, (java.nio.ByteBuffer)null);
+		if (!GLok("glTexImage2D"))
+			return 0;
+		
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, l_FBOTexture, 0);
+		if (!GLok("glFramebufferTexture2D"))
+			return 0;
+		
+		int l_err = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if(l_err == GL_FRAMEBUFFER_COMPLETE)
+		{
+			System.out.println("Framebuffer creation successful");
+			return l_fbo;
+		}
+		else
+		{
+			System.out.println("Failed to create FBO: "+l_err);
+			return 0;
+		}
+	}
+	
+	BufferedImage getBufferedImageFromFBO(int a_width, int a_height)
+	{
+		ByteBuffer l_buffer = BufferUtils.createByteBuffer(a_width * a_height * 4);
+		glReadPixels(0, 0, a_width, a_height, GL_RGBA, GL_UNSIGNED_BYTE, l_buffer);
+		GLok("glReadPixels");
+		BufferedImage l_image = new BufferedImage(a_width, a_height, BufferedImage.TYPE_3BYTE_BGR);
+		byte[] array = ((DataBufferByte) l_image.getRaster().getDataBuffer()).getData();
+		for(int y = 0; y < a_height; ++y)
+		{
+			for(int x = 0; x < a_width; ++x)
+			{
+				int i = (y*a_width + x)*3;
+				int j = ((a_height-y-1)*a_width + x)*4;
+				array[i+0] = l_buffer.get(j+2);
+				array[i+1] = l_buffer.get(j+1);
+				array[i+2] = l_buffer.get(j+0);
+			}
+		}
+		return l_image;
+	}
+	
+@Override
 	public void run() {
+		// Render with OpenGL ES
+
+		System.out.println("Run");
+		
 		// Render with OpenGL ES
 
 		System.out.println("Run");
 		float scale = java.awt.Toolkit.getDefaultToolkit().getScreenResolution() / 96.0f;
 		System.out.println("Res: " + java.awt.Toolkit.getDefaultToolkit().getScreenResolution());
-		displayW = 1000;
-		displayH = 680;
+		displayW = 1;
+		displayH = 1;
 		/*
 		 * try (MemoryStack stack = stackPush()) { IntBuffer peError =
 		 * stack.mallocInt(1);
@@ -988,50 +1139,18 @@ public class PointCloudObject implements Runnable {
 			}
 		}
 		
-		glfwShowWindow(m_window);
-		
-		while (!glfwWindowShouldClose(m_window)) {
-			glfwPollEvents();
-/*			if (m_reload) {
-				glfwMakeContextCurrent(m_window);
-				m_pcos = new ArrayList<>();
-				for (int i = 0; i < m_pcd.m_layers.size(); ++i) {
-					m_pcos.add(new PointCloudObject(m_pcd, i));
-					if (!m_pcos.get(i).load()) {
-						System.err.println("Failed to load point cloud");
-						GLES.setCapabilities(null);
+		int l_current_width = glpanel.getWidth();
+		int l_current_height = glpanel.getHeight();
+		int l_fbo = this.makeFBOTexture(l_current_width, l_current_height);
 
-						glfwFreeCallbacks(m_window);
-						glfwTerminate();
-						System.exit(1);
-
-					}
-				}
-				m_reload = false;
-				m_pause = false;
-			}
-			if (m_pause) {
-				try {
-					Thread.sleep(1000);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			} else {*/
-				//System.out.println("Render");
-				update();
-				render(m_egl, m_gles);
+		while (!m_stop_gl_thread) {
+			glBindFramebuffer(GL_FRAMEBUFFER, l_fbo);
+			update();
+			render(m_egl, m_gles);
 				//System.out.println("Rendered");
-
-				glfwSwapBuffers(m_window);
-				
-//			}
 		}
+		
 		glclear();
-        glfwHideWindow(m_window);
-		GLES.setCapabilities(null);
-		glfwFreeCallbacks(m_window);
-		glfwTerminate();
 		m_finished = true;
 	}
 
@@ -1134,5 +1253,59 @@ public class PointCloudObject implements Runnable {
 		m_frontfilter = a_frontfilter;
 		m_backfilter = a_backfilter;
 
+	}
+
+	@Override
+	public void adjustmentValueChanged(AdjustmentEvent e) {
+		m_Pointsize = sbPointsize.getValue();
+		m_Scale = sbScale.getValue();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		m_stoprotation = !this.cbContinuousRotation.isSelected();
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		// TODO Auto-generated method stub
+		m_stop_gl_thread = true;
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
 	}
 }
