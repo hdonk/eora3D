@@ -104,6 +104,7 @@ public class PointCloudObject implements Runnable {
 	public float m_tt_angle = 0.0f;
 	public int m_Zrotoff = 0;
 	public int m_Xrotoff = 0;
+	public int m_Ymodeloff = 0;
 	public int m_Ydispoff = 0;
 
 	private int m_leftfilter = -5000;
@@ -449,7 +450,7 @@ public class PointCloudObject implements Runnable {
 					modelM.identity();
 					Quaternionf q = new Quaternionf();
 					modelM.rotate(q.rotateY((float) Math.toRadians(j*m_tt_angle)).normalize());
-					modelM.translate(m_Xrotoff, m_Ydispoff, -m_Zrotoff);
+					modelM.translate(m_Xrotoff, m_Ymodeloff, -m_Zrotoff);
 			        for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
 			        	if(
@@ -716,7 +717,7 @@ public class PointCloudObject implements Runnable {
 				.setOrtho(-1000.0f/l_x_scale, 1000.0f/l_x_scale, -1000.0f/l_y_scale, 1000.0f/l_y_scale, -30000.0f, 30000.0f);
 		viewM.identity();
 		// Corner view
-		viewM.lookAt(0.0f, 100.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		viewM.lookAt(0.0f, m_Ydispoff, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		// Top view
 		//viewM.lookAt(0.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		modelM.identity();
@@ -807,7 +808,7 @@ public class PointCloudObject implements Runnable {
 			modelM.identity();
 			q = new Quaternionf();
 			modelM.rotate(q.rotateY((float) Math.toRadians(i*m_tt_angle+m_rot)).normalize());
-			modelM.translate(m_Xrotoff, m_Ydispoff, -m_Zrotoff);
+			modelM.translate(m_Xrotoff, m_Ymodeloff, -m_Zrotoff);
 			//modelM.translate(0.0f, 0.0f, -2000.0f);
 			modelViewLoc = glGetUniformLocation(l_program, "modelView");
 			if (!GLok("Calling glGetUniformLocation"))
@@ -1121,7 +1122,7 @@ public class PointCloudObject implements Runnable {
 		m_tt_angle = a_angle;
 		m_Zrotoff = a_Zrotoff;
 		m_Xrotoff = a_Xrotoff;
-		m_Ydispoff = a_Ydispoff;
+		m_Ymodeloff = a_Ydispoff;
 		
 		m_leftfilter = a_leftfilter;
 		m_rightfilter = a_rightfilter;

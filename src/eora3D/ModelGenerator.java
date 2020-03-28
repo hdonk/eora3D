@@ -84,7 +84,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfBottomFilter;
 	private JTextField tfFrontFilter;
 	private JTextField tfBackFilter;
-	private JTextField tfYDisplayOffset;
+	private JTextField tfYModelOffset;
 	private JTextField tfTestrotation;
 	private Thread m_pco_thread;
 	
@@ -98,6 +98,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private ArrayList<ArrayList<RawPoint>> m_raw_points;
 	private JCheckBox cbKeepDetectedPoints;
 	private JCheckBox cbStopRotation;	
+	private JTextField tfYDisplayOffset;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -248,7 +249,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "3D Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(773, 17, 150, 286);
+		panel_1.setBounds(773, 17, 150, 361);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -303,21 +304,32 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfXrotoff.setColumns(10);
 		tfXrotoff.addActionListener(this);
 		
-		JLabel lblYDisplayOffset = new JLabel("Y display offset");
-		lblYDisplayOffset.setBounds(6, 214, 122, 15);
-		panel_1.add(lblYDisplayOffset);
+		JLabel lblYModelOffset = new JLabel("Y model offset");
+		lblYModelOffset.setBounds(6, 214, 122, 15);
+		panel_1.add(lblYModelOffset);
 		
-		tfYDisplayOffset = new JTextField();
-		tfYDisplayOffset.setText("500");
-		tfYDisplayOffset.setBounds(6, 228, 122, 27);
-		panel_1.add(tfYDisplayOffset);
-		tfYDisplayOffset.setColumns(10);
-		tfYDisplayOffset.addActionListener(this);
+		tfYModelOffset = new JTextField();
+		tfYModelOffset.setText("500");
+		tfYModelOffset.setBounds(6, 228, 122, 27);
+		panel_1.add(tfYModelOffset);
+		tfYModelOffset.setColumns(10);
+		tfYModelOffset.addActionListener(this);
 		
 		cbStopRotation = new JCheckBox("Stop rotation");
 		cbStopRotation.setBounds(6, 255, 104, 18);
 		panel_1.add(cbStopRotation);
 		cbStopRotation.addActionListener(this);
+		
+		JLabel lblNewLabel = new JLabel("Y display offset");
+		lblNewLabel.setBounds(11, 277, 99, 16);
+		panel_1.add(lblNewLabel);
+		
+		tfYDisplayOffset = new JTextField();
+		tfYDisplayOffset.setText("0");
+		tfYDisplayOffset.setBounds(6, 295, 122, 28);
+		panel_1.add(tfYDisplayOffset);
+		tfYDisplayOffset.setColumns(10);
+		tfYDisplayOffset.addActionListener(this);
 		
 /*		JLabel lblTtRot = new JLabel("tt rot");
 		lblTtRot.setBounds(6, 292, 60, 15);
@@ -548,7 +560,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f,
 						Integer.parseInt(tfZrotoff.getText()),
 						Integer.parseInt(tfXrotoff.getText()),
-						Integer.parseInt(tfYDisplayOffset.getText()),
+						Integer.parseInt(tfYModelOffset.getText()),
 						Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_topfilter,
@@ -760,8 +772,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				|| ae.getSource().equals(tfTopFilter)
 				|| ae.getSource().equals(tfFrontFilter)
 				|| ae.getSource().equals(tfBackFilter)
-				|| ae.getSource().equals(tfYDisplayOffset)
+				|| ae.getSource().equals(tfYModelOffset)
 				|| ae.getSource().equals(cbStopRotation)
+				|| ae.getSource().equals(tfYDisplayOffset)
 				)
 		{
 			if(m_detect_thread == null)
@@ -782,13 +795,14 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f,
 						Integer.parseInt(tfZrotoff.getText()),
 						Integer.parseInt(tfXrotoff.getText()),
-						Integer.parseInt(tfYDisplayOffset.getText()),
+						Integer.parseInt(tfYModelOffset.getText()),
 						Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_topfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
 						Eora3D_MainWindow.m_e3d_config.sm_backfilter);
+				m_pco.m_Ydispoff = Integer.parseInt(tfYDisplayOffset.getText());
 				if(m_socket!=null)
 				{
 					try {
@@ -799,7 +813,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 //			    		l_dos.writeFloat((float)Float.parseFloat(tfTTrot.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 			    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
-			    		l_dos.writeInt(Integer.parseInt(tfYDisplayOffset.getText()));
+			    		l_dos.writeInt(Integer.parseInt(tfYModelOffset.getText()));
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
 			    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_topfilter);
@@ -927,7 +941,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	    		l_dos.writeFloat((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18);
 	    		l_dos.writeInt(Integer.parseInt(tfZrotoff.getText()));
 	    		l_dos.writeInt(Integer.parseInt(tfXrotoff.getText()));
-	    		l_dos.writeInt(Integer.parseInt(tfYDisplayOffset.getText()));
+	    		l_dos.writeInt(Integer.parseInt(tfYModelOffset.getText()));
 	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
 	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_rightfilter);
 	    		l_dos.writeInt(Eora3D_MainWindow.m_e3d_config.sm_topfilter);

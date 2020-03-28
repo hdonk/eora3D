@@ -7,11 +7,11 @@ import java.awt.image.BufferedImage;
 class CalibrationData
 {
 	// mm
-	public double board_w_mm = 160.0f;
-	public double board_h_mm = 220.0f;
+	public double board_w_mm = 160.0f*(403.5f/130.0f);
+	public double board_h_mm = 220.0f*(403.5f/130.0f);
 	public double spot_r_mm = 2.0f;
-	public double spot_sep_w_mm = 130.0f;
-	public double spot_sep_h_mm = 191.0f;
+	public double spot_sep_w_mm = 130.0f*(403.5f/130.0f);
+	public double spot_sep_h_mm = 191.0f*(403.5f/130.0f);
 	
 	// Calculation inputs
 	// pixels
