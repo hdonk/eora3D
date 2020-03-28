@@ -105,7 +105,6 @@ public class PointCloudObject implements Runnable {
 	public int m_Zrotoff = 0;
 	public int m_Xrotoff = 0;
 	public int m_Ymodeloff = 0;
-	public int m_Ydispoff = 0;
 
 	private int m_leftfilter = -5000;
 	private int m_rightfilter = 5000;
@@ -116,6 +115,7 @@ public class PointCloudObject implements Runnable {
 	
 	public double m_pix_to_mm = 1.0f;
 	public boolean m_stoprotation;
+	public int m_YViewOffset = 0;
 	
 	public PointCloudObject()
 	{
@@ -298,7 +298,7 @@ public class PointCloudObject implements Runnable {
 				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(l_point);
-			m_refresh = true;
+//			m_refresh = true;
 		}
 	}
 	public void addPoint(int a_list, RGB3DPoint a_point)
@@ -313,7 +313,7 @@ public class PointCloudObject implements Runnable {
 				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(a_point);
-			m_refresh = true;
+//			m_refresh = true;
 		}
 	}
 
@@ -716,8 +716,11 @@ public class PointCloudObject implements Runnable {
 		projectM
 				.setOrtho(-1000.0f/l_x_scale, 1000.0f/l_x_scale, -1000.0f/l_y_scale, 1000.0f/l_y_scale, -30000.0f, 30000.0f);
 		viewM.identity();
+		// User controlled front view
+		viewM.lookAt(0.0f, (float)m_YViewOffset, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+		
 		// Corner view
-		viewM.lookAt(0.0f, m_Ydispoff, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+//		viewM.lookAt(0.0f, m_Ydispoff, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
 		// Top view
 		//viewM.lookAt(0.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		modelM.identity();

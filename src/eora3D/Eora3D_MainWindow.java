@@ -73,7 +73,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	
 	List<Webcam> m_webcams = null;
 	public Webcam m_camera = null;
-	static eora3D_configuration_data_v1 m_e3d_config;
+	static eora3D_configuration_data_v1 m_e3d_config = null;
 	public CalibrationData m_cal_data = null;
 	private JTextField tfIPcameraurl;
 	private boolean m_use_IPCamera;
