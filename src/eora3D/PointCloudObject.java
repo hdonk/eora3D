@@ -30,6 +30,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.lwjgl.BufferUtils;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengles.GLES32;
 import org.lwjgl.opengles.OESMapbuffer;
 
@@ -58,7 +59,7 @@ import org.lwjgl.egl.EGLCapabilities;
 import static org.lwjgl.glfw.Callbacks.*;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.glfw.GLFWNativeEGL.*;
-import static org.lwjgl.egl.EGL10.*;
+import static org.lwjgl.egl.EGL15.*;
 import static org.lwjgl.opengles.GLES20.*;
 import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.MemoryUtil.*;
@@ -75,7 +76,7 @@ import javax.swing.JScrollBar;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 
-public class PointCloudObject extends JFrame implements Runnable, AdjustmentListener, ActionListener, WindowListener {
+public class PointCloudObject/* extends JFrame*/ implements Runnable/*, AdjustmentListener, ActionListener, WindowListener*/ {
 	EGLCapabilities m_egl;
 	GLESCapabilities m_gles;
 
@@ -120,16 +121,19 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 	public double m_pix_to_mm = 1.0f;
 	public boolean m_stoprotation;
 	public int m_YViewOffset = 0;
-	private JTextField tfObjectYRotation;
+/*	private JTextField tfObjectYRotation;
 	private JScrollBar sbPointsize;
 	private JScrollBar sbScale;
-	private JCheckBox cbContinuousRotation;
+	private JCheckBox cbContinuousRotation;*/
 	private PaintImage glpanel;
 	boolean m_stop_gl_thread = false;
 	
-	public PointCloudObject()
+	public PointCloudObject(PaintImage a_paintimage)
 	{
-		getContentPane().setLayout(null);
+		glpanel = a_paintimage;
+		clear();
+
+/*		getContentPane().setLayout(null);
 		
 		setResizable(false);
 		setSize(1024,690);
@@ -186,9 +190,8 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 		cbContinuousRotation.setBounds(16, 176, 104, 18);
 		cbContinuousRotation.addActionListener(this);
 		panel_1.add(cbContinuousRotation);
-		clear();
 		
-		setVisible(true);
+		setVisible(true);*/
 	}
 	
 	public void clear()
@@ -699,7 +702,7 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 		return program;
 	}
 
-	private void render(EGLCapabilities egl, GLESCapabilities gles) {
+	private void render() {
 
 		int modelViewLoc;
 		int scaleLoc;
@@ -1064,7 +1067,6 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 
 			// EGL capabilities
 			long dpy = glfwGetEGLDisplay();
-
 			try (MemoryStack stack = stackPush()) {
 				IntBuffer major = stack.mallocInt(1);
 				IntBuffer minor = stack.mallocInt(1);
@@ -1072,7 +1074,6 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 				if (!eglInitialize(dpy, major, minor)) {
 					throw new IllegalStateException(String.format("Failed to initialize EGL [0x%X]", eglGetError()));
 				}
-
 				m_egl = EGL.createDisplayCapabilities(dpy, major.get(0), minor.get(0));
 			}
 /*
@@ -1142,11 +1143,17 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 		int l_current_width = glpanel.getWidth();
 		int l_current_height = glpanel.getHeight();
 		int l_fbo = this.makeFBOTexture(l_current_width, l_current_height);
+		displayW = l_current_width;
+		displayH = l_current_height;
 
 		while (!m_stop_gl_thread) {
 			glBindFramebuffer(GL_FRAMEBUFFER, l_fbo);
 			update();
-			render(m_egl, m_gles);
+			render();
+			BufferedImage l_image;
+			l_image = getBufferedImageFromFBO(l_current_width, l_current_height);
+			glpanel.m_image = l_image;
+			glpanel.repaint();
 				//System.out.println("Rendered");
 		}
 		
@@ -1254,7 +1261,7 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 		m_backfilter = a_backfilter;
 
 	}
-
+/*
 	@Override
 	public void adjustmentValueChanged(AdjustmentEvent e) {
 		m_Pointsize = sbPointsize.getValue();
@@ -1308,4 +1315,5 @@ public class PointCloudObject extends JFrame implements Runnable, AdjustmentList
 		// TODO Auto-generated method stub
 		
 	}
+	*/
 }

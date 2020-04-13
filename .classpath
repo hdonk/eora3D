@@ -14,12 +14,12 @@
 	<classpathentry kind="lib" path="libs/joml-1.9.14.jar" sourcepath="/home/nickh/home/devel/java/eclipse-workspace/eora3D/libs/joml-1.9.14-sources.jar"/>
 	<classpathentry kind="lib" path="libs/webcam-capture-driver-ipcam-0.3.12.jar"/>
 	<classpathentry kind="lib" path="libs/webcam-capture-0.3.12.jar"/>
-	<classpathentry kind="lib" path="libs/lwjgl-egl.jar">
+	<classpathentry kind="lib" path="libs/lwjgl-egl.jar" sourcepath="libs/lwjgl-egl-sources.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="eora3D/libs/windows"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/lwjgl-glfw.jar">
+	<classpathentry kind="lib" path="libs/lwjgl-glfw.jar" sourcepath="libs/lwjgl-glfw-sources.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="eora3D/libs/windows"/>
 		</attributes>
@@ -29,7 +29,7 @@
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="eora3D/libs/windows"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="libs/lwjgl.jar">
+	<classpathentry kind="lib" path="libs/lwjgl.jar" sourcepath="libs/lwjgl-sources.jar">
 		<attributes>
 			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="eora3D/libs/windows"/>
 		</attributes>

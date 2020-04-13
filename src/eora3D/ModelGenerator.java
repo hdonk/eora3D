@@ -56,6 +56,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfBluethreshold;
 	private JTextField tfPercentagechange;
 	private PaintImage imagePanel;
+	private PaintImage glPanel;
 	private JScrollBar sbScaling;
 	private JScrollBar sbPointsize;
 	private JComboBox cbDetectionmethod;
@@ -111,7 +112,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(null, "Laser Detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel.setBounds(6, 0, 141, 621);
+		panel.setBounds(6, 0, 141, 633);
 		getContentPane().add(panel);
 		panel.setLayout(null);
 		
@@ -169,31 +170,31 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		cbDetectionmethod.addActionListener(this);
 		
 		JButton btnTest = new JButton("Test");
-		btnTest.setBounds(6, 492, 100, 27);
+		btnTest.setBounds(6, 470, 100, 27);
 		panel.add(btnTest);
 		btnTest.addActionListener(this);
 		
 		tfTestframe = new JTextField();
-		tfTestframe.setBounds(6, 454, 122, 27);
+		tfTestframe.setBounds(6, 441, 122, 27);
 		panel.add(tfTestframe);
 		tfTestframe.setColumns(10);
 		
 		JLabel lblTestFrame = new JLabel("Test frame");
-		lblTestFrame.setBounds(6, 436, 72, 15);
+		lblTestFrame.setBounds(6, 423, 72, 15);
 		panel.add(lblTestFrame);
 		
 		JButton btnClear = new JButton("Base");
-		btnClear.setBounds(6, 552, 100, 27);
+		btnClear.setBounds(6, 530, 100, 27);
 		panel.add(btnClear);
 		btnClear.addActionListener(this);
 		
 		JButton btnLasered = new JButton("Lasered");
-		btnLasered.setBounds(6, 582, 100, 27);
+		btnLasered.setBounds(6, 560, 100, 27);
 		panel.add(btnLasered);
 		btnLasered.addActionListener(this);
 		
 		JButton btnColourmap = new JButton("Colourmap");
-		btnColourmap.setBounds(6, 523, 100, 27);
+		btnColourmap.setBounds(6, 501, 100, 27);
 		panel.add(btnColourmap);
 		btnColourmap.addActionListener(this);
 		
@@ -213,21 +214,31 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfMinpointsperlaser.addActionListener(this);
 		
 		JLabel lblTestRotation = new JLabel("Test rotation");
-		lblTestRotation.setBounds(6, 388, 106, 15);
+		lblTestRotation.setBounds(6, 375, 106, 15);
 		panel.add(lblTestRotation);
 		
 		tfTestrotation = new JTextField();
 		tfTestrotation.setText("0");
-		tfTestrotation.setBounds(6, 404, 122, 27);
+		tfTestrotation.setBounds(6, 391, 122, 27);
 		panel.add(tfTestrotation);
 		tfTestrotation.setColumns(10);
 		tfTestrotation.addActionListener(this);
+		
+		JButton bt3D = new JButton("3D");
+		bt3D.setBounds(6, 599, 100, 27);
+		panel.add(bt3D);
+		bt3D.addActionListener(this);
 
 		
 		imagePanel = new PaintImage(false);
 		imagePanel.setBounds(156, 0, 460, 633);
 		imagePanel.m_cal_data = m_e3d.m_cal_data;
 		imagePanel.pos = 0;
+		
+		glPanel = new PaintImage(false);
+		glPanel.setBounds(156, 0, 460, 633);
+		glPanel.m_cal_data = m_e3d.m_cal_data;
+		glPanel.pos = 0;
 		
 		imageScrollPane = new JScrollPane(imagePanel);
 		imageScrollPane.setBounds(156, 0, 460, 633);
@@ -446,11 +457,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		getContentPane().add(btnReCalculate3D);
 		btnReCalculate3D.addActionListener(this);
 		
-		m_pco = new PointCloudObject();
+		m_pco = new PointCloudObject(glPanel);
 		m_pco.m_finished = true;
 		m_pco.m_Pointsize = sbPointsize.getValue();
 		m_pco.m_Scale = sbScaling.getValue();
-		//new Thread(m_pco).start();
+		new Thread(m_pco).start();
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
 			m_e3d.m_cal_data.capture_h_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
@@ -591,7 +602,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		    if(!m_e3d.m_is_windows10)
 		    {
 				try {
-					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+					//m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
@@ -652,6 +663,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Test")
 		{
+			imageScrollPane.setViewportView(imagePanel);
 			m_e3d.m_cal_data.calculate();
 			m_e3d.m_cal_data.calculateBaseCoords();
 
@@ -661,6 +673,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Base")
 		{
+			imageScrollPane.setViewportView(imagePanel);
 			File l_infile;
 			String l_tt = "";
 			if(chckbxTurntableScan.isSelected()) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
@@ -690,6 +703,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Colourmap")
 		{
+			imageScrollPane.setViewportView(imagePanel);
 			File l_infile;
 			String l_tt = "";
 			if(chckbxTurntableScan.isSelected()) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
@@ -719,6 +733,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		} else
 		if(ae.getActionCommand() == "Lasered")
 		{
+			imageScrollPane.setViewportView(imagePanel);
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 			File l_infile;
 			String l_tt = "";
@@ -745,6 +760,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			}
 			imagePanel.m_overlay = l_inimage;
 			imagePanel.repaint();
+		} else
+		if(ae.getActionCommand() == "3D")
+		{
+			imageScrollPane.setViewportView(glPanel);
 		} else
 		if(ae.getSource().equals(cbDetectionmethod))
 		{
@@ -803,7 +822,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			    m_pco.m_YViewOffset = Integer.parseInt(tfYViewOffset.getText());
 			    
 			    if(!m_e3d.m_is_windows10) try {
-					m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+				//	m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 				} catch (Exception e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
@@ -909,7 +928,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	    	m_pco_thread.start();
     	}
 	    if(!m_e3d.m_is_windows10) try {
-			m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+			//m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -1516,7 +1535,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		    DataOutputStream l_dos = null;
 
 			if(!m_e3d.m_is_windows10) try {
-				m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
+				//m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
 			} catch (Exception e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
