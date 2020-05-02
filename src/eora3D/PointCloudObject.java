@@ -21,6 +21,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.Buffer;
 import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -723,7 +724,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 				0 };
 		int[] indices = { 1, 0, 2, 3, 4, 5 };
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) BufferUtils.createFloatBuffer(vertices.length).put(vertices).flip(),
+		glBufferData(GL_ARRAY_BUFFER, (FloatBuffer) ((Buffer)BufferUtils.createFloatBuffer(vertices.length).put(vertices)).flip(),
 				GL_STATIC_DRAW);
 		glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * 4 + 4 * 4, 0);
 		glEnableVertexAttribArray(0);
@@ -731,7 +732,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		glEnableVertexAttribArray(1);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-				(IntBuffer) BufferUtils.createIntBuffer(indices.length).put(indices).flip(), GL_STATIC_DRAW);
+				(IntBuffer) ((Buffer)BufferUtils.createIntBuffer(indices.length).put(indices)).flip(), GL_STATIC_DRAW);
 
 		glClearColor(0.0f, 0.5f, 1.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
