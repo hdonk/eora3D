@@ -56,6 +56,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfFrontFilter;
 	private JTextField tfBackFilter;
 	private JTextField tfOutputDir;
+	private JTextField tfDetectionWidth;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -95,7 +96,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_1 = new JPanel();
 		panel_1.setBorder(new TitledBorder(null, "Calibration", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_1.setBounds(6, 148, 163, 285);
+		panel_1.setBounds(6, 148, 163, 316);
 		getContentPane().add(panel_1);
 		panel_1.setLayout(null);
 		
@@ -124,30 +125,41 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		panel_1.add(lblBoardVerticalOffset);
 		
 		tfBoardverticaloffset = new JTextField();
-		tfBoardverticaloffset.setBounds(6, 129, 122, 27);
+		tfBoardverticaloffset.setBounds(6, 122, 122, 27);
 		panel_1.add(tfBoardverticaloffset);
 		tfBoardverticaloffset.setColumns(10);
 		tfBoardverticaloffset.addActionListener(this);
 		
 		JLabel lblDetectionAngleLeft = new JLabel("Detection angle left");
-		lblDetectionAngleLeft.setBounds(6, 160, 138, 15);
+		lblDetectionAngleLeft.setBounds(6, 152, 138, 15);
 		panel_1.add(lblDetectionAngleLeft);
 		
 		tfDetectionangleleft = new JTextField();
-		tfDetectionangleleft.setBounds(6, 178, 122, 27);
+		tfDetectionangleleft.setBounds(6, 168, 122, 27);
 		panel_1.add(tfDetectionangleleft);
 		tfDetectionangleleft.setColumns(10);
 		tfDetectionangleleft.addActionListener(this);
 		
 		JLabel lblDetectionAngleRight = new JLabel("Detection angle right");
-		lblDetectionAngleRight.setBounds(6, 217, 155, 15);
+		lblDetectionAngleRight.setBounds(6, 196, 155, 15);
 		panel_1.add(lblDetectionAngleRight);
 		
 		tfDetectionangleright = new JTextField();
-		tfDetectionangleright.setBounds(6, 238, 122, 27);
+		tfDetectionangleright.setBounds(6, 216, 122, 27);
 		panel_1.add(tfDetectionangleright);
 		tfDetectionangleright.setColumns(10);
 		tfDetectionangleright.addActionListener(this);
+		
+		JLabel lblNewLabel_2 = new JLabel("Detection width (mm)");
+		lblNewLabel_2.setBounds(6, 247, 138, 14);
+		panel_1.add(lblNewLabel_2);
+		
+		tfDetectionWidth = new JTextField();
+		tfDetectionWidth.setText("0");
+		tfDetectionWidth.setBounds(6, 265, 122, 27);
+		panel_1.add(tfDetectionWidth);
+		tfDetectionWidth.setColumns(10);
+		tfDetectionWidth.addActionListener(this);
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Laser detection", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -482,6 +494,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfBoardverticaloffset.setText(""+a_cfg.sm_calibration_vertical_offset);
 		tfDetectionangleleft.setText(""+a_cfg.sm_calibration_tl_motorpos_1);
 		tfDetectionangleright.setText(""+a_cfg.sm_calibration_tr_motorpos_1);
+		tfDetectionWidth.setText(""+a_cfg.sm_target_sep);
 		tfRedthreshold.setText(""+a_cfg.sm_laser_detection_threshold_r);
 		tfGreenthreshold.setText(""+a_cfg.sm_laser_detection_threshold_g);
 		tfBluethreshold.setText(""+a_cfg.sm_laser_detection_threshold_b);
@@ -549,6 +562,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.sm_calibration_vertical_offset = Integer.parseInt(tfBoardverticaloffset.getText());
 		a_cfg.sm_calibration_tl_motorpos_1 = Integer.parseInt(tfDetectionangleleft.getText());
 		a_cfg.sm_calibration_tr_motorpos_1 = Integer.parseInt(tfDetectionangleright.getText());
+		a_cfg.sm_target_sep =Float.parseFloat( tfDetectionWidth.getText());
 		a_cfg.sm_laser_detection_threshold_r = Integer.parseInt(tfRedthreshold.getText());
 		a_cfg.sm_laser_detection_threshold_g = Integer.parseInt(tfGreenthreshold.getText());
 		a_cfg.sm_laser_detection_threshold_b = Integer.parseInt(tfBluethreshold.getText());
@@ -661,6 +675,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		checkTextFieldIntRange(tfBoardverticaloffset, -200, +200, l_default.sm_calibration_v_offset);
 		checkTextFieldIntRange(tfDetectionangleleft, 0, 9000, l_default.sm_calibration_tl_motorpos_1);
 		checkTextFieldIntRange(tfDetectionangleright, 0, 9000, l_default.sm_calibration_tr_motorpos_1);
+		checkTextFieldFloatRange(this.tfDetectionWidth, 1.0f, 2000.0f, l_default.sm_target_sep);
 		checkTextFieldIntRange(tfRedthreshold, 1, 255, l_default.sm_laser_detection_threshold_r);
 		checkTextFieldIntRange(tfGreenthreshold, 1, 255, l_default.sm_laser_detection_threshold_g);
 		checkTextFieldIntRange(tfBluethreshold, 1, 255, l_default.sm_laser_detection_threshold_b);

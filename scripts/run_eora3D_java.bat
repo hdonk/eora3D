@@ -1,0 +1,1 @@
+java -Djava.library.path=dlls;%windir%\system32 -Xms1024m -Xmx2048m -jar eora3D.jar

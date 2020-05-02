@@ -5,14 +5,7 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
 class CalibrationData
-{
-	// mm
-	public double board_w_mm = 160.0f*(403.5f/130.0f);
-	public double board_h_mm = 220.0f*(403.5f/130.0f);
-	public double spot_r_mm = 2.0f;
-	public double spot_sep_w_mm = 130.0f*(403.5f/130.0f);
-	public double spot_sep_h_mm = 191.0f*(403.5f/130.0f);
-	
+{	
 	// Calculation inputs
 	// pixels
 	public int capture_w_pix = 1280;
@@ -57,6 +50,32 @@ class CalibrationData
 	public int m_laser_to_camera_sep_pix = 0;
 	
 	public double m_pix_to_mm = 1.0f;
+
+	public double getboard_w_mm()
+	{
+		return 160.0f*(Eora3D_MainWindow.m_e3d_config.sm_target_sep/130.0f);
+	}
+	
+	public double getboard_h_mm()
+	{
+		return 220.0f*(Eora3D_MainWindow.m_e3d_config.sm_target_sep/130.0f);
+	}
+	
+	public double getspot_r_mm()
+	{
+		return 2.0f;
+	}
+	
+	public double getspot_sep_w_mm()
+	{
+		return 130.0f*(Eora3D_MainWindow.m_e3d_config.sm_target_sep/130.0f);
+	}
+	
+	public double getspot_sep_h_mm()
+	{
+		return 191.0f*(Eora3D_MainWindow.m_e3d_config.sm_target_sep/130.0f);
+	}
+
 	
 	void calculate()
 	{
@@ -67,13 +86,13 @@ class CalibrationData
 		{
 			// use the height as the limit
 			cal_board_target_h_pix = ((double)capture_h_pix * cal_pos_1_percent);
-			cal_board_target_w_pix = (cal_board_target_h_pix/board_h_mm)*board_w_mm;
+			cal_board_target_w_pix = (cal_board_target_h_pix/getboard_h_mm())*getboard_w_mm();
 		}
 		else // portrait
 		{
 			// Use the width as the limit
 			cal_board_target_w_pix = ((double)capture_w_pix * cal_pos_1_percent);
-			cal_board_target_h_pix = (cal_board_target_w_pix/board_w_mm)*board_h_mm;
+			cal_board_target_h_pix = (cal_board_target_w_pix/getboard_w_mm())*getboard_h_mm();
 		}
 		pos_1_board_pix = new Rectangle();
 		pos_1_board_pix.height = (int)cal_board_target_h_pix;
@@ -92,10 +111,10 @@ class CalibrationData
 		pos_1_board_pix.y = (capture_h_pix-pos_1_board_pix.height)/2 + v_offset_pix;
 		
 		pos_1_tl_det_spot = new Rectangle();
-		pos_1_tl_det_spot.width = (int)(((cal_board_target_w_pix/board_w_mm)*spot_r_mm))*2;
-		pos_1_tl_det_spot.height = (int)(((cal_board_target_h_pix/board_h_mm)*spot_r_mm))*2;
-		pos_1_tl_det_spot.x = (int)(capture_w_pix -((cal_board_target_w_pix/board_w_mm)*spot_sep_w_mm))/2 - pos_1_tl_det_spot.width;
-		pos_1_tl_det_spot.y = (int)(capture_h_pix -((cal_board_target_h_pix/board_h_mm)*spot_sep_h_mm))/2 - pos_1_tl_det_spot.height + v_offset_pix;
+		pos_1_tl_det_spot.width = (int)(((cal_board_target_w_pix/getboard_w_mm())*getspot_r_mm()))*2;
+		pos_1_tl_det_spot.height = (int)(((cal_board_target_h_pix/getboard_h_mm())*getspot_r_mm()))*2;
+		pos_1_tl_det_spot.x = (int)(capture_w_pix -((cal_board_target_w_pix/getboard_w_mm())*getspot_sep_w_mm()))/2 - pos_1_tl_det_spot.width;
+		pos_1_tl_det_spot.y = (int)(capture_h_pix -((cal_board_target_h_pix/getboard_h_mm())*getspot_sep_h_mm()))/2 - pos_1_tl_det_spot.height + v_offset_pix;
 
 		pos_1_tr_det_spot = new Rectangle();
 		pos_1_tr_det_spot.width = pos_1_tl_det_spot.width;
@@ -183,20 +202,20 @@ class CalibrationData
 		cal_square_tr.x = cal_square_bl.x + pos_2_board.width;*/
 		
 		// Calculate focal length
-		x = (((double)spot_sep_w_mm)*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
+		x = (((double)getspot_sep_w_mm())*Math.tan(Math.toRadians(alpha)))/(Math.tan(Math.toRadians(beta))-Math.tan(Math.toRadians(alpha)));
 		y = x*Math.tan(Math.toRadians(beta));
 		double d_mm = y;
 		double h_pix = (l_spot_sep_pix_x)/*(spot_sep_w_mm/board_w_mm)*/;
-		double H_mm = spot_sep_w_mm;
+		double H_mm = getspot_sep_w_mm();
 		focal_length_pix_x = (d_mm*h_pix)/H_mm;
 
 		System.out.println("spot sep in pix is "+h_pix);
 		
-		m_pix_to_mm = spot_sep_w_mm / h_pix; 
+		m_pix_to_mm = getspot_sep_w_mm() / h_pix; 
 
 		d_mm = y;
 		h_pix = l_spot_sep_pix_y /**(spot_sep_h_mm/board_h_mm)*/;
-		H_mm = spot_sep_h_mm;
+		H_mm = getspot_sep_h_mm();
 		focal_length_pix_y = (d_mm*h_pix)/H_mm;
 //		focal_length_pix_y = focal_length_pix_x;
 		//focal_length_pix *= 1.1f;

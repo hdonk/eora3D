@@ -345,7 +345,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			eora3D_configuration_editor l_editor = new eora3D_configuration_editor(this);
 			l_editor.setVisible(true);
 			tfIPcameraurl.setText(m_e3d_config.sm_IP_webcam);
-			System.out.println("MW left "+Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
+			//System.out.println("MW left "+Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
 		} else
 /*		else
 		if(e.getActionCommand()=="Load config")

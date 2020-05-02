@@ -370,7 +370,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(l_point);
-//			m_refresh = true;
+			m_refresh = true;
 		}
 	}
 	public void addPoint(int a_list, RGB3DPoint a_point)
@@ -385,7 +385,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 				m_vertexdisplaycount.add(Integer.valueOf(0));
 			}
 			this.m_points.get(a_list).add(a_point);
-//			m_refresh = true;
+			m_refresh = true;
 		}
 	}
 
@@ -786,7 +786,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		
 		
 		projectM
-				.setOrtho(-1000.0f/l_x_scale, 1000.0f/l_x_scale, -1000.0f/l_y_scale, 1000.0f/l_y_scale, -30000.0f, 30000.0f);
+				.setOrtho(-2000.0f/l_x_scale, 2000.0f/l_x_scale, -2000.0f/l_y_scale, 2000.0f/l_y_scale, -20000.0f, 20000.0f);
 		viewM.identity();
 		// User controlled front view
 		viewM.lookAt(0.0f, (float)m_YViewOffset, 15000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
@@ -796,6 +796,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		// Top view
 		//viewM.lookAt(0.0f, 1000.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 		modelM.identity();
+		
 		Quaternionf q = new Quaternionf();
 		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
 
@@ -822,7 +823,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
 		if (!GLok(""))
 			return;
-
+		
 //		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
 		//modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
 //				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
@@ -856,8 +857,8 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		//}
 		scaleLoc = glGetUniformLocation(l_program, "scale");
 		GLok("Retrieving scale uniform location");
-		//System.out.println("Scale to "+((float)sbScale.getValue()/10.0f));
-		glUniform1f(scaleLoc, (m_Scale/1000.0f)); 
+		//glUniform1f(scaleLoc, (m_Scale/1000.0f)); 
+		glUniform1f(scaleLoc, 1.0f);
 		GLok("Set scale uniform");
 		int pointsizeLoc = glGetUniformLocation(l_program, "pointsize");
 		GLok("Retrieving pointsize uniform location");
@@ -872,15 +873,12 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			Thread.dumpStack();
 			return;
 		}
+		//System.out.println("Running "+m_points.size()+" point sets");
 		for(int i=0; i<m_points.size(); ++i)
 		{
-//			private int m_tt_angle;
-//			private int m_Zrotoff;
-//			private int m_Xrotoff;
-
-			
-			
 			modelM.identity();
+//			System.out.println("Scale to "+(m_Scale/1000.0f));
+			modelM.scale(m_Scale/1000.0f);
 			q = new Quaternionf();
 			modelM.rotate(q.rotateY((float) Math.toRadians(i*m_tt_angle+m_rot)).normalize());
 			modelM.translate(m_Xrotoff, m_Ymodeloff, -m_Zrotoff);
@@ -895,19 +893,20 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			glUniformMatrix4fv(modelViewLoc, false, modelView.get(fb));
 			if (!GLok("Setting glUniformMatrix4fv"))
 				return;
+			//System.out.println("Drawing "+i+" point set");
 			draw(i);
 		}
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		if(!m_stoprotation) m_rot += delta * 5f;
+		if(!m_stoprotation) m_rot += delta * 10f;
 		if (m_rot > 360.0f) {
 			m_rot = 0.0f;
 		}
 		//m_rot = 176.0f;
 //		System.out.println("Rot: "+m_rot);
 		lastTime = thisTime;
-
+		
 	}
 
 	int makeFBOTexture(int a_width, int a_height)
@@ -1145,8 +1144,11 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		int l_fbo = this.makeFBOTexture(l_current_width, l_current_height);
 		displayW = l_current_width;
 		displayH = l_current_height;
+		
+//		glfwShowWindow(m_window);
 
-		while (!m_stop_gl_thread) {
+		while (!m_stop_gl_thread && !glfwWindowShouldClose(m_window)) {
+			glfwPollEvents();
 			glBindFramebuffer(GL_FRAMEBUFFER, l_fbo);
 			update();
 			render();

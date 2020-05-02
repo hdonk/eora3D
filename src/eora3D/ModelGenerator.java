@@ -272,9 +272,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		sbScaling = new JScrollBar();
 		sbScaling.setOrientation(JScrollBar.HORIZONTAL);
 		sbScaling.setBounds(6, 45, 122, 27);
-		sbScaling.setValue(1000);
 		sbScaling.setMinimum(1);
-		sbScaling.setMaximum(6000);
+		sbScaling.setMaximum(50000);
+		sbScaling.setValue(1000);
 		panel_1.add(sbScaling);
 		sbScaling.addAdjustmentListener(this);
 		
@@ -461,7 +461,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_pco.m_finished = true;
 		m_pco.m_Pointsize = sbPointsize.getValue();
 		m_pco.m_Scale = sbScaling.getValue();
-		new Thread(m_pco).start();
+		m_pco_thread = new Thread(m_pco);
+		m_pco_thread.start();
 		if(Eora3D_MainWindow.m_e3d_config.sm_camera_rotation==90)
 		{
 			m_e3d.m_cal_data.capture_h_pix = Eora3D_MainWindow.m_e3d_config.sm_camera_res_w;
@@ -576,22 +577,22 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			m_pco.save(l_file);
 			
 		} else
-			if(ae.getActionCommand() == "Export merged")
-			{
-				File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
-				m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f,
-						Integer.parseInt(tfZrotoff.getText()),
-						Integer.parseInt(tfXrotoff.getText()),
-						Integer.parseInt(tfYModelOffset.getText()),
-						Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
-						Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
-						Eora3D_MainWindow.m_e3d_config.sm_topfilter,
-						Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
-						Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
-						Eora3D_MainWindow.m_e3d_config.sm_backfilter);
-				m_pco.m_pix_to_mm = m_e3d.m_cal_data.m_pix_to_mm;
-				m_pco.save_apply_offsets(l_file);
-			} else
+		if(ae.getActionCommand() == "Export merged")
+		{
+			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
+			m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f,
+					Integer.parseInt(tfZrotoff.getText()),
+					Integer.parseInt(tfXrotoff.getText()),
+					Integer.parseInt(tfYModelOffset.getText()),
+					Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
+					Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
+					Eora3D_MainWindow.m_e3d_config.sm_topfilter,
+					Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
+					Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
+					Eora3D_MainWindow.m_e3d_config.sm_backfilter);
+			m_pco.m_pix_to_mm = m_e3d.m_cal_data.m_pix_to_mm;
+			m_pco.save_apply_offsets(l_file);
+		} else
 		if(ae.getActionCommand() == "Import")
 		{
 			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
@@ -808,7 +809,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				|| ae.getSource().equals(tfObjectRotation)
 				)
 		{
-			if(m_detect_thread == null)
+			if(m_e3d.m_is_windows10 || m_detect_thread == null)
 			{
 			    DataOutputStream l_dos = null;
 			    

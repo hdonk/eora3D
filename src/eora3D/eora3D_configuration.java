@@ -64,6 +64,8 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_frontfilter = -5000;
 	public int sm_backfilter = 5000;
 	
+	public float sm_target_sep = 130.0f;
+	
 	int checkIntRange( int a_value, int a_min, int a_max)
 	{
 		if(a_value<a_min) return a_min;
@@ -105,6 +107,7 @@ class eora3D_configuration_data_v1 implements Serializable
 		 sm_frontfilter = checkIntRange( sm_frontfilter, -100000000, +100000000);
 		 sm_backfilter = checkIntRange( sm_backfilter, -100000000, +100000000);
 
+		 sm_target_sep = checkFloatRange( sm_target_sep, 1.0f, 2000.0f);
 	}
 }
 

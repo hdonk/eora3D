@@ -139,7 +139,11 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 	public boolean setMotorPos(int a_pos)
 	{
 		byte[] l_pos = { (byte) (a_pos&0xff), (byte) ((a_pos&0xff00)>>8)};
-    	if(!laserOk()) return false;
+    	if(!laserOk())
+		{
+    		System.err.println("!laserOk");
+    		return false;
+		}
     	if(!javelin.watchBLECharacteristicChanges(m_laser_id,
     			UUID_laser_motor_service.toUpperCase(),
     			UUID_laser_motor_mmode.toUpperCase()) )
@@ -154,6 +158,12 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 				l_pos))
     	{
     		System.err.println("Failed to set laser motor position");
+        	if(!javelin.unWatchBLECharacteristicChanges(m_laser_id,
+        			UUID_laser_motor_service.toUpperCase(),
+        			UUID_laser_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove laser motor watch");
+    		}
     		return false;
     	}
     	
@@ -165,16 +175,34 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
     	if(l_bytes == null)
     	{
     		System.err.println("Timed out waiting for laser motor start");
+        	if(!javelin.unWatchBLECharacteristicChanges(m_laser_id,
+        			UUID_laser_motor_service.toUpperCase(),
+        			UUID_laser_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove laser motor watch");
+    		}
     		return false;
     	}
     	if(l_bytes.length == 0)
     	{
     		System.err.println("Failed to get laser motor running indicator");
+        	if(!javelin.unWatchBLECharacteristicChanges(m_laser_id,
+        			UUID_laser_motor_service.toUpperCase(),
+        			UUID_laser_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove laser motor watch");
+    		}
     		return false;
     	}
     	if(l_bytes[0] != 2)
     	{
     		System.err.println("Got wrong laser motor running indicator "+l_bytes[0]);
+        	if(!javelin.unWatchBLECharacteristicChanges(m_laser_id,
+        			UUID_laser_motor_service.toUpperCase(),
+        			UUID_laser_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove laser motor watch");
+    		}
     		return false;
     	}
     	l_bytes = 
@@ -182,6 +210,12 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
     					UUID_laser_motor_service.toUpperCase(),
     					UUID_laser_motor_mmode.toUpperCase(),
     	    			40000);
+    	if(!javelin.unWatchBLECharacteristicChanges(m_laser_id,
+    			UUID_laser_motor_service.toUpperCase(),
+    			UUID_laser_motor_mmode.toUpperCase()) )
+		{
+    		System.err.println("Failed to remove laser motor watch");
+		}
     	if(l_bytes == null)
     	{
     		System.err.println("Timed out waiting for laser motor stop");
@@ -195,7 +229,7 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
     	if(l_bytes[0] != 1)
     	{
     		System.err.println("Got wrong laser motor stopped indicator "+l_bytes[0]);
-    		return false;
+        	return false;
     	}
 		
     	return true;
@@ -243,6 +277,12 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
 				l_pos))
     	{
     		System.err.println("Failed to set turntable motor position");
+        	if(!javelin.unWatchBLECharacteristicChanges(m_turntable_id,
+        			UUID_turntable_tmotor_service.toUpperCase(),
+        			UUID_turntable_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove turntable motor watch");
+    		}
     		return false;
     	}
     	
@@ -254,16 +294,34 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
     	if(l_bytes == null)
     	{
     		System.err.println("Timed out waiting for motor start");
+        	if(!javelin.unWatchBLECharacteristicChanges(m_turntable_id,
+        			UUID_turntable_tmotor_service.toUpperCase(),
+        			UUID_turntable_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove turntable motor watch");
+    		}
     		return false;
     	}
     	if(l_bytes.length == 0)
     	{
     		System.err.println("Failed to get motor running indicator");
+        	if(!javelin.unWatchBLECharacteristicChanges(m_turntable_id,
+        			UUID_turntable_tmotor_service.toUpperCase(),
+        			UUID_turntable_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove turntable motor watch");
+    		}
     		return false;
     	}
     	if(l_bytes[0] != 2)
     	{
     		System.err.println("Got wrong motor running indicator "+l_bytes[0]);
+        	if(!javelin.unWatchBLECharacteristicChanges(m_turntable_id,
+        			UUID_turntable_tmotor_service.toUpperCase(),
+        			UUID_turntable_motor_mmode.toUpperCase()) )
+    		{
+        		System.err.println("Failed to remove turntable motor watch");
+    		}
     		return false;
     	}
     	l_bytes = 
@@ -271,6 +329,12 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
     					UUID_turntable_tmotor_service.toUpperCase(),
     	    			UUID_turntable_motor_mmode.toUpperCase(),
     	    			40000);
+    	if(!javelin.unWatchBLECharacteristicChanges(m_turntable_id,
+    			UUID_turntable_tmotor_service.toUpperCase(),
+    			UUID_turntable_motor_mmode.toUpperCase()) )
+		{
+    		System.err.println("Failed to remove turntable motor watch");
+		}
     	if(l_bytes == null)
     	{
     		System.err.println("Timed out waiting for motor stop");

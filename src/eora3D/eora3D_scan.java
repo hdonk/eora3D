@@ -158,7 +158,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 	}
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		System.out.println("AE: "+e+" from "+e.getActionCommand());
+		//System.out.println("AE: "+e+" from "+e.getActionCommand());
 		putToConfig();
 		if(e.getActionCommand()=="Start scan")
 		{
@@ -203,6 +203,8 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 						JOptionPane.showMessageDialog(getContentPane(), "OK", "Failed to set capture turntable colour map", JOptionPane.ERROR_MESSAGE);
 						return;
 					}
+					System.err.println("Colour maps captured");
+					System.err.println("Capturing "+Eora3D_MainWindow.m_e3d_config.sm_turntable_steps_per_rotation/Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size+" turntable slots");
 					for(int i=0; i<Eora3D_MainWindow.m_e3d_config.sm_turntable_steps_per_rotation/Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size; ++i)
 					{
 						captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle,
@@ -252,7 +254,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		else
 		if(e.getSource().equals(btnLaserTestStart))
 		{
-			System.out.println("TestStart");
+			//System.out.println("TestStart");
 			Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle = Integer.parseInt(tfScanStartAngle.getText());
 			
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle))
@@ -272,7 +274,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		else
 		if(e.getSource().equals(btnLaserTestEnd))
 		{
-			System.out.println("TestEnd");
+			//System.out.println("TestEnd");
 			
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle))
 			{
@@ -389,6 +391,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		}
 		if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(a_start-1))
 		{
+			System.err.println("Failed to set motor pos");
 			return;
 		}
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
@@ -410,6 +413,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
 			{
 				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
+				System.out.println("Failed to set motor pos");
 				return;
 			}
 			l_image = m_e3d.getImage();
