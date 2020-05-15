@@ -216,6 +216,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 							return;
 						}
 					}
+					JOptionPane.showMessageDialog(getContentPane(), "Done", "Turntable scan", JOptionPane.INFORMATION_MESSAGE);
 					m_camera_thread = new Thread(this);
 					m_camera_thread.start();
 
@@ -275,6 +276,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		if(e.getSource().equals(btnLaserTestEnd))
 		{
 			//System.out.println("TestEnd");
+			Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle = Integer.parseInt(tfScanEndAngle.getText());
 			
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle))
 			{
@@ -283,7 +285,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 			else
 			{
 				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
-				BufferedImage l_image = m_e3d.m_camera.getImage();
+				BufferedImage l_image = m_e3d.getImage();
 
 				imagePanel.m_image = l_image;
 				imagePanel.repaint();

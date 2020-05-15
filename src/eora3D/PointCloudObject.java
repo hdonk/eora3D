@@ -3,6 +3,7 @@ package eora3D;
 import static org.lwjgl.opengles.GLES30.GL_RGBA8;
 import static org.lwjgl.opengles.GLES30.glBindVertexArray;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.AdjustmentEvent;
@@ -88,7 +89,8 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 	private int displayW;
 	private int displayH;
 //	PointCloudData m_pcd = null;
-	float m_rot = 0.0f;
+	public float m_y_rot = 0.0f;
+	public float m_x_rot = 0.0f;
 	private Thread m_thread = null;
 	
 	long lastTime = 0;
@@ -128,10 +130,24 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 	private JCheckBox cbContinuousRotation;*/
 	private PaintImage glpanel;
 	boolean m_stop_gl_thread = false;
+
+	public ArrayList<Boolean> m_layer_visible;
 	
+	public ArrayList<Boolean> m_layer_coloured;
+	public ArrayList<Color> m_layer_colour;
+	public ArrayList<Integer> m_layer_z_off;
+	public ArrayList<Integer> m_layer_x_off;
+	public ArrayList<Integer> m_layer_rot_off;
+
 	public PointCloudObject(PaintImage a_paintimage)
 	{
+		System.err.println("Creating PCO");
 		glpanel = a_paintimage;
+		
+		m_layer_visible = new ArrayList<Boolean>();
+		for(int l_layer = 0; l_layer<20; ++l_layer)
+			m_layer_visible.add(Boolean.TRUE);
+		
 		clear();
 
 /*		getContentPane().setLayout(null);
@@ -352,8 +368,9 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			glBindVertexArray(0);
 			if(!GLok("Setting glBindVertexArray")) return;
 			
-			
+			//System.err.println("Drawing elements "+a_list+"count "+m_vertexdisplaycount.get(a_list)+" offset "+m_vertexoffset.get(a_list));
 			glDrawElements(GL_POINTS, m_vertexdisplaycount.get(a_list), GL_UNSIGNED_INT, m_vertexoffset.get(a_list)*4);
+			//System.err.println("Drawing done");
 			if(!GLok("glDrawElements")) return;
 		}
 	}
@@ -441,7 +458,12 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			        dos.writeDouble(y);
 			        dos.writeDouble(z);
 		        dos.close();*/
-			        for(int i=0; i<m_points.get(j).size(); ++i)
+			        Matrix4f modelM = new Matrix4f();
+					modelM.identity();
+					Quaternionf q = new Quaternionf();
+					modelM.rotate(q.rotateY((float) Math.toRadians(j*m_tt_angle)).normalize());
+					modelM.translate(m_Xrotoff, m_Ymodeloff, -m_Zrotoff);
+					for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
 			        	if(
 			    				m_points.get(j).get(i).m_x >= m_leftfilter &&
@@ -453,12 +475,21 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			    				m_points.get(j).get(i).m_z >= m_frontfilter &&
 			    				m_points.get(j).get(i).m_z <= m_backfilter )
 			        	{
-				        	writer.write(m_points.get(j).get(i).m_x+" ");
+			        		Vector3f v = new Vector3f(m_points.get(j).get(i).m_x, m_points.get(j).get(i).m_y, m_points.get(j).get(i).m_z);
+			        		modelM.transformPosition(v);
+				        	writer.write(((float)v.x)*m_pix_to_mm+" ");
+				        	writer.write(((float)v.y)*m_pix_to_mm+" ");
+				        	writer.write(((float)v.z)*m_pix_to_mm+" ");
+				        	writer.write(m_points.get(j).get(i).m_r+" ");
+				        	writer.write(m_points.get(j).get(i).m_g+" ");
+				        	writer.write(m_points.get(j).get(i).m_b+"\n");
+
+				        	/*writer.write(m_points.get(j).get(i).m_x+" ");
 				        	writer.write(m_points.get(j).get(i).m_y+" ");
 				        	writer.write(m_points.get(j).get(i).m_z+" ");
 				        	writer.write(m_points.get(j).get(i).m_r+" ");
 				        	writer.write(m_points.get(j).get(i).m_g+" ");
-				        	writer.write(m_points.get(j).get(i).m_b+"\n");
+				        	writer.write(m_points.get(j).get(i).m_b+"\n");*/
 			        	}
 			        }
 			        writer.close();
@@ -799,7 +830,8 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		modelM.identity();
 		
 		Quaternionf q = new Quaternionf();
-		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
+		modelM.rotate(q.rotateY((float) Math.toRadians(m_y_rot)).normalize());
+		modelM.rotate(q.rotateX((float) Math.toRadians(m_x_rot)).normalize());
 
 		glUseProgram(m_main_program);
 		if (!GLok(""))
@@ -821,68 +853,67 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		glBindAttribLocation(m_main_program, 0, "color");
 		if (!GLok(""))
 			return;
+//		System.err.println("Drawing lines");
 		glDrawElements(GL_LINES, 6, GL_UNSIGNED_INT, 0);
+//		System.err.println("Drew lines");
 		if (!GLok(""))
 			return;
 		
-//		modelM.rotate(q.rotateY((float) Math.toRadians(m_rot)).normalize());
-		//modelM.rotate(q.rotateX((float) Math.toRadians(m_rot)).normalize());
-//				.translate(m_pcd.x_pos, m_pcd.y_pos, m_pcd.z_pos)
-
-		/* .rotate(q.rotateZ((float) Math.toRadians(rot)).normalize()) */;
-		int l_program;
-/*		if(m_pcd.m_layers.get(i).fixedColor)
-		{
-			glUseProgram(m_point_program);
-			l_program = m_point_program;
-			if (!GLok("glUseProgram(m_point_program)"))
-				return;
-			int l_colorloc = glGetUniformLocation(m_point_program, "color");
-			GLok("Retrieving scale uniform location");
-				glUniform4f(l_colorloc,
-						m_pcd.m_layers.get(i).r/255.0f,
-						m_pcd.m_layers.get(i).g/255.0f,
-						m_pcd.m_layers.get(i).b/255.0f,
-						0.0f
-						);
-		}
-		else*/
-	//	{
-			glUseProgram(m_point_program_col);
-			l_program = m_point_program_col;
-			if (!GLok("glUseProgram(m_point_program_col)"))
-				return;
-			glBindAttribLocation(m_point_program, 1, "color");
-			if (!GLok("Setting glBindAttribLocation"))
-				return;
-		//}
-		scaleLoc = glGetUniformLocation(l_program, "scale");
-		GLok("Retrieving scale uniform location");
-		//glUniform1f(scaleLoc, (m_Scale/1000.0f)); 
-		glUniform1f(scaleLoc, 1.0f);
-		GLok("Set scale uniform");
-		int pointsizeLoc = glGetUniformLocation(l_program, "pointsize");
-		GLok("Retrieving pointsize uniform location");
-		//System.out.println("Point size to "+sbPointSize.getValue()/10);
-		glUniform1f(pointsizeLoc, m_Pointsize/10.0f); 
-		GLok("Set pointsize uniform");
-
-		glBindAttribLocation(l_program, 0, "vertex");
-		errorCheckValue = glGetError();
-		if (errorCheckValue != GL_NO_ERROR) {
-			System.err.println("GL Error " + errorCheckValue);
-			Thread.dumpStack();
-			return;
-		}
 		//System.out.println("Running "+m_points.size()+" point sets");
 		for(int i=0; i<m_points.size(); ++i)
 		{
+			int l_program;
+			if(m_layer_visible.get(i) != null && m_layer_visible.get(i)==false) continue;
+
+			if(m_layer_coloured.get(i))
+			{
+				Color l_color = m_layer_colour.get(i);
+				glUseProgram(m_point_program);
+				l_program = m_point_program;
+				if (!GLok("glUseProgram(m_point_program)"))
+					return;
+				int l_colorloc = glGetUniformLocation(m_point_program, "color");
+				GLok("Retrieving scale uniform location");
+					glUniform4f(l_colorloc,
+							l_color.getRed()/255.0f,
+							l_color.getGreen()/255.0f,
+							l_color.getBlue()/255.0f,
+							0.0f
+							);
+			}
+			else
+			{
+				glUseProgram(m_point_program_col);
+				l_program = m_point_program_col;
+				if (!GLok("glUseProgram(m_point_program_col)"))
+					return;
+				glBindAttribLocation(m_point_program, 1, "color");
+				if (!GLok("Setting glBindAttribLocation"))
+					return;
+			}
+			scaleLoc = glGetUniformLocation(l_program, "scale");
+			GLok("Retrieving scale uniform location");
+			//glUniform1f(scaleLoc, (m_Scale/1000.0f)); 
+			glUniform1f(scaleLoc, 1.0f);
+			GLok("Set scale uniform");
+			int pointsizeLoc = glGetUniformLocation(l_program, "pointsize");
+			GLok("Retrieving pointsize uniform location");
+			//System.out.println("Point size to "+sbPointSize.getValue()/10);
+			glUniform1f(pointsizeLoc, m_Pointsize/10.0f); 
+			GLok("Set pointsize uniform");
+			glBindAttribLocation(l_program, 0, "vertex");
+			if (!GLok("glBindAttribLocation"))
+			{
+				return;
+			}
+
 			modelM.identity();
 //			System.out.println("Scale to "+(m_Scale/1000.0f));
 			modelM.scale(m_Scale/1000.0f);
 			q = new Quaternionf();
-			modelM.rotate(q.rotateY((float) Math.toRadians(i*m_tt_angle+m_rot)).normalize());
-			modelM.translate(m_Xrotoff, m_Ymodeloff, -m_Zrotoff);
+			modelM.rotate(q.rotateX((float) Math.toRadians(m_x_rot)).normalize());
+			modelM.rotate(q.rotateY((float) Math.toRadians(i*m_tt_angle+m_y_rot+m_layer_rot_off.get(i))).normalize());
+			modelM.translate(m_Xrotoff+m_layer_x_off.get(i), m_Ymodeloff, -m_Zrotoff-m_layer_z_off.get(i));
 			//modelM.translate(0.0f, 0.0f, -2000.0f);
 			modelViewLoc = glGetUniformLocation(l_program, "modelView");
 			if (!GLok("Calling glGetUniformLocation"))
@@ -900,9 +931,9 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 
 		long thisTime = System.nanoTime();
 		float delta = (thisTime - lastTime) / 1E9f;
-		if(!m_stoprotation) m_rot += delta * 10f;
-		if (m_rot > 360.0f) {
-			m_rot = 0.0f;
+		if(!m_stoprotation) m_y_rot += delta * 10f;
+		if (m_y_rot > 360.0f) {
+			m_y_rot = 0.0f;
 		}
 		//m_rot = 176.0f;
 //		System.out.println("Rot: "+m_rot);
@@ -992,6 +1023,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		// Render with OpenGL ES
 
 		System.out.println("Run");
+		m_finished = false;
 		
 		// Render with OpenGL ES
 
@@ -1148,7 +1180,8 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		
 //		glfwShowWindow(m_window);
 
-		while (!m_stop_gl_thread && !glfwWindowShouldClose(m_window)) {
+		int l_count = 0;
+		while (!glfwWindowShouldClose(m_window) && !m_stop_gl_thread) {
 			glfwPollEvents();
 			glBindFramebuffer(GL_FRAMEBUFFER, l_fbo);
 			update();
@@ -1158,16 +1191,21 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			glpanel.m_image = l_image;
 			glpanel.repaint();
 				//System.out.println("Rendered");
+			if(l_count++%10==0)
+				System.gc();
 		}
 		
 		glclear();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glDeleteFramebuffers(l_fbo);
 		m_finished = true;
 	}
 
 	public void Close()
 	{
 		if(m_finished) return;
-		//glfwSetWindowShouldClose(m_window, true);
+		glfwSetWindowShouldClose(m_window, true);
+		m_stop_gl_thread = true;
 	}
 
 	public void load(File a_file, int a_max_layer) {

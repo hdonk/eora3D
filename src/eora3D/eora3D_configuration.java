@@ -1,9 +1,11 @@
 package eora3D;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 import javax.swing.JDialog;
 
@@ -30,7 +32,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_laser_detection_threshold_b = 140;
 	public float sm_laser_detection_threshold_percent = 30.0f;
 	public String sm_laser_detection_threshold_logic = "Or";
-	public int sm_max_points_per_line = 3;
+	public int sm_max_points_per_line = 1;
 	public int sm_min_points_per_laser = 3;
 	
 	public int sm_calibration_vertical_offset = 0;
@@ -65,6 +67,51 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_backfilter = 5000;
 	
 	public float sm_target_sep = 130.0f;
+	
+	public boolean sm_turntable_scan = false;
+	
+	public ArrayList<Boolean> m_layer_coloured;
+	public ArrayList<Color> m_layer_colour;
+	
+	public ArrayList<Integer> m_layer_z_off;
+	public ArrayList<Integer> m_layer_x_off;
+	public ArrayList<Integer> m_layer_rot_off;
+	
+	eora3D_configuration_data_v1()
+	{
+		m_layer_coloured = new ArrayList<Boolean>();
+		m_layer_z_off = new ArrayList<Integer>();
+		m_layer_x_off = new ArrayList<Integer>();
+		m_layer_rot_off = new ArrayList<Integer>();
+		for(int l_layer = 0; l_layer < 20; ++l_layer)
+		{
+			m_layer_coloured.add(new Boolean(false));
+			m_layer_z_off.add(0);
+			m_layer_x_off.add(0);
+			m_layer_rot_off.add(0);
+		}
+		m_layer_colour = new ArrayList<Color>();
+		m_layer_colour.add(new Color(255, 0, 0)); // 0 red
+		m_layer_colour.add(new Color(0, 255, 0)); // 1 green
+		m_layer_colour.add(new Color(0, 0, 255)); // 2 blue
+		m_layer_colour.add(new Color(255, 128, 0)); // 3 orange
+		m_layer_colour.add(new Color(102, 0, 102)); // 4 purple
+		m_layer_colour.add(new Color(153, 102, 51)); // 5 brown
+		m_layer_colour.add(new Color(255, 102, 255)); // 6 Pink
+		m_layer_colour.add(new Color(0, 0, 0)); // 7 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 8 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 9 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 10 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 11 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 12 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 13 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 14 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 15 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 16 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 17 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 18 Black
+		m_layer_colour.add(new Color(0, 0, 0)); // 19 Black
+	}
 	
 	int checkIntRange( int a_value, int a_min, int a_max)
 	{

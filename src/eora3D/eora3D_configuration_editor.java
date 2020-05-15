@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -20,6 +21,7 @@ import javax.swing.border.TitledBorder;
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 
 public class eora3D_configuration_editor extends JDialog implements ActionListener {
 	Eora3D_MainWindow m_e3d = null;
@@ -57,6 +59,16 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfBackFilter;
 	private JTextField tfOutputDir;
 	private JTextField tfDetectionWidth;
+
+	private JCheckBox chckbxTurntableScanOn;
+	
+	public ArrayList<Boolean> m_layer_coloured;
+	public ArrayList<Color> m_layer_colour;
+	
+	public ArrayList<Integer> m_layer_z_off;
+	public ArrayList<Integer> m_layer_x_off;
+	public ArrayList<Integer> m_layer_rot_off;
+
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -197,6 +209,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		cbAlgorithm.addItem("And");
 		cbAlgorithm.addItem("%");
 		cbAlgorithm.addItem("Weighted %");
+		cbAlgorithm.addItem("No base peak threshold");
 		panel_2.add(cbAlgorithm);
 		
 		JLabel lblBlueThreshold = new JLabel("Blue threshold");
@@ -303,7 +316,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		JPanel panel_4 = new JPanel();
 		panel_4.setLayout(null);
 		panel_4.setBorder(new TitledBorder(null, "Scan", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(59, 59, 59)));
-		panel_4.setBounds(182, 204, 136, 171);
+		panel_4.setBounds(182, 204, 136, 160);
 		getContentPane().add(panel_4);
 		
 		JLabel lblStartPosition = new JLabel("Start position");
@@ -317,21 +330,21 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		tfStartposition.addActionListener(this);
 		
 		JLabel lblEndPosition = new JLabel("End position");
-		lblEndPosition.setBounds(6, 67, 96, 15);
+		lblEndPosition.setBounds(6, 64, 96, 15);
 		panel_4.add(lblEndPosition);
 		
 		tfEndposition = new JTextField();
-		tfEndposition.setBounds(6, 85, 122, 27);
+		tfEndposition.setBounds(6, 81, 122, 27);
 		panel_4.add(tfEndposition);
 		tfEndposition.setColumns(10);
 		tfEndposition.addActionListener(this);
 		
 		JLabel lblStepSize = new JLabel("Step size");
-		lblStepSize.setBounds(6, 120, 84, 15);
+		lblStepSize.setBounds(6, 109, 84, 15);
 		panel_4.add(lblStepSize);
 		
 		tfStepsize = new JTextField();
-		tfStepsize.setBounds(6, 134, 122, 27);
+		tfStepsize.setBounds(6, 127, 122, 27);
 		panel_4.add(tfStepsize);
 		tfStepsize.setColumns(10);
 		tfStepsize.addActionListener(this);
@@ -384,22 +397,26 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		JPanel panel_6 = new JPanel();
 		panel_6.setBorder(new TitledBorder(null, "Turntable", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_6.setBounds(181, 376, 150, 88);
+		panel_6.setBounds(181, 362, 150, 102);
 		getContentPane().add(panel_6);
 		panel_6.setLayout(null);
 		
 		JLabel lblStepSize_1 = new JLabel("Stops");
-		lblStepSize_1.setBounds(6, 24, 70, 15);
+		lblStepSize_1.setBounds(6, 18, 70, 15);
 		panel_6.add(lblStepSize_1);
 		
 		cbTurntableStops = new JComboBox<String>();
-		cbTurntableStops.setBounds(6, 47, 114, 27);
+		cbTurntableStops.setBounds(6, 33, 114, 27);
 		cbTurntableStops.addItem("18");
 		cbTurntableStops.addItem("12");
 		cbTurntableStops.addItem("6");
 		cbTurntableStops.addItem("4");
 		cbTurntableStops.addItem("2");
 		panel_6.add(cbTurntableStops);
+		
+		chckbxTurntableScanOn = new JCheckBox("Turntable scan on");
+		chckbxTurntableScanOn.setBounds(6, 64, 121, 18);
+		panel_6.add(chckbxTurntableScanOn);
 		
 		JPanel panel_7 = new JPanel();
 		panel_7.setBorder(new TitledBorder(null, "Output", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -536,6 +553,10 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		{
 			cbAlgorithm.setSelectedIndex(3);
 		}
+		else if(a_cfg.sm_laser_detection_threshold_logic.equals("No base peak threshold"))
+		{
+			cbAlgorithm.setSelectedIndex(4);
+		}
 		switch(a_cfg.sm_camera_rotation)
 		{
 			case 0:
@@ -551,6 +572,15 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				cbCamerarotation.setSelectedIndex(3);
 				break;
 		}
+		chckbxTurntableScanOn.setSelected(a_cfg.sm_turntable_scan);
+		
+		m_layer_coloured = new ArrayList<>(a_cfg.m_layer_coloured);
+		m_layer_colour = new ArrayList<>(a_cfg.m_layer_colour);
+		
+		m_layer_z_off = new ArrayList<>(a_cfg.m_layer_z_off);
+		m_layer_x_off = new ArrayList<>(a_cfg.m_layer_x_off);
+		m_layer_rot_off = new ArrayList<>(a_cfg.m_layer_rot_off);
+
 	}
 	
 	void setConfig(eora3D_configuration_data_v1 a_cfg)
@@ -601,9 +631,19 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				a_cfg.sm_laser_detection_threshold_logic = "%"; break;
 			case 3:
 				a_cfg.sm_laser_detection_threshold_logic = "Weighted %"; break;
+			case 4:
+				a_cfg.sm_laser_detection_threshold_logic = "No base peak threshold"; break;
 		}
 		a_cfg.sm_camera_rotation = cbCamerarotation.getSelectedIndex()*90;
-	}
+		a_cfg.sm_turntable_scan = chckbxTurntableScanOn.isSelected();
+
+		a_cfg.m_layer_coloured = new ArrayList<>(m_layer_coloured);
+		a_cfg.m_layer_colour = new ArrayList<>(m_layer_colour);
+		
+		a_cfg.m_layer_z_off = new ArrayList<>(m_layer_z_off);
+		a_cfg.m_layer_x_off = new ArrayList<>(m_layer_x_off);
+		a_cfg.m_layer_rot_off = new ArrayList<>(m_layer_rot_off);
+}
 	
 	public void checkTextFieldIntRange(JTextField a_tf, int a_min, int a_max, int a_default)
 	{
@@ -730,6 +770,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 					l_ois.close();
 					l_fis.close();
 					l_config.sm_config_file = l_file;
+
 					setFromConfig(l_config);
 //					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
 					System.out.println("Serialized data loaded from " + l_file);
@@ -748,10 +789,9 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 			JFileChooser l_fc;
 			l_fc = new JFileChooser(m_e3d.m_e3d_config.sm_config_file);
 			l_fc.setFileFilter(new extensionFileFilter("e3d"));
+			l_fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			l_fc.setSelectedFile(m_e3d.m_e3d_config.sm_config_file);
 			int l_ret = l_fc.showSaveDialog(this);
-			System.out.println("Save left "+Eora3D_MainWindow.m_e3d_config.sm_leftfilter);
-			System.out.println("Save left l_config "+l_config.sm_leftfilter);
 			if (l_ret == JFileChooser.APPROVE_OPTION)
 			{
 				File l_file = l_fc.getSelectedFile();
@@ -760,6 +800,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 					l_file = new File(l_file.toString()+".e3d");
 				}
 				l_config.sm_config_file = l_file;
+				setFromConfig(l_config);
 				try {
 					FileOutputStream l_fos = new FileOutputStream(l_file);
 					ObjectOutputStream l_oos = new ObjectOutputStream(l_fos);
@@ -768,7 +809,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 					l_oos.close();
 					l_fos.close();
 					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Save", JOptionPane.INFORMATION_MESSAGE);
-					setFromConfig(l_config);
+
 					System.out.println("Serialized data is saved in " + l_file);
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
