@@ -682,8 +682,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		getContentPane().add(sbViewXRotation);
 		sbViewXRotation.setMinimum(0);
 		sbViewXRotation.setMaximum(360);
-		sbViewXRotation.setValue(180);
-		sbViewXRotation.setUnitIncrement(2);
+		sbViewXRotation.setValue(0);
+		sbViewXRotation.setUnitIncrement(1);
 		sbViewXRotation.addAdjustmentListener(this);
 
 		JLabel lblXFocalMod = new JLabel("UX");
@@ -691,7 +691,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblXFocalMod);
 		
 		tfUX = new JTextField();
-		tfUX.setText("1.0");
+		tfUX.setText("11");
 		tfUX.setBounds(6, 277, 60, 28);
 		panel_1.add(tfUX);
 		tfUX.setColumns(10);
@@ -701,6 +701,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblYFocalMod);
 		
 		tfUZ = new JTextField();
+		tfUZ.setEnabled(false);
 		tfUZ.setText("0.0");
 		tfUZ.setBounds(68, 277, 60, 28);
 		panel_1.add(tfUZ);
@@ -715,12 +716,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblNewLabel_4);
 		
 		tfVX = new JTextField();
-		tfVX.setText("0.0");
+		tfVX.setText("-0.09");
 		tfVX.setBounds(6, 330, 60, 28);
 		panel_1.add(tfVX);
 		tfVX.setColumns(10);
 		
 		tfVZ = new JTextField();
+		tfVZ.setEnabled(false);
 		tfVZ.setText("1.0");
 		tfVZ.setBounds(70, 330, 60, 28);
 		panel_1.add(tfVZ);
@@ -784,12 +786,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblWz);
 		
 		tfWX = new JTextField();
-		tfWX.setText("0.0");
+		tfWX.setText("1.1");
 		tfWX.setColumns(10);
 		tfWX.setBounds(6, 373, 60, 28);
 		panel_1.add(tfWX);
 		
 		tfWZ = new JTextField();
+		tfWZ.setEnabled(false);
 		tfWZ.setText("0.0");
 		tfWZ.setColumns(10);
 		tfWZ.setBounds(68, 373, 60, 28);
@@ -1245,6 +1248,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			    putToConfig();
 			    
 			    m_pco.m_stoprotation = cbStopRotation.isSelected();
+		    	m_pco.m_y_rot = sbViewYRotation.getValue();
+		    	m_pco.m_x_rot = sbViewXRotation.getValue()/2.0f;
 			    
 			    if(!m_e3d.m_is_windows10) try {
 				//	m_socket = new Socket(InetAddress.getLoopbackAddress(), 7778);
@@ -2132,8 +2137,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		else
 		if(e.getSource().equals(this.sbViewXRotation))
 		{
-	    	m_pco.m_x_rot = sbViewXRotation.getValue()/2;
-	    	lblOVXR.setText(""+m_pco.m_x_rot);
+	    	m_pco.m_x_rot = sbViewXRotation.getValue()/2.0f;
+	    	lblOVXR.setText(""+sbViewXRotation.getValue());
 		}
 		if(m_detect_thread == null)
 		{

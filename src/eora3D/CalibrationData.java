@@ -305,6 +305,27 @@ class CalibrationData
 			double y_pos = (double)screen_y - ((double)capture_h_pix/2.0d);
 			double y = z * (y_pos/(focal_length_pix_y));
 
+			
+			{
+				A = Math.toDegrees(Math.atan((focal_length_pix_x+z/ux)/(-x_pos)));
+				B = 180.0d - A - C;
+				
+				D = (a_angle_steps - Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+				
+				
+				b = m_laser_to_camera_sep_pix;
+				
+				c = (b*Math.sin(Math.toRadians(C))) / (Math.sin(Math.toRadians(B)));
+				
+				z = c * Math.sin(Math.toRadians(A)) + vx*x; // Modifying A here changes skew & curvature
+				z *= wx;
+
+
+				z += (30.5d/m_pix_to_mm);
+
+			}
+			
+			
 			l_point = new RGB3DPoint((int)x, (int)y, (int)z);
 		}
 
