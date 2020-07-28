@@ -46,5 +46,7 @@
 	<classpathentry kind="lib" path="libs/windows/lwjgl-natives-windows.jar"/>
 	<classpathentry kind="lib" path="libs/windows/lwjgl-opengles-natives-windows.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/javelin_test"/>
+	<classpathentry kind="lib" path="libs/opencv-440.jar"/>
+	<classpathentry kind="lib" path="/json-io/json-io.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

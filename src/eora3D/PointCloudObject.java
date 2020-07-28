@@ -109,7 +109,7 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 	ArrayList<Integer> m_vertexcount = null;
 	ArrayList<Integer> m_vertexdisplaycount = null;
 	ArrayList<Integer> m_vertexoffset = null;
-	public float m_tt_angle = 0.0f;
+	private float m_tt_angle = 0.0f;
 	public int m_Zrotoff = 0;
 	public int m_Xrotoff = 0;
 	public int m_Ymodeloff = 0;
@@ -1301,7 +1301,8 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 		m_frontfilter = a_frontfilter;
 		m_backfilter = a_backfilter;
 
-	}
+		System.out.println("m_tt_angle "+m_tt_angle);
+		}
 /*
 	@Override
 	public void adjustmentValueChanged(AdjustmentEvent e) {

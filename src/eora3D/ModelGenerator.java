@@ -138,6 +138,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JLabel lblOVYR;
 	private JTextField tfWX;
 	private JTextField tfWZ;
+	private JRadioButton rdbtnChannels;
+	private JComboBox<String> cbChannel;
 	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
@@ -204,7 +206,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		cbDetectionmethod.addItem("And");
 		cbDetectionmethod.addItem("%");
 		cbDetectionmethod.addItem("Weighted %");
-		cbDetectionmethod.addItem("No base peak threshold");
+		cbDetectionmethod.addItem("GLBLRSB");
 		
 		cbDetectionmethod.addActionListener(this);
 		
@@ -259,7 +261,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		JPanel panel_3 = new JPanel();
 		panel_3.setBorder(new TitledBorder(null, "Display", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_3.setBounds(6, 453, 129, 111);
+		panel_3.setBounds(6, 453, 129, 154);
 		panel.add(panel_3);
 		panel_3.setLayout(null);
 		
@@ -289,12 +291,31 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_3.add(rdbtn3d);
 		rdbtn3d.addActionListener(this);
 
+		rdbtnChannels = new JRadioButton("Channels");
+		rdbtnChannels.setBounds(6, 97, 115, 18);
+		panel_3.add(rdbtnChannels);
+		rdbtnChannels.addActionListener(this);
+		
+		cbChannel = new JComboBox<String>();
+		cbChannel.setBounds(6, 113, 115, 26);
+		cbChannel.addItem("Red");
+		cbChannel.addItem("Green");
+		cbChannel.addItem("Blue");
+		cbChannel.addItem("Max Red");
+		cbChannel.addItem("Max Green");
+		cbChannel.addItem("Max Blue");
+		cbChannel.addItem("Base Diff");
+		cbChannel.setSelectedIndex(0);
+		panel_3.add(cbChannel);
+		
+
 		ButtonGroup l_rbg = new ButtonGroup();
 		l_rbg.add(rdbtnColourmap);
 		l_rbg.add(rdbtnBase);
 		l_rbg.add(rdbtnLasered);
 		l_rbg.add(rdbtn3d);
 		l_rbg.add(rdbtnDetected);
+		l_rbg.add(rdbtnChannels);
 		
 		imagePanel = new PaintImage(false);
 		imagePanel.setBounds(156, 0, 460, 633);
@@ -701,8 +722,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblYFocalMod);
 		
 		tfUZ = new JTextField();
-		tfUZ.setEnabled(false);
-		tfUZ.setText("0.0");
+		tfUZ.setEnabled(true);
+		tfUZ.setText("-11");
 		tfUZ.setBounds(68, 277, 60, 28);
 		panel_1.add(tfUZ);
 		tfUZ.setColumns(10);
@@ -722,8 +743,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfVX.setColumns(10);
 		
 		tfVZ = new JTextField();
-		tfVZ.setEnabled(false);
-		tfVZ.setText("1.0");
+		tfVZ.setEnabled(true);
+		tfVZ.setText("0.9");
 		tfVZ.setBounds(70, 330, 60, 28);
 		panel_1.add(tfVZ);
 		tfVZ.setColumns(10);
@@ -737,7 +758,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		lblOVYR.setBounds(919, 488, 55, 16);
 		getContentPane().add(lblOVYR);
 		
-		lblOVXR = new JLabel("90");
+		lblOVXR = new JLabel("0");
 		lblOVXR.setBounds(919, 543, 55, 16);
 		getContentPane().add(lblOVXR);
 		
@@ -792,7 +813,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(tfWX);
 		
 		tfWZ = new JTextField();
-		tfWZ.setEnabled(false);
+//		tfWZ.setEnabled(false);
 		tfWZ.setText("0.0");
 		tfWZ.setColumns(10);
 		tfWZ.setBounds(68, 373, 60, 28);
@@ -849,7 +870,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			cbDetectionmethod.setSelectedIndex(3);
 		}
-		else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("No base peak threshold"))
+		else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.equals("GLBLRSB"))
 		{
 			cbDetectionmethod.setSelectedIndex(4);
 		}
@@ -930,6 +951,16 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			if(m_detect_thread==null)
 			{
+				m_e3d.m_cal_data.ux = Float.parseFloat(tfUX.getText());
+				m_e3d.m_cal_data.uz = Float.parseFloat(tfUZ.getText());
+				m_e3d.m_cal_data.vx = Float.parseFloat(tfVX.getText());
+				m_e3d.m_cal_data.vz = Float.parseFloat(tfVZ.getText());
+				m_e3d.m_cal_data.wx = Float.parseFloat(tfWX.getText());
+				m_e3d.m_cal_data.wz = Float.parseFloat(tfWZ.getText());
+				
+				m_e3d.m_cal_data.calculate();
+				m_e3d.m_cal_data.calculateBaseCoords();
+
 				m_ControlSetState.setState(2); validate(); repaint();
 				getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				Runnable l_runnable = () -> {
@@ -1196,6 +1227,157 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			imagePanel.repaint();
 		}
 		else
+		if(ae.getSource().equals(rdbtnChannels) && rdbtnChannels.isSelected())
+		{
+			if((String)cbChannel.getSelectedItem()=="Red" ||
+				(String)cbChannel.getSelectedItem()=="Green" ||
+				(String)cbChannel.getSelectedItem()=="Blue")
+			{
+				int l_channel = 0;
+				if((String)cbChannel.getSelectedItem()=="Green") l_channel = 1;
+				else if((String)cbChannel.getSelectedItem()=="Blue") l_channel = 2;
+				imageScrollPane.setViewportView(imagePanel);
+				Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
+				File l_infile;
+				String l_tt = "";
+				if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+				try {
+					l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					m_detect_thread=null;
+					return;
+				}
+				if(!l_infile.exists()) return;
+//					System.out.println("Analysing "+l_infile.toString());
+				BufferedImage l_inimage;
+
+				try {
+					l_inimage = ImageIO.read(l_infile);
+				} catch (IOException e1) {
+					e1.printStackTrace();
+					m_detect_thread=null;
+					return;
+				}
+				for(int y=0; y<l_inimage.getHeight(); ++y)
+				{
+					for(int x=0; x<l_inimage.getWidth(); ++x)
+					{
+						switch(l_channel)
+						{
+							case 0:
+								l_inimage.setRGB(x,  y, l_inimage.getRGB(x, y)&0xffff0000);
+								break;
+							case 1:
+								l_inimage.setRGB(x,  y, l_inimage.getRGB(x, y)&0xff00ff00);
+								break;
+							case 2:
+								l_inimage.setRGB(x,  y, l_inimage.getRGB(x, y)&0xff0000ff);
+								break;
+						}
+					}
+				}
+				imagePanel.m_overlay = l_inimage;
+				imagePanel.repaint();
+			}
+			else
+			if((String)cbChannel.getSelectedItem()=="Max Red" ||
+					(String)cbChannel.getSelectedItem()=="Max Green" ||
+					(String)cbChannel.getSelectedItem()=="Max Blue")
+				{
+					int l_channel = 0;
+					if((String)cbChannel.getSelectedItem()=="Max Green") l_channel = 1;
+					else if((String)cbChannel.getSelectedItem()=="Max Blue") l_channel = 2;
+					imageScrollPane.setViewportView(imagePanel);
+					Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
+					File l_infile;
+					String l_tt = "";
+					if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+					try {
+						l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+					}
+					catch(Exception e)
+					{
+						e.printStackTrace();
+						m_detect_thread=null;
+						return;
+					}
+					if(!l_infile.exists()) return;
+//						System.out.println("Analysing "+l_infile.toString());
+					BufferedImage l_inimage;
+
+					try {
+						l_inimage = ImageIO.read(l_infile);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+						m_detect_thread=null;
+						return;
+					}
+					for(int y=0; y<l_inimage.getHeight(); ++y)
+					{
+						long l_max = 0;
+						for(int x=0; x<l_inimage.getWidth(); ++x)
+						{
+							switch(l_channel)
+							{
+								case 0:
+									l_max = Math.max(l_max, l_inimage.getRGB(x, y)&0x00ff0000);
+									break;
+								case 1:
+									l_max = Math.max(l_max, l_inimage.getRGB(x, y)&0x0000ff00);
+									break;
+								case 2:
+									l_max = Math.max(l_max, l_inimage.getRGB(x, y)&0x000000ff);
+									break;
+							}
+						}
+						for(int x=0; x<l_inimage.getWidth(); ++x)
+						{
+							switch(l_channel)
+							{
+								case 0:
+									if((long)(l_inimage.getRGB(x, y)&0x00ff0000) < l_max)
+									{
+										l_inimage.setRGB(x,  y, 0xff000000);
+									}
+									else
+									{
+										l_inimage.setRGB(x,  y, (int)(0xff000000 | l_max));
+										
+									}
+									break;
+								case 1:
+									if((long)(l_inimage.getRGB(x, y)&0x0000ff00) < l_max)
+									{
+										l_inimage.setRGB(x,  y, 0xff000000);
+									}
+									else
+									{
+										l_inimage.setRGB(x,  y, (int)(0xff000000 | l_max));
+										
+									}
+									break;
+								case 2:
+									if((long)(l_inimage.getRGB(x, y)&0x000000ff) < l_max)
+									{
+										l_inimage.setRGB(x,  y, 0xff000000);
+									}
+									else
+									{
+										l_inimage.setRGB(x,  y, (int)(0xff000000 | l_max));
+										
+									}
+									break;
+							}
+						}
+					}
+					imagePanel.m_overlay = l_inimage;
+					imagePanel.repaint();
+				}
+		}
+		else
 		if(ae.getSource().equals(cbDetectionmethod))
 		{
 			switch(cbDetectionmethod.getSelectedIndex())
@@ -1390,6 +1572,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 
 			if (l_ret == JFileChooser.APPROVE_OPTION) {
 				File l_file = l_fc.getSelectedFile();
+				int l_count = 0;
 				try {
 					FileInputStream l_fis = new FileInputStream(l_file);
 					ObjectInputStream l_ois = new ObjectInputStream(l_fis);
@@ -1398,6 +1581,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					synchronized(m_raw_points)
 					{
 						Integer l_layers = (Integer)l_ois.readObject();
+						System.out.println("Loading "+l_layers+"layers");
 						for(int i = 0; i < l_layers; ++ i)
 						{
 							ArrayList<RawPoint> l_rpal = new ArrayList<RawPoint>();
@@ -1407,6 +1591,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 							{
 								RawPoint l_rp = (RawPoint)l_ois.readObject();
 								l_rpal.add(l_rp);
+								++l_count;
 							}
 						}
 					}
@@ -1416,7 +1601,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					reCalculate();
 					getContentPane().setCursor(Cursor.getDefaultCursor());
 					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load 2D Points", JOptionPane.INFORMATION_MESSAGE);
-					System.out.println("Serialized data loaded from " + l_file);
+					System.out.println("Serialized data loaded "+l_count+" points from " + l_file);
 
 				} catch (Exception ioe) {
 					ioe.printStackTrace();
@@ -1775,6 +1960,20 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			int l_end_of_high_point = -1;
 			int mr=0, mg=0, mb=0;
 			int l_laser_point_count = 0;
+			// First pass, find brightest green & blue in the line
+			int l_g_max = 0;
+			int l_gb_max = 0;
+			for(x = 0; x < a_in.getWidth(); ++x)
+			{
+				int argb = a_in.getRGB(x, y);
+            	int g = (argb & 0x00ff00) >> 8;
+				int b = (argb & 0x0000ff) >> 8;
+				if(g>=l_g_max)
+				{
+					l_g_max = g;
+					if(b>l_gb_max) l_gb_max = b;
+				}
+			}
 			for(x = 0; x<a_in.getWidth(); ++x)
 			{
 				int argb = a_in.getRGB(x, y);
@@ -1793,7 +1992,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		int rd;
         		int gd;
         		int bd;
-        		if(!Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("No base peak threshold"))
+        		if(!Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("GLBLRSB"))
         		{
             		rd = Math.abs(r_base-r);
             		gd = Math.abs(g_base-g);
@@ -1838,11 +2037,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		{
         			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
 	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_detected = true;
-	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("No base peak threshold"))
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("GLBLRSB"))
         		{
 	    			if(r<Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
 	        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-	        				b<Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b) l_detected = true;
+	        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b &&
+	        				g >= l_g_max &&
+	        				b >= l_gb_max) l_detected = true;
 	        	}
         		
         		if(l_detected)
@@ -1937,13 +2138,19 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			int l_end_of_high_point = -1;
 			int mr=0, mg=0, mb=0;
 			int l_laser_point_count = 0;
-			// First pass, find brightest green in the line
+			// First pass, find brightest green & blue in the line
 			int l_g_max = 0;
+			int l_gb_max = 0;
 			for(x = 0; x < a_in.getWidth(); ++x)
 			{
 				int argb = a_in.getRGB(x, y);
             	int g = (argb & 0x00ff00) >> 8;
-				l_g_max = Math.max(g,  l_g_max);
+				int b = (argb & 0x0000ff) >> 8;
+				if(g>=l_g_max)
+				{
+					l_g_max = g;
+					if(b>l_gb_max) l_gb_max = b;
+				}
 			}
 			for(x = 0; x < a_in.getWidth(); ++x)
 			{
@@ -1960,7 +2167,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		int rd;
         		int gd;
         		int bd;
-        		if(!Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("No base peak threshold"))
+        		if(!Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("GLBLRSB"))
         		{
             		rd = Math.abs(r_base-r);
             		gd = Math.abs(g_base-g);
@@ -1992,12 +2199,13 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
         		{
         			float pc = (((float)rd/255.0f)*40.0f + ((float)gd/255.0f)*20.0f + ((float)bd/255.0f)*40.0f);
 	        		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) l_detected = true;
-	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("No base peak threshold"))
+	        	} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("GLBLRSB"))
         		{
 	    			if(r<Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
 	        				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&
-	        				b<Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b
-	        				&& g >= l_g_max) l_detected = true;
+	        				b>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b
+	        				&& g >= l_g_max &&
+	        				b >= l_gb_max) l_detected = true;
 	        	}
 
         		if(l_detected)
@@ -2138,7 +2346,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		if(e.getSource().equals(this.sbViewXRotation))
 		{
 	    	m_pco.m_x_rot = sbViewXRotation.getValue()/2.0f;
-	    	lblOVXR.setText(""+sbViewXRotation.getValue());
+	    	lblOVXR.setText(""+(sbViewXRotation.getValue()*1.0d));
 		}
 		if(m_detect_thread == null)
 		{
@@ -2203,7 +2411,18 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
-		
+
+		m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f+Float.parseFloat(tfRotationModifier.getText()),
+				Integer.parseInt(tfZrotoff.getText()),
+				Integer.parseInt(tfXrotoff.getText()),
+				Integer.parseInt(tfYModelOffset.getText()),
+				Eora3D_MainWindow.m_e3d_config.sm_leftfilter,
+				Eora3D_MainWindow.m_e3d_config.sm_rightfilter,
+				Eora3D_MainWindow.m_e3d_config.sm_topfilter,
+				Eora3D_MainWindow.m_e3d_config.sm_bottomfilter,
+				Eora3D_MainWindow.m_e3d_config.sm_frontfilter,
+				Eora3D_MainWindow.m_e3d_config.sm_backfilter);
+
 		int l_tt_layer = 0;
 		if(m_raw_points == null) return;
 		synchronized(m_raw_points)

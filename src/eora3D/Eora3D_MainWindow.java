@@ -88,6 +88,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			System.loadLibrary("libGLESv2");
 			System.loadLibrary("libEGL");
 		}
+		System.loadLibrary("opencv_java440");
 
 		m_e3d_config = new eora3D_configuration_data_v1();
 		m_cal_data = new CalibrationData();
@@ -132,7 +133,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		btnBluetoothRescan.addActionListener(this);
 		
 		JButton btnCameraRescan = new JButton("Relist");
-		btnCameraRescan.setBounds(302, 100, 99, 23);
+		btnCameraRescan.setBounds(302, 86, 125, 23);
 		getContentPane().add(btnCameraRescan);
 		btnCameraRescan.addActionListener(this);
 		
@@ -172,6 +173,10 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		lblIpCameraUrl.setBounds(10, 135, 99, 15);
 		getContentPane().add(lblIpCameraUrl);
 		
+		JButton btnCalibrateCamera = new JButton("Calibrate camera");
+		btnCalibrateCamera.setBounds(302, 116, 125, 23);
+		getContentPane().add(btnCalibrateCamera);
+		btnCalibrateCamera.addActionListener(this);
 		
 		setSize(445, 399);
 		
@@ -254,7 +259,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		//System.out.println("action :"+e);
+		System.out.println("action :"+e);
 		if(e.getActionCommand()=="Detect")
 		{
 			Bluetooth_Rescan();
@@ -417,6 +422,17 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="TTT")
 		{
 			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
+		} else 
+		if(e.getActionCommand()=="Calibrate camera")
+		{
+			if(camera_selector.getSelectedItem().toString().equals("IPCamera") || m_camera!=null)
+			{
+				new eora3D_camera_calibration(this).setVisible(true);
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No camera configured", "Calibrate camera", JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 

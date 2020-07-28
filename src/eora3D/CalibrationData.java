@@ -290,6 +290,7 @@ class CalibrationData
 
 			double x = c * Math.cos(Math.toRadians(A));
 
+			// Laser rotation point offset compensation
 			z += (30.5d/m_pix_to_mm);
 			x += ((30.5d/Math.tan(Math.toRadians(A)))/m_pix_to_mm);
 			
@@ -302,9 +303,6 @@ class CalibrationData
 			
 			
 			
-			double y_pos = (double)screen_y - ((double)capture_h_pix/2.0d);
-			double y = z * (y_pos/(focal_length_pix_y));
-
 			
 			{
 				A = Math.toDegrees(Math.atan((focal_length_pix_x+z/ux)/(-x_pos)));
@@ -325,6 +323,10 @@ class CalibrationData
 
 			}
 			
+			double y_pos = (double)screen_y - ((double)capture_h_pix/2.0d);
+			double y = z * (y_pos/(focal_length_pix_y+z/uz));
+			y *= vz;
+
 			
 			l_point = new RGB3DPoint((int)x, (int)y, (int)z);
 		}
@@ -408,7 +410,7 @@ class CalibrationData
 		{
 			float pc = (((float)r/255.0f)*40.0f + ((float)g/255.0f)*20.0f + ((float)b/255.0f)*40.0f);
     		if(pc>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent) return true;
-		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("No base peak threshold"))
+		} else if(Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic.contentEquals("GLBLRSB"))
 		{
 			if(r<Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_r &&
     				g>Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_g &&

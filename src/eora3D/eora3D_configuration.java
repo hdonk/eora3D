@@ -6,8 +6,11 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JDialog;
+
+import org.opencv.core.Mat;
 
 class eora3D_configuration_version implements Serializable
 {
@@ -19,7 +22,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	public int sm_laser_0_offset = 1800;
 	public int sm_laser_steps_per_deg = 80;
 	
-	public File sm_config_file = new File(System.getProperty("user.home")+File.separatorChar+"ScannerConfig.e3d");
+	public File sm_config_file = new File(System.getProperty("user.home")+File.separatorChar+"ScannerConfig.e3j");
 	public File sm_image_dir = new File(System.getProperty("user.home")+File.separatorChar+"e3d_caps");
 	public String sm_IP_webcam = "http://10.10.10.104:8080/photo.jpg";
 	
@@ -76,6 +79,11 @@ class eora3D_configuration_data_v1 implements Serializable
 	public ArrayList<Integer> m_layer_z_off;
 	public ArrayList<Integer> m_layer_x_off;
 	public ArrayList<Integer> m_layer_rot_off;
+	
+	public boolean m_camera_calibration = false;
+	public Mat m_camera_calibration_intrinsic = null;
+	public Mat m_camera_calibration_distCoeffs = null;
+
 	
 	eora3D_configuration_data_v1()
 	{

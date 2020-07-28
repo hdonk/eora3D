@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -22,6 +23,9 @@ import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JCheckBox;
+
+import com.cedarsoftware.util.*;
+import com.cedarsoftware.util.io.*;
 
 public class eora3D_configuration_editor extends JDialog implements ActionListener {
 	Eora3D_MainWindow m_e3d = null;
@@ -209,7 +213,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		cbAlgorithm.addItem("And");
 		cbAlgorithm.addItem("%");
 		cbAlgorithm.addItem("Weighted %");
-		cbAlgorithm.addItem("No base peak threshold");
+		cbAlgorithm.addItem("GLBLRSB");
 		panel_2.add(cbAlgorithm);
 		
 		JLabel lblBlueThreshold = new JLabel("Blue threshold");
@@ -553,7 +557,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		{
 			cbAlgorithm.setSelectedIndex(3);
 		}
-		else if(a_cfg.sm_laser_detection_threshold_logic.equals("No base peak threshold"))
+		else if(a_cfg.sm_laser_detection_threshold_logic.equals("GLBLRSB"))
 		{
 			cbAlgorithm.setSelectedIndex(4);
 		}
@@ -632,7 +636,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 			case 3:
 				a_cfg.sm_laser_detection_threshold_logic = "Weighted %"; break;
 			case 4:
-				a_cfg.sm_laser_detection_threshold_logic = "No base peak threshold"; break;
+				a_cfg.sm_laser_detection_threshold_logic = "GLBLRSB"; break;
 		}
 		a_cfg.sm_camera_rotation = cbCamerarotation.getSelectedIndex()*90;
 		a_cfg.sm_turntable_scan = chckbxTurntableScanOn.isSelected();
@@ -748,7 +752,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		{
 			JFileChooser l_fc;
 			l_fc = new JFileChooser(System.getProperty("user.home"));
-			l_fc.setFileFilter(new extensionFileFilter("e3d"));
+			l_fc.setFileFilter(new extensionFileFilter("e3j"));
 			l_fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			l_fc.setSelectedFile(m_e3d.m_e3d_config.sm_config_file);
 			int l_ret = l_fc.showOpenDialog(null);
@@ -757,21 +761,25 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				File l_file = l_fc.getSelectedFile();
 				try {
 					FileInputStream l_fis = new FileInputStream(l_file);
-					ObjectInputStream l_ois = new ObjectInputStream(l_fis);
-					eora3D_configuration_version l_e3d_config_ver = (eora3D_configuration_version) l_ois.readObject();
+					JsonReader l_jr = new JsonReader(l_fis);
+					
+					eora3D_configuration_version l_e3d_config_ver = (eora3D_configuration_version) l_jr.readObject();
 					if(l_e3d_config_ver.sm_config_version!=1)
 					{
 						System.err.println("Unrecognised configuration file");
-						l_ois.close();
+						l_jr.close();
+						l_fis.close();
 						return;
 					}
 					eora3D_configuration_data_v1 l_config;
-					l_config = (eora3D_configuration_data_v1) l_ois.readObject();
-					l_ois.close();
+					l_config = (eora3D_configuration_data_v1) l_jr.readObject();
+					
+					l_jr.close();
 					l_fis.close();
 					l_config.sm_config_file = l_file;
 
 					setFromConfig(l_config);
+					m_e3d.m_e3d_config.sm_config_file = l_file;
 //					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Load", JOptionPane.INFORMATION_MESSAGE);
 					System.out.println("Serialized data loaded from " + l_file);
 				} catch (Exception ioe) {
@@ -788,7 +796,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 			setConfig(l_config);
 			JFileChooser l_fc;
 			l_fc = new JFileChooser(m_e3d.m_e3d_config.sm_config_file);
-			l_fc.setFileFilter(new extensionFileFilter("e3d"));
+			l_fc.setFileFilter(new extensionFileFilter("e3j"));
 			l_fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			l_fc.setSelectedFile(m_e3d.m_e3d_config.sm_config_file);
 			int l_ret = l_fc.showSaveDialog(this);
@@ -797,20 +805,22 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				File l_file = l_fc.getSelectedFile();
 				if(!l_file.toString().contains("."))
 				{
-					l_file = new File(l_file.toString()+".e3d");
+					l_file = new File(l_file.toString()+".e3j");
 				}
 				l_config.sm_config_file = l_file;
 				setFromConfig(l_config);
 				try {
 					FileOutputStream l_fos = new FileOutputStream(l_file);
-					ObjectOutputStream l_oos = new ObjectOutputStream(l_fos);
-					l_oos.writeObject(new eora3D_configuration_version());
-					l_oos.writeObject(l_config);
-					l_oos.close();
+					JsonWriter l_jw = new JsonWriter(l_fos);
+					l_jw.write(new eora3D_configuration_version());
+					l_jw.write(l_config);
+					l_jw.close();
 					l_fos.close();
 					JOptionPane.showMessageDialog(getContentPane(), "Ok", "Save", JOptionPane.INFORMATION_MESSAGE);
 
 					System.out.println("Serialized data is saved in " + l_file);
+					m_e3d.m_e3d_config.sm_config_file = l_file;					
+					
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
 					JOptionPane.showMessageDialog(getContentPane(), "Failed", "Save", JOptionPane.ERROR_MESSAGE);
