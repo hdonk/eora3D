@@ -4,6 +4,11 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
+
 class CalibrationData
 {	
 	// Calculation inputs
@@ -57,6 +62,9 @@ class CalibrationData
 	public int m_laser_to_camera_sep_pix = 0;
 	
 	public double m_pix_to_mm = 1.0f;
+	
+	public double m_optical_center_x = 0.0;
+	public double m_optical_center_y = 0.0;
 
 	public double getboard_w_mm()
 	{
@@ -251,6 +259,19 @@ class CalibrationData
 		//m_laser_to_camera_sep_pix *= 1.2f;
 		System.out.println("Camera laser sep pixels: "+m_laser_to_camera_sep_pix);
 		
+		// Override focal length from camera calibration:
+/*		double[] l_intrinsic_double = new double[3*3];
+		Eora3D_MainWindow.m_camera_calibration_intrinsic.get(0, 0, l_intrinsic_double);
+		
+		focal_length_pix_x = l_intrinsic_double[0];
+		focal_length_pix_y = l_intrinsic_double[4];
+		
+		m_optical_center_x = l_intrinsic_double[2];
+		m_optical_center_y = l_intrinsic_double[5];
+
+		System.out.println("X focal length in pixels now: "+focal_length_pix_x);
+		System.out.println("Y focal length in pixels now: "+focal_length_pix_y);*/
+		
 		/*
 		float board_left = 36;//pos_1_tl.x;
 		float board_right = 684;//pos_1_tr.x;
@@ -262,6 +283,98 @@ class CalibrationData
 		//m_pix_to_mm = spot_sep_w/board_width_pixels;
 		
 		System.out.println("bl x : "+bl.m_x+" br x: "+br.m_x+" spot_sep_w "+spot_sep_w+" bwp "+board_width_pixels+" pix to mm "+m_pix_to_mm);*/
+	}
+
+	RGB3DPoint getPointOffset_opencv(int a_angle_steps, int screen_x, int screen_y)
+	{
+		RGB3DPoint l_point;
+		
+		double undistorted_screen_x, undistorted_screen_y;
+		MatOfPoint2f l_src = new MatOfPoint2f();
+		MatOfPoint2f l_dst = new MatOfPoint2f();
+		
+		org.opencv.core.Point[] l_pts = new org.opencv.core.Point[1];
+		
+		l_pts[0] = new org.opencv.core.Point((double)screen_x, (double)screen_y);
+		l_src.fromArray(l_pts);
+		//System.out.println(l_src.dump());
+//		Mat l_identity = Mat.eye(3, 3, CvType.CV_64F);
+//		System.out.println(Eora3D_MainWindow.m_camera_calibration_intrinsic.dump());
+//		System.out.println(l_identity.dump());
+		
+		Calib3d.undistortPoints(l_src, l_dst, Eora3D_MainWindow.m_camera_calibration_intrinsic/*l_identity*/, Eora3D_MainWindow.m_camera_calibration_distCoeffs);
+		l_pts = l_dst.toArray();
+		undistorted_screen_x = l_pts[0].x * focal_length_pix_x;
+		undistorted_screen_y = l_pts[0].y * focal_length_pix_y;
+		
+		//System.out.println("From ("+screen_x+","+screen_y+") to ("+undistorted_screen_x+","+undistorted_screen_y+")");
+		{
+			double l_to_camera_steps = Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset+Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg*90;
+	//		double alpha = (l_to_camera_steps - Eora3D_MainWindow.m_e3d_config.sm_calibration_tl_motorpos_1)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+			double C = (l_to_camera_steps - a_angle_steps)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+			
+			double x_pos = (double)undistorted_screen_x/* - m_optical_center_x*/;
+			double y_pos = (double)undistorted_screen_y/* - m_optical_center_y*/;
+			
+			//double alpha = Math.toDegrees(Math.atan((x_pos)/(focal_length_pix_x)));
+			//double A = 90.0d + alpha;
+			double A = Math.toDegrees(Math.atan((focal_length_pix_x)/(-x_pos)));
+			double B = 180.0d - A - C;
+			
+			double D = (a_angle_steps - Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+			
+			double b = m_laser_to_camera_sep_pix;
+			
+			double c = (b*Math.sin(Math.toRadians(C))) / (Math.sin(Math.toRadians(B)));
+			
+			double z = c * Math.sin(Math.toRadians(A)); // Modifying A here changes skew & curvature
+
+			double x = c * Math.cos(Math.toRadians(A));
+
+			// Laser rotation point offset compensation
+			z += (30.5d/m_pix_to_mm);
+			x += ((30.5d/Math.tan(Math.toRadians(A)))/m_pix_to_mm);
+			
+			double y = z * (y_pos/(focal_length_pix_y));
+
+			/*double X = x*ux + z*vx + x*z*wx;
+			double Z = x*uz + z*vz + x*z*wz;
+			
+			x = X;
+			z = Z;*/
+			
+/*			
+			
+			
+			
+			{
+				A = Math.toDegrees(Math.atan((focal_length_pix_x+z/ux)/(-x_pos)));
+				B = 180.0d - A - C;
+				
+				D = (a_angle_steps - Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset)/Eora3D_MainWindow.m_e3d_config.sm_laser_steps_per_deg;
+				
+				
+				b = m_laser_to_camera_sep_pix;
+				
+				c = (b*Math.sin(Math.toRadians(C))) / (Math.sin(Math.toRadians(B)));
+				
+				z = c * Math.sin(Math.toRadians(A)) + vx*x; // Modifying A here changes skew & curvature
+				z *= wx;
+
+
+				z += (30.5d/m_pix_to_mm);
+
+			}
+			
+			double y_pos = (double)screen_y - ((double)capture_h_pix/2.0d);
+			double y = z * (y_pos/(focal_length_pix_y+z/uz));
+			y *= vz;
+
+	*/		
+			l_point = new RGB3DPoint((int)x, (int)y, (int)z);
+		}
+
+		return l_point;
 	}
 	
 	RGB3DPoint getPointOffset(int a_angle_steps, int screen_x, int screen_y)
@@ -334,7 +447,7 @@ class CalibrationData
 		return l_point;
 	}
 	
-	RGB3DPoint getPointOffset_old(int a_angle_steps, int screen_x, int screen_y)
+	RGB3DPoint getPointOffset_old2(int a_angle_steps, int screen_x, int screen_y)
 	{
 		RGB3DPoint l_point; 
 		{

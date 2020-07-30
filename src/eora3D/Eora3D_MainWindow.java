@@ -37,6 +37,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
+
+import org.opencv.core.Mat;
+
 import javax.swing.JMenu;
 import javax.swing.JTextField;
 
@@ -79,7 +82,10 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	private boolean m_use_IPCamera;
 	
 	public boolean m_is_windows10 = false;
-	
+
+	public static Mat m_camera_calibration_intrinsic = null;
+	public static Mat m_camera_calibration_distCoeffs = null;
+
 	public Eora3D_MainWindow()
 	{
 		if(System.getProperty("os.name").contentEquals("Windows 10"))
@@ -316,7 +322,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-			if(!m_e3D_bluetooth.laserOk())
+			if(m_e3D_bluetooth==null || !m_e3D_bluetooth.laserOk())
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No laser", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
@@ -327,6 +333,11 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="Scan")
 		{
 			System.out.println("Camera is "+m_camera);
+/*			if(!this.m_e3d_config.m_camera_calibration)
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No camera calibration", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}*/
 			if(m_camera==null && !m_use_IPCamera)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Camera needed", JOptionPane.ERROR_MESSAGE);
@@ -342,6 +353,11 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		else
 		if(e.getActionCommand()=="Generate model")
 		{
+/*			if(!this.m_e3d_config.m_camera_calibration)
+			{
+				JOptionPane.showMessageDialog(getContentPane(), "No camera calibration", "Error", JOptionPane.ERROR_MESSAGE);
+				return;
+			}*/
 			new ModelGenerator(this).setVisible(true);
 		}
 		else

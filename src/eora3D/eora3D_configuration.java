@@ -24,7 +24,7 @@ class eora3D_configuration_data_v1 implements Serializable
 	
 	public File sm_config_file = new File(System.getProperty("user.home")+File.separatorChar+"ScannerConfig.e3j");
 	public File sm_image_dir = new File(System.getProperty("user.home")+File.separatorChar+"e3d_caps");
-	public String sm_IP_webcam = "http://10.10.10.104:8080/photo.jpg";
+	public String sm_IP_webcam = "http://10.10.10.22:8080/photo.jpg";
 	
 	public int sm_circle_min_rad = 3;
 	public int sm_circle_max_rad = 10;
@@ -81,9 +81,15 @@ class eora3D_configuration_data_v1 implements Serializable
 	public ArrayList<Integer> m_layer_rot_off;
 	
 	public boolean m_camera_calibration = false;
-	public Mat m_camera_calibration_intrinsic = null;
-	public Mat m_camera_calibration_distCoeffs = null;
 
+	private int  m_camera_calibration_intrinsic_rows = 0;
+	private int  m_camera_calibration_intrinsic_cols = 0;
+	private int  m_camera_calibration_intrinsic_type = 0;
+	private double[]  m_camera_calibration_intrinsic_double = null;
+	private int  m_camera_calibration_distCoeffs_rows = 0;
+	private int  m_camera_calibration_distCoeffs_cols = 0;
+	private int  m_camera_calibration_distCoeffs_type = 0;
+	private double[]  m_camera_calibration_distCoeffs_double = null;
 	
 	eora3D_configuration_data_v1()
 	{
@@ -119,6 +125,48 @@ class eora3D_configuration_data_v1 implements Serializable
 		m_layer_colour.add(new Color(0, 0, 0)); // 17 Black
 		m_layer_colour.add(new Color(0, 0, 0)); // 18 Black
 		m_layer_colour.add(new Color(0, 0, 0)); // 19 Black
+	}
+	
+	void preSerialize()
+	{
+		if(Eora3D_MainWindow.m_camera_calibration_intrinsic != null)
+		{
+			m_camera_calibration_intrinsic_rows = Eora3D_MainWindow.m_camera_calibration_intrinsic.rows();
+			m_camera_calibration_intrinsic_cols = Eora3D_MainWindow.m_camera_calibration_intrinsic.cols();
+			m_camera_calibration_intrinsic_type = Eora3D_MainWindow.m_camera_calibration_intrinsic.type();
+			m_camera_calibration_intrinsic_double = new double[(int)(Eora3D_MainWindow.m_camera_calibration_intrinsic.total())];
+			Eora3D_MainWindow.m_camera_calibration_intrinsic.get(0, 0, m_camera_calibration_intrinsic_double);
+		}
+
+		if(Eora3D_MainWindow.m_camera_calibration_distCoeffs != null)
+		{
+			m_camera_calibration_distCoeffs_rows = Eora3D_MainWindow.m_camera_calibration_distCoeffs.rows();
+			m_camera_calibration_distCoeffs_cols = Eora3D_MainWindow.m_camera_calibration_distCoeffs.cols();
+			m_camera_calibration_distCoeffs_type = Eora3D_MainWindow.m_camera_calibration_distCoeffs.type();
+			m_camera_calibration_distCoeffs_double = new double[(int)(Eora3D_MainWindow.m_camera_calibration_distCoeffs.total())];
+			Eora3D_MainWindow.m_camera_calibration_distCoeffs.get(0, 0, m_camera_calibration_distCoeffs_double);
+		}
+	}
+	
+	void postDeserialize()
+	{
+		if(m_camera_calibration_intrinsic_double != null)
+		{
+			Eora3D_MainWindow.m_camera_calibration_intrinsic = new Mat(
+					m_camera_calibration_intrinsic_rows,
+					m_camera_calibration_intrinsic_cols,
+					m_camera_calibration_intrinsic_type);
+			Eora3D_MainWindow.m_camera_calibration_intrinsic.put(0,  0, m_camera_calibration_intrinsic_double );
+		}
+		
+		if(m_camera_calibration_distCoeffs_double != null)
+		{
+			Eora3D_MainWindow.m_camera_calibration_distCoeffs = new Mat(
+					m_camera_calibration_distCoeffs_rows,
+					m_camera_calibration_distCoeffs_cols,
+					m_camera_calibration_distCoeffs_type);
+			Eora3D_MainWindow.m_camera_calibration_distCoeffs.put(0,  0, m_camera_calibration_distCoeffs_double );
+		}
 	}
 	
 	int checkIntRange( int a_value, int a_min, int a_max)

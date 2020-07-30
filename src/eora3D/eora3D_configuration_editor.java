@@ -19,6 +19,9 @@ import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
+
+import org.opencv.core.Mat;
+
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -73,6 +76,9 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	public ArrayList<Integer> m_layer_x_off;
 	public ArrayList<Integer> m_layer_rot_off;
 
+	boolean m_camera_calibration = false;
+	Mat m_camera_calibration_intrinsic = null;
+	Mat m_camera_calibration_distCoeffs = null;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -584,7 +590,8 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		m_layer_z_off = new ArrayList<>(a_cfg.m_layer_z_off);
 		m_layer_x_off = new ArrayList<>(a_cfg.m_layer_x_off);
 		m_layer_rot_off = new ArrayList<>(a_cfg.m_layer_rot_off);
-
+		
+		m_camera_calibration = a_cfg.m_camera_calibration;
 	}
 	
 	void setConfig(eora3D_configuration_data_v1 a_cfg)
@@ -647,6 +654,8 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.m_layer_z_off = new ArrayList<>(m_layer_z_off);
 		a_cfg.m_layer_x_off = new ArrayList<>(m_layer_x_off);
 		a_cfg.m_layer_rot_off = new ArrayList<>(m_layer_rot_off);
+		
+		a_cfg.m_camera_calibration = m_camera_calibration;
 }
 	
 	public void checkTextFieldIntRange(JTextField a_tf, int a_min, int a_max, int a_default)
@@ -777,6 +786,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 					l_jr.close();
 					l_fis.close();
 					l_config.sm_config_file = l_file;
+					l_config.postDeserialize();
 
 					setFromConfig(l_config);
 					m_e3d.m_e3d_config.sm_config_file = l_file;
@@ -808,6 +818,7 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 					l_file = new File(l_file.toString()+".e3j");
 				}
 				l_config.sm_config_file = l_file;
+				l_config.preSerialize();
 				setFromConfig(l_config);
 				try {
 					FileOutputStream l_fos = new FileOutputStream(l_file);

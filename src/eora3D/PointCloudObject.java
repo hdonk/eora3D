@@ -553,8 +553,17 @@ public class PointCloudObject/* extends JFrame*/ implements Runnable/*, Adjustme
 			        Matrix4f modelM = new Matrix4f();
 					modelM.identity();
 					Quaternionf q = new Quaternionf();
-					modelM.rotate(q.rotateY((float) Math.toRadians(j*m_tt_angle)).normalize());
-					modelM.translate(m_Xrotoff, m_Ymodeloff, -m_Zrotoff);
+					modelM.rotate(q.rotateY((float) Math.toRadians(j*m_tt_angle+m_layer_rot_off.get(j))).normalize());
+					modelM.translate(m_Xrotoff+m_layer_x_off.get(j), m_Ymodeloff, -m_Zrotoff-m_layer_z_off.get(j));
+					
+					/*
+			modelM.rotate(q.rotateY((float) Math.toRadians(i*m_tt_angle+m_y_rot+m_layer_rot_off.get(i))).normalize());
+			modelM.translate(m_Xrotoff+m_layer_x_off.get(i), m_Ymodeloff, -m_Zrotoff-m_layer_z_off.get(i));
+					 */
+					
+					
+					
+					
 			        for(int i=0; i<m_points.get(j).size(); ++i)
 			        {
 			        	if(

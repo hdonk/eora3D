@@ -12,6 +12,7 @@ import java.awt.event.AdjustmentListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -44,6 +45,11 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.border.TitledBorder;
+
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+
 import javax.swing.JRadioButton;
 
 final class RawPoint implements Serializable
@@ -723,7 +729,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		
 		tfUZ = new JTextField();
 		tfUZ.setEnabled(true);
-		tfUZ.setText("-11");
+		tfUZ.setText("-5000");
 		tfUZ.setBounds(68, 277, 60, 28);
 		panel_1.add(tfUZ);
 		tfUZ.setColumns(10);
@@ -737,7 +743,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblNewLabel_4);
 		
 		tfVX = new JTextField();
-		tfVX.setText("-0.09");
+		tfVX.setText("-0.06");
 		tfVX.setBounds(6, 330, 60, 28);
 		panel_1.add(tfVX);
 		tfVX.setColumns(10);
@@ -807,7 +813,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblWz);
 		
 		tfWX = new JTextField();
-		tfWX.setText("1.1");
+		tfWX.setText("1.203");
 		tfWX.setColumns(10);
 		tfWX.setBounds(6, 373, 60, 28);
 		panel_1.add(tfWX);
@@ -1773,8 +1779,11 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	
 				try {
 					l_baseimage = ImageIO.read(l_basefile);
+//					undistortImage(l_baseimage);
 					l_colourmapimage = ImageIO.read(l_colourmapfile);
+//					undistortImage(l_colourmapimage);
 					l_inimage = ImageIO.read(l_infile);
+//					undistortImage(l_inimage);
 				} catch (IOException e1) {
 					e1.printStackTrace();
 					m_detect_thread=null;
@@ -2495,4 +2504,37 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		System.out.println("Recalculated "+m_points.size()+" points");
 
 	}
+	
+	void undistortImage(BufferedImage a_img)
+	{
+		BufferedImage l_inter_bi = new BufferedImage(a_img.getWidth(), a_img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
+		l_inter_bi.getGraphics().drawImage(a_img, 0, 0, null);
+
+		Mat l_mat1 = new Mat(a_img.getHeight(), a_img.getWidth(), CvType.CV_8UC3);
+		byte[] data = ((DataBufferByte) a_img.getRaster().getDataBuffer()).getData();
+		l_mat1.put(0, 0, data);
+
+		// Perform correction
+		Mat l_mat2 = new Mat();
+		
+		Calib3d.undistort(l_mat1, l_mat2, Eora3D_MainWindow.m_camera_calibration_intrinsic, Eora3D_MainWindow.m_camera_calibration_distCoeffs);
+		
+		/*
+		byte[] l_dst_data = ((DataBufferByte) a_img.getRaster().getDataBuffer()).getData();
+		byte[] l_src_data = new byte[a_img.getWidth() * a_img.getHeight()*3];
+		l_mat1.get(0, 0, l_src_data);
+		for(int i=0; i<a_img.getWidth() * a_img.getHeight(); ++i)
+		{
+			l_dst_data[(i*4)+1] = l_src_data[(i*3)+0];
+			l_dst_data[(i*4)+2] = l_src_data[(i*3)+1];
+			l_dst_data[(i*4)+3] = l_src_data[(i*3)+2];
+			if(l_dst_data[(i*4)+1]!=0x00 ||
+					l_dst_data[(i*4)+2]!=0x00 ||
+					l_dst_data[(i*4)+3]!=0x0 )
+			l_dst_data[(i*4)+0] = (byte)0xff;
+		}*/
+		byte[] l_dst_data = ((DataBufferByte) a_img.getRaster().getDataBuffer()).getData();
+		l_mat2.get(0, 0, l_dst_data);
+	}
+	
 }

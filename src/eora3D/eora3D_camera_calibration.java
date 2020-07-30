@@ -47,12 +47,6 @@ import java.awt.Image;
 import java.awt.Toolkit;
 
 public class eora3D_camera_calibration extends JDialog implements ActionListener, Runnable, WindowListener {
-	private JTextField textField;
-	private JTextField textField_1;
-	private JTextField textField_2;
-	private JTextField textField_3;
-	private JTextField textField_4;
-	private JTextField textField_5;
 	
 	private PaintImage m_image;
 	private JComboBox calibrationImageSelection;
@@ -74,11 +68,6 @@ public class eora3D_camera_calibration extends JDialog implements ActionListener
 		m_e3d = a_e3d;
 		getContentPane().setLayout(null);
 		
-		textField = new JTextField();
-		textField.setBounds(10, 11, 86, 20);
-		getContentPane().add(textField);
-		textField.setColumns(10);
-		
 		JPanel panel = new JPanel();
 		panel.setBounds(123, 11, 531, 638);
 		getContentPane().add(panel);
@@ -86,8 +75,12 @@ public class eora3D_camera_calibration extends JDialog implements ActionListener
 		panel.add(m_image = new PaintImage(true), BorderLayout.CENTER);
 		m_image.pos=0;
 		
+		JLabel lblNewLabel = new JLabel("Snapshot");
+		lblNewLabel.setBounds(7, 27, 68, 16);
+		getContentPane().add(lblNewLabel);
+		
 		calibrationImageSelection = new JComboBox();
-		calibrationImageSelection.setBounds(10, 42, 86, 22);
+		calibrationImageSelection.setBounds(7, 42, 86, 22);
 		m_detected_points = new ArrayList<Mat>();
 		
 		for(int i=1; i<=m_pointset_count; ++i)
@@ -108,52 +101,10 @@ public class eora3D_camera_calibration extends JDialog implements ActionListener
 		getContentPane().add(btnNewButton_1);
 		btnNewButton_1.addActionListener(this);
 		
-		textField_1 = new JTextField();
-		textField_1.setBounds(7, 165, 86, 20);
-		getContentPane().add(textField_1);
-		textField_1.setColumns(10);
-		
-		JLabel lblNewLabel = new JLabel("New label");
-		lblNewLabel.setBounds(10, 151, 46, 14);
-		getContentPane().add(lblNewLabel);
-		
-		textField_2 = new JTextField();
-		textField_2.setColumns(10);
-		textField_2.setBounds(7, 202, 86, 20);
-		getContentPane().add(textField_2);
-		
-		JLabel label = new JLabel("New label");
-		label.setBounds(10, 188, 46, 14);
-		getContentPane().add(label);
-		
-		textField_3 = new JTextField();
-		textField_3.setColumns(10);
-		textField_3.setBounds(7, 244, 86, 20);
-		getContentPane().add(textField_3);
-		
-		JLabel label_1 = new JLabel("New label");
-		label_1.setBounds(10, 230, 46, 14);
-		getContentPane().add(label_1);
-		
-		textField_4 = new JTextField();
-		textField_4.setColumns(10);
-		textField_4.setBounds(7, 285, 86, 20);
-		getContentPane().add(textField_4);
-		
-		JLabel label_2 = new JLabel("New label");
-		label_2.setBounds(10, 271, 46, 14);
-		getContentPane().add(label_2);
-		
-		textField_5 = new JTextField();
-		textField_5.setColumns(10);
-		textField_5.setBounds(7, 330, 86, 20);
-		getContentPane().add(textField_5);
-		
-		JLabel label_3 = new JLabel("New label");
-		label_3.setBounds(10, 316, 46, 14);
-		getContentPane().add(label_3);
-		
-		btnNewButton.addActionListener(this);
+		JButton btnNewButton_2 = new JButton("Finish");
+		btnNewButton_2.setBounds(7, 202, 90, 28);
+		getContentPane().add(btnNewButton_2);
+		btnNewButton_2.addActionListener(this);
 		
 		this.addWindowListener(this);
 		
@@ -166,6 +117,8 @@ public class eora3D_camera_calibration extends JDialog implements ActionListener
 		{
 			m_detected_points.set(calibrationImageSelection.getSelectedIndex(), m_last_detected_points);
 			System.out.println("Captured snapshot at "+calibrationImageSelection.getSelectedIndex());
+			if(calibrationImageSelection.getSelectedIndex() < 4)
+				calibrationImageSelection.setSelectedIndex(calibrationImageSelection.getSelectedIndex()+1);
 		} else
 		if(ae.getActionCommand() == "Calibrate")
 		{
@@ -197,16 +150,16 @@ public class eora3D_camera_calibration extends JDialog implements ActionListener
 
 			l_rvecs = new ArrayList<>();
 			l_tvecs = new ArrayList<>();
-			m_e3d.m_e3d_config.m_camera_calibration_intrinsic = new Mat();
-			m_e3d.m_e3d_config.m_camera_calibration_intrinsic.put(0, 0, 1);
-			m_e3d.m_e3d_config.m_camera_calibration_intrinsic.put(1, 1, 1);
-			m_e3d.m_e3d_config.m_camera_calibration_distCoeffs = new Mat();
+			Eora3D_MainWindow.m_camera_calibration_intrinsic = new Mat();
+			Eora3D_MainWindow.m_camera_calibration_intrinsic.put(0, 0, 1);
+			Eora3D_MainWindow.m_camera_calibration_intrinsic.put(1, 1, 1);
+			Eora3D_MainWindow.m_camera_calibration_distCoeffs = new Mat();
 			// calibrate!
-			Calib3d.calibrateCamera(objectPoints, m_detected_points, m_saved_image.size(), m_e3d.m_e3d_config.m_camera_calibration_intrinsic,
-					m_e3d.m_e3d_config.m_camera_calibration_distCoeffs, l_rvecs, l_tvecs);
-			m_e3d.m_e3d_config.m_camera_calibration = true;
+			Calib3d.calibrateCamera(objectPoints, m_detected_points, m_saved_image.size(), Eora3D_MainWindow.m_camera_calibration_intrinsic,
+					Eora3D_MainWindow.m_camera_calibration_distCoeffs, l_rvecs, l_tvecs);
+			Eora3D_MainWindow.m_e3d_config.m_camera_calibration = true;
 			double[] l_intrinsic_double = new double[3*3];
-			m_e3d.m_e3d_config.m_camera_calibration_intrinsic.get(0, 0, l_intrinsic_double);
+			Eora3D_MainWindow.m_camera_calibration_intrinsic.get(0, 0, l_intrinsic_double);
 			
 			System.out.println("Calibration Array");
 			for(int i=0; i<3; ++i)
@@ -218,9 +171,14 @@ public class eora3D_camera_calibration extends JDialog implements ActionListener
 				System.out.println("");
 			}
 						
+		} else
+		if(ae.getActionCommand()=="Finish")
+		{
+			m_stop_camera = true;
+			setVisible(false);
 		}
 	}
-	
+
 	public static Mat bufferedImageToMat(BufferedImage bi, int ct)
 	{
 		BufferedImage l_inter_bi = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
