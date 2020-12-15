@@ -60,12 +60,13 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 	private JTextField txtBluethreshold;
 	private JComboBox<String> cbThresholdLogic;
 	private Thread m_calibration_thread = null;
-	private boolean m_stop_calibration_thread;
+	private boolean m_stop_calibration_thread = false;
 	private JTextField txtTopleftmotorpos;
 	private JTextField txtToprightmotorpos;
 	private JLabel lblTopRightMotor;
 	private JLabel lblTopLeftMotor;
 
+	private Runnable m_runnable = null;
 	private Thread m_thread = null;
 	boolean m_stop_for_cal = false;
 	
@@ -233,7 +234,7 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new TitledBorder(null, "Detected positions", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setBounds(684, 321, 153, 131);
+		panel_2.setBounds(684, 348, 153, 131);
 		getContentPane().add(panel_2);
 		panel_2.setLayout(null);
 		
@@ -262,6 +263,11 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		getContentPane().add(btnFinish);
 		btnFinish.addActionListener(this);
 		
+		JButton btnStopCalibration = new JButton("Stop Calibration");
+		btnStopCalibration.setBounds(684, 308, 153, 28);
+		getContentPane().add(btnStopCalibration);
+		btnStopCalibration.addActionListener(this);
+		
 
 		m_camera = m_e3d.m_camera;
 		
@@ -272,10 +278,10 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		m_cal_data = m_e3d.m_cal_data;
 		calculateCalibrationPositions();
 
-		Runnable l_runnable = () -> {
+		m_runnable = () -> {
 			CircleDetection();
 		};
-		m_thread = new Thread(l_runnable);
+		m_thread = new Thread(m_runnable);
 		m_thread.start();
 }
 	
@@ -347,21 +353,51 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_b = Integer.parseInt(this.txtBluethreshold.getText());
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_percent = Float.parseFloat(this.tfPercentageThreshold.getText());
 				Eora3D_MainWindow.m_e3d_config.sm_laser_detection_threshold_logic = (String)this.cbThresholdLogic.getSelectedItem();
-				m_stop_for_cal = true;
+				if(m_thread!=null)
+				{
+					m_stop_for_cal = true;
+					try {
+						m_thread.join();
+					} catch (InterruptedException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
 				m_stop_calibration_thread = false;
-				Runnable l_runnable = () -> {
+				Runnable m_runnable = () -> {
 					Calibrate();
 				};
-				m_calibration_thread = new Thread(l_runnable);
+				m_calibration_thread = new Thread(m_runnable);
 				m_calibration_thread.start();
-			}
-			else
-			{
-				m_stop_calibration_thread = true;
 			}
 		}
 		else
 		if(e.getActionCommand()=="Finish")
+		{
+			if(m_thread!=null)
+			{
+				m_stop_for_cal = true;
+				try {
+					m_thread.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			if(m_calibration_thread!=null)
+			{
+				m_stop_calibration_thread = true;
+				try {
+					m_calibration_thread.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			setVisible(false);
+		}
+		else
+		if(e.getActionCommand()=="Stop Calibration")
 		{
 			m_stop_calibration_thread = true;
 			m_stop_for_cal = true;
@@ -715,6 +751,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			if(m_stop_calibration_thread)
 			{
 				m_calibration_thread = null;
+				m_stop_calibration_thread = false;
+				m_thread = new Thread(m_runnable);
+				m_thread.start();
 //				m_thread.start();
 				return;
 			}
@@ -727,6 +766,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-2))
 			{
 				m_calibration_thread = null;
+				m_thread = new Thread(m_runnable);
+				m_thread.start();
+
 				//m_thread.start();
 				return;
 			}
@@ -748,6 +790,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(Eora3D_MainWindow.m_e3d_config.sm_laser_0_offset-1))
 				{
 					m_calibration_thread = null;
+					m_thread = new Thread(m_runnable);
+					m_thread.start();
+
 					//m_thread.start();
 					return;
 				}
@@ -781,6 +826,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
 					m_calibration_thread = null;
+					m_thread = new Thread(m_runnable);
+					m_thread.start();
+
 					//m_thread.start();
 					return;
 				}
@@ -799,6 +847,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 					{
 						Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 						m_calibration_thread = null;
+						m_thread = new Thread(m_runnable);
+						m_thread.start();
+
 						//m_thread.start();
 						return;
 					}
@@ -848,6 +899,9 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 				{
 					JOptionPane.showMessageDialog(getContentPane(), "Failed to detect laser in first phase", "Laser Detection Failed", JOptionPane.ERROR_MESSAGE);
 					m_calibration_thread = null;
+					m_thread = new Thread(m_runnable);
+					m_thread.start();
+
 					//m_thread.start();
 					return;
 				}
@@ -875,6 +929,8 @@ public class eora3D_calibration extends JDialog implements ActionListener, Adjus
 		
 		image.pos = 1;
 		m_calibration_thread = null;
+		m_thread = new Thread(m_runnable);
+		m_thread.start();
 		//m_thread.start();
 
 	}

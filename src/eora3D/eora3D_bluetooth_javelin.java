@@ -219,7 +219,7 @@ public class eora3D_bluetooth_javelin extends eora3D_bluetooth {
     	if(l_bytes == null)
     	{
     		System.err.println("Timed out waiting for laser motor stop");
-    		return false;
+    		return true;
     	}
     	if(l_bytes.length == 0)
     	{

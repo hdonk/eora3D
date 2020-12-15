@@ -1,6 +1,7 @@
 package eora3D;
 
 import javax.swing.JDialog;
+
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 
@@ -43,6 +44,8 @@ import org.opencv.core.Mat;
 import javax.swing.JMenu;
 import javax.swing.JTextField;
 
+import com.objectplanet.image.PngEncoder;
+
 class extensionFileFilter extends javax.swing.filechooser.FileFilter {
 
 	String m_extension;
@@ -82,9 +85,6 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 	private boolean m_use_IPCamera;
 	
 	public boolean m_is_windows10 = false;
-
-	public static Mat m_camera_calibration_intrinsic = null;
-	public static Mat m_camera_calibration_distCoeffs = null;
 
 	public Eora3D_MainWindow()
 	{
@@ -178,11 +178,6 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		JLabel lblIpCameraUrl = new JLabel("IP Camera URL");
 		lblIpCameraUrl.setBounds(10, 135, 99, 15);
 		getContentPane().add(lblIpCameraUrl);
-		
-		JButton btnCalibrateCamera = new JButton("Calibrate camera");
-		btnCalibrateCamera.setBounds(302, 116, 125, 23);
-		getContentPane().add(btnCalibrateCamera);
-		btnCalibrateCamera.addActionListener(this);
 		
 		setSize(445, 399);
 		
@@ -317,6 +312,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="Calibrate")
 		{
 			System.out.println("Camera is "+m_camera);
+			if(m_use_IPCamera) setupIPCamera();
 			if(m_camera==null && !m_use_IPCamera)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No camera", "Error", JOptionPane.ERROR_MESSAGE);
@@ -333,7 +329,8 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="Scan")
 		{
 			System.out.println("Camera is "+m_camera);
-/*			if(!this.m_e3d_config.m_camera_calibration)
+			if(m_use_IPCamera) setupIPCamera();
+			/*			if(!this.m_e3d_config.m_camera_calibration)
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "No camera calibration", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
@@ -438,17 +435,6 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		if(e.getActionCommand()=="TTT")
 		{
 			new eora3D_turntable_controller(m_e3D_bluetooth).setVisible(true);
-		} else 
-		if(e.getActionCommand()=="Calibrate camera")
-		{
-			if(camera_selector.getSelectedItem().toString().equals("IPCamera") || m_camera!=null)
-			{
-				new eora3D_camera_calibration(this).setVisible(true);
-			}
-			else
-			{
-				JOptionPane.showMessageDialog(getContentPane(), "No camera configured", "Calibrate camera", JOptionPane.ERROR_MESSAGE);
-			}
 		}
 	}
 
@@ -507,12 +493,16 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			try
 			{
 				URL url = new URL(m_e3d_config.sm_IP_webcam);
+				long l_st = System.currentTimeMillis();
+//				System.out.println("IPImageRead @ "+l_st);
 				l_image = ImageIO.read(url);
 				if(l_image != null && Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 				{
 					l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 				}
 				l_image.flush();
+				long l_stt = System.currentTimeMillis();
+				System.out.println("Read took "+(l_stt-l_st)+" ms");
 			} catch(Exception e)
 			{
 				e.printStackTrace();
@@ -524,13 +514,36 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 		else
 		{
 			if(m_camera == null) return null;
+//			long l_st = System.currentTimeMillis();
+//			System.out.println("USBImageRead @ "+l_st);
 			l_image = m_camera.getImage();
 			if(l_image != null && Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
 			{
 				l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 			}
 			l_image.flush();
+//			long l_stt = System.currentTimeMillis();
+//			System.out.println("Read took "+(l_stt-l_st)+" ms");
 			return l_image;
 		}
+	}
+	
+	static void WritePNG(BufferedImage a_img, File a_filename)
+	{
+//		long l_st = System.currentTimeMillis();
+		try
+		{
+			FileOutputStream l_fos = new FileOutputStream(a_filename);
+			PngEncoder l_e = new PngEncoder();
+			l_e.encode(a_img, l_fos);
+			l_fos.close();
+		}
+		catch(Exception e)
+		{
+			System.err.println("Failed to write PNG");
+			e.printStackTrace();
+		}
+//		long l_stt = System.currentTimeMillis();
+//		System.out.println("Write took "+(l_stt-l_st)+" ms");
 	}
 }

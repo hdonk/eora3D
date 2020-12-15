@@ -66,8 +66,6 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	private JTextField tfBackFilter;
 	private JTextField tfOutputDir;
 	private JTextField tfDetectionWidth;
-
-	private JCheckBox chckbxTurntableScanOn;
 	
 	public ArrayList<Boolean> m_layer_coloured;
 	public ArrayList<Color> m_layer_colour;
@@ -79,6 +77,17 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 	boolean m_camera_calibration = false;
 	Mat m_camera_calibration_intrinsic = null;
 	Mat m_camera_calibration_distCoeffs = null;
+	
+	int m_Zrotoff = 0;
+	int m_Xrotoff = 0;
+	int m_Ymodeloff = 0;
+	
+	double m_ux = 0.0f;
+	double m_uz = 0.0f;
+	double m_vx = 0.0f;
+	double m_vz = 0.0f;
+	double m_wx = 0.0f;
+	double m_wz = 0.0f;
 
 	eora3D_configuration_editor(Eora3D_MainWindow a_e3d)
 	{
@@ -417,16 +426,15 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		
 		cbTurntableStops = new JComboBox<String>();
 		cbTurntableStops.setBounds(6, 33, 114, 27);
+		cbTurntableStops.addItem("6516");
+		cbTurntableStops.addItem("3258");
 		cbTurntableStops.addItem("18");
 		cbTurntableStops.addItem("12");
 		cbTurntableStops.addItem("6");
 		cbTurntableStops.addItem("4");
 		cbTurntableStops.addItem("2");
+		cbTurntableStops.addItem("1");
 		panel_6.add(cbTurntableStops);
-		
-		chckbxTurntableScanOn = new JCheckBox("Turntable scan on");
-		chckbxTurntableScanOn.setBounds(6, 64, 121, 18);
-		panel_6.add(chckbxTurntableScanOn);
 		
 		JPanel panel_7 = new JPanel();
 		panel_7.setBorder(new TitledBorder(null, "Output", TitledBorder.LEADING, TitledBorder.TOP, null, null));
@@ -582,7 +590,6 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				cbCamerarotation.setSelectedIndex(3);
 				break;
 		}
-		chckbxTurntableScanOn.setSelected(a_cfg.sm_turntable_scan);
 		
 		m_layer_coloured = new ArrayList<>(a_cfg.m_layer_coloured);
 		m_layer_colour = new ArrayList<>(a_cfg.m_layer_colour);
@@ -591,7 +598,19 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		m_layer_x_off = new ArrayList<>(a_cfg.m_layer_x_off);
 		m_layer_rot_off = new ArrayList<>(a_cfg.m_layer_rot_off);
 		
-		m_camera_calibration = a_cfg.m_camera_calibration;
+		
+		m_Zrotoff = a_cfg.sm_Zrotoff;
+		m_Xrotoff = a_cfg.sm_Xrotoff;
+		m_Ymodeloff = a_cfg.sm_Ymodeloff;
+
+		
+		m_ux = a_cfg.sm_ux;
+		m_uz = a_cfg.sm_uz;
+		m_vx = a_cfg.sm_vx;
+		m_vz = a_cfg.sm_vz;
+		m_wx = a_cfg.sm_wx;
+		m_wz = a_cfg.sm_wz;
+
 	}
 	
 	void setConfig(eora3D_configuration_data_v1 a_cfg)
@@ -646,7 +665,6 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 				a_cfg.sm_laser_detection_threshold_logic = "GLBLRSB"; break;
 		}
 		a_cfg.sm_camera_rotation = cbCamerarotation.getSelectedIndex()*90;
-		a_cfg.sm_turntable_scan = chckbxTurntableScanOn.isSelected();
 
 		a_cfg.m_layer_coloured = new ArrayList<>(m_layer_coloured);
 		a_cfg.m_layer_colour = new ArrayList<>(m_layer_colour);
@@ -655,7 +673,17 @@ public class eora3D_configuration_editor extends JDialog implements ActionListen
 		a_cfg.m_layer_x_off = new ArrayList<>(m_layer_x_off);
 		a_cfg.m_layer_rot_off = new ArrayList<>(m_layer_rot_off);
 		
-		a_cfg.m_camera_calibration = m_camera_calibration;
+		a_cfg.sm_Zrotoff = m_Zrotoff;
+		a_cfg.sm_Xrotoff = m_Xrotoff;
+		a_cfg.sm_Ymodeloff = this.m_Ymodeloff;
+
+		
+		a_cfg.sm_ux = m_ux;
+		a_cfg.sm_uz = m_uz;
+		a_cfg.sm_vx = m_vx;
+		a_cfg.sm_vz = m_vz;
+		a_cfg.sm_wx = m_wx;
+		a_cfg.sm_wz = m_wz;
 }
 	
 	public void checkTextFieldIntRange(JTextField a_tf, int a_min, int a_max, int a_default)

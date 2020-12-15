@@ -49,6 +49,7 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 	
 	boolean m_stop_camera = false;
 	Thread m_camera_thread = null;
+	boolean m_stop_scanning = false;
 	
 	public eora3D_scan(Eora3D_MainWindow a_e3d) {
 		super();
@@ -105,22 +106,20 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		getContentPane().add(btnStartScan);
 		btnStartScan.addActionListener(this);
 		
-		JButton btnStartTurntableScan = new JButton("Start turntable scan");
-		btnStartTurntableScan.setBounds(620, 372, 168, 27);
-		getContentPane().add(btnStartTurntableScan);
-		btnStartTurntableScan.addActionListener(this);
-		
 		JLabel lblTurntableStops = new JLabel("Turntable stops");
 		lblTurntableStops.setBounds(16, 345, 194, 15);
 		getContentPane().add(lblTurntableStops);
 		
 		cbTurntableStops = new JComboBox<String>();
 		cbTurntableStops.setBounds(16, 372, 122, 27);
+		cbTurntableStops.addItem("6516");
+		cbTurntableStops.addItem("3258");
 		cbTurntableStops.addItem("18");
 		cbTurntableStops.addItem("12");
 		cbTurntableStops.addItem("6");
 		cbTurntableStops.addItem("4");
 		cbTurntableStops.addItem("2");
+		cbTurntableStops.addItem("1");
 		getContentPane().add(cbTurntableStops);
 		
 		JButton btnConfig = new JButton("Config");
@@ -149,6 +148,11 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 
 		imagePanel.m_centerline = true;
 		
+		JButton btnStopScan = new JButton("Stop scan");
+		btnStopScan.setBounds(620, 237, 100, 27);
+		getContentPane().add(btnStopScan);
+		btnStopScan.addActionListener(this);
+		
 		setFromConfig();
 		
 		m_e3d = a_e3d;
@@ -171,36 +175,21 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 				e1.printStackTrace();
 			}
 			m_camera_thread = null;
-			Runnable l_runnable = () -> {
-				deleteFiles(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString(), ".png");
-				captureScanChainColourMap();
-				captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle,
-						Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle,
-						Eora3D_MainWindow.m_e3d_config.sm_scan_step_size, "");
-				m_camera_thread = new Thread(this);
-				m_camera_thread.start();
-			};
-			m_scanning_thread = new Thread(l_runnable);
-			m_scanning_thread.start();
-		} 
-		else
-		if(e.getActionCommand()=="Start turntable scan")
-		{
-			if(m_scanning_thread != null) return;
-			m_stop_camera = true;
-			try {
-				m_camera_thread.join();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			m_camera_thread = null;
-			deleteFiles(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString(), ".png"); 
+			deleteFiles(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString(), Eora3D_MainWindow.m_e3d_config.sm_image_filetype); 
 
 				Runnable l_runnable = () -> {
 					if(!captureScanChainColourMapTurntable())
 					{
+						if(m_stop_scanning)
+						{
+							m_stop_scanning = false;
+							m_camera_thread = new Thread(this);
+							m_camera_thread.start();
+							return;
+						}
 						JOptionPane.showMessageDialog(getContentPane(), "OK", "Failed to set capture turntable colour map", JOptionPane.ERROR_MESSAGE);
+						m_camera_thread = new Thread(this);
+						m_camera_thread.start();
 						return;
 					}
 					System.err.println("Colour maps captured");
@@ -210,9 +199,19 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 						captureScanChain(Eora3D_MainWindow.m_e3d_config.sm_scan_start_angle,
 								Eora3D_MainWindow.m_e3d_config.sm_scan_end_angle,
 								Eora3D_MainWindow.m_e3d_config.sm_scan_step_size, "_tt"+i);
-						if(!m_e3d.m_e3D_bluetooth.setTurntableMotorPos(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size))
+						if(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size!=6516 && !m_e3d.m_e3D_bluetooth.setTurntableMotorPos(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size))
 						{
 							JOptionPane.showMessageDialog(getContentPane(), "OK", "Failed to set turntable position", JOptionPane.ERROR_MESSAGE);
+							m_camera_thread = new Thread(this);
+							m_camera_thread.start();
+							return;
+						}
+						if(m_stop_scanning)
+						{
+							m_scanning_thread = null;
+							m_stop_scanning = false;
+							m_camera_thread = new Thread(this);
+							m_camera_thread.start();
 							return;
 						}
 					}
@@ -224,6 +223,21 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 				m_scanning_thread = new Thread(l_runnable);
 				m_scanning_thread.start();
 		} 
+		else
+		if(e.getActionCommand()=="Stop scan")
+		{
+			if(m_scanning_thread != null)
+			{
+				m_stop_scanning = true;
+				try {
+					m_scanning_thread.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				m_scanning_thread = null;
+			}
+		}
 		else
 		if(e.getActionCommand()=="Config")
 		{
@@ -242,14 +256,28 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		else
 		if(e.getActionCommand()=="Finish")
 		{
-			m_stop_camera = true;
-			try {
-				m_camera_thread.join();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+			if(m_camera_thread!=null)
+			{
+				m_stop_camera = true;
+				try {
+					m_camera_thread.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				m_camera_thread = null;
 			}
-			m_camera_thread = null;
+			if(m_scanning_thread!=null)
+			{
+				m_stop_scanning = true;
+				try {
+					m_scanning_thread.join();
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				m_scanning_thread = null;
+			}
 			setVisible(false);
 		}
 		else
@@ -310,38 +338,6 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 	    }
 	   }
 
-	void captureScanChainColourMap()
-	{
-		if(!Eora3D_MainWindow.m_e3d_config.sm_image_dir.isDirectory())
-			if(!Eora3D_MainWindow.m_e3d_config.sm_image_dir.mkdir())
-		{
-			JOptionPane.showMessageDialog(this, "Failed", "Creating scanned image store", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
-		if(chckbxPauseToTurn.isSelected())
-		{
-			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights ON", JOptionPane.INFORMATION_MESSAGE);
-		}
-		File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_colourmap.png");
-		BufferedImage l_image = m_e3d.getImage();
-
-		try {
-			ImageIO.write(l_image, "png", l_outfile);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		imagePanel.m_image = l_image;
-		imagePanel.repaint();
-		
-		if(chckbxPauseToTurn.isSelected())
-		{
-			JOptionPane.showMessageDialog(getContentPane(), "Done", "Turn the lights OFF", JOptionPane.INFORMATION_MESSAGE);
-		}
-		
-	}
-
 	boolean captureScanChainColourMapTurntable()
 	{
 		if(!Eora3D_MainWindow.m_e3d_config.sm_image_dir.isDirectory())
@@ -361,19 +357,16 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 			File l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_tt"+i+"_colourmap.png");
 			BufferedImage l_image = m_e3d.getImage();
 
-			try {
-				ImageIO.write(l_image, "png", l_outfile);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-				return false;
-			}
+			Eora3D_MainWindow.WritePNG(l_image, l_outfile);
+
 			imagePanel.m_image = l_image;
 			imagePanel.repaint();
-			if(!m_e3d.m_e3D_bluetooth.setTurntableMotorPos(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size))
+			if(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size!=6516 && !m_e3d.m_e3D_bluetooth.setTurntableMotorPos(Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size))
 			{
 				JOptionPane.showMessageDialog(getContentPane(), "OK", "Failed to set turntable position", JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
+			if(m_stop_scanning) return false;
 		}
 		
 		if(chckbxPauseToTurn.isSelected())
@@ -402,16 +395,13 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 		l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan"+a_file_insert+"_base.png");
 		l_image = m_e3d.getImage();
 
-		try {
-			ImageIO.write(l_image, "png", l_outfile);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return;
-		}
+		Eora3D_MainWindow.WritePNG(l_image, l_outfile);
+
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(true);
 		for(int l_pos = a_start; l_pos < a_end; l_pos += a_stepsize)
 		{
-			l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan"+a_file_insert+"_"+l_pos+".png");
+			System.out.println("Capture "+a_file_insert+"_"+l_pos);
+			l_outfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan"+a_file_insert+"_"+l_pos+Eora3D_MainWindow.m_e3d_config.sm_image_filetype);
 			if(!Eora3D_MainWindow.m_e3D_bluetooth.setMotorPos(l_pos))
 			{
 				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
@@ -420,16 +410,11 @@ public class eora3D_scan extends JDialog implements ActionListener, Runnable {
 			}
 			l_image = m_e3d.getImage();
 
-			try {
-				ImageIO.write(l_image, "png", l_outfile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
-				return;
-			}
+			Eora3D_MainWindow.WritePNG(l_image, l_outfile);
+			
 			imagePanel.m_image = l_image;
 			imagePanel.repaint();
+			if(m_stop_scanning) break;
 		}
 		Eora3D_MainWindow.m_e3D_bluetooth.setLaserStatus(false);
 		m_scanning_thread = null;

@@ -85,7 +85,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private Socket m_socket = null;
 	
 	ArrayList<RGB3DPoint> m_points;
-	private JCheckBox chckbxTurntableScan;
 	private JTextField tfZrotoff;
 	private JTextField tfXrotoff;
 //	private JTextField tfTTrot;
@@ -140,10 +139,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JTextField tfUZ;
 	private JTextField tfVX;
 	private JTextField tfVZ;
-	private JLabel lblOVXR;
-	private JLabel lblOVYR;
 	private JTextField tfWX;
 	private JTextField tfWZ;
+	private JLabel lblOVXR;
+	private JLabel lblOVYR;
 	private JRadioButton rdbtnChannels;
 	private JComboBox<String> cbChannel;
 	
@@ -393,7 +392,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblZRotOff);
 		
 		tfZrotoff = new JTextField();
-		tfZrotoff.setText("1400");
+		tfZrotoff.setText("900");
 		tfZrotoff.setBounds(6, 139, 122, 27);
 		panel_1.add(tfZrotoff);
 		tfZrotoff.setColumns(10);
@@ -415,7 +414,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(lblYDisplayOffset);
 		
 		tfYModelOffset = new JTextField();
-		tfYModelOffset.setText("500");
+		tfYModelOffset.setText("300");
 		tfYModelOffset.setBounds(6, 228, 122, 27);
 		panel_1.add(tfYModelOffset);
 		tfYModelOffset.setColumns(10);
@@ -546,10 +545,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		getContentPane().add(btnLoad2DPoints);
 		btnLoad2DPoints.addActionListener(this);
 		
-		chckbxTurntableScan = new JCheckBox("Turntable scan");
-		chckbxTurntableScan.setBounds(628, 155, 115, 18);
-		getContentPane().add(chckbxTurntableScan);
-
 		JPanel panel_lc = new JPanel();
 		panel_lc.setBorder(new TitledBorder(null, "Layer control", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panel_lc.setBounds(923, 17, 302, 464);
@@ -755,6 +750,27 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		panel_1.add(tfVZ);
 		tfVZ.setColumns(10);
 
+		JLabel lblWx = new JLabel("WX");
+		lblWx.setBounds(11, 360, 42, 16);
+		panel_1.add(lblWx);
+		
+		JLabel lblWz = new JLabel("WZ");
+		lblWz.setBounds(70, 360, 42, 16);
+		panel_1.add(lblWz);
+		
+		tfWX = new JTextField();
+		tfWX.setText("1.203");
+		tfWX.setColumns(10);
+		tfWX.setBounds(6, 373, 60, 28);
+		panel_1.add(tfWX);
+		
+		tfWZ = new JTextField();
+//		tfWZ.setEnabled(false);
+		tfWZ.setText("0.0");
+		tfWZ.setColumns(10);
+		tfWZ.setBounds(68, 373, 60, 28);
+		panel_1.add(tfWZ);
+		
 		cbStopRotation = new JCheckBox("Stop auto rotation");
 		cbStopRotation.setBounds(1039, 487, 129, 18);
 		getContentPane().add(cbStopRotation);
@@ -799,31 +815,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_ControlSetState = new controlSetState();
 		m_ControlSetState.addControl(btnReCalculate3D);
 		m_ControlSetState.addControl(btnReCalculate3D);
-		m_ControlSetState.addControl(chckbxTurntableScan);
 
 		m_ControlSetState.addControl(panel);
 		m_ControlSetState.addControl(panel_1);
-		
-		JLabel lblWx = new JLabel("WX");
-		lblWx.setBounds(11, 360, 42, 16);
-		panel_1.add(lblWx);
-		
-		JLabel lblWz = new JLabel("WZ");
-		lblWz.setBounds(70, 360, 42, 16);
-		panel_1.add(lblWz);
-		
-		tfWX = new JTextField();
-		tfWX.setText("1.203");
-		tfWX.setColumns(10);
-		tfWX.setBounds(6, 373, 60, 28);
-		panel_1.add(tfWX);
-		
-		tfWZ = new JTextField();
-//		tfWZ.setEnabled(false);
-		tfWZ.setText("0.0");
-		tfWZ.setColumns(10);
-		tfWZ.setBounds(68, 373, 60, 28);
-		panel_1.add(tfWZ);
 		
 		m_ControlSetState.addControl(panel_2);
 		m_ControlSetState.addControl(panel_3);
@@ -840,7 +834,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_ControlSetState.addControlOff(2, panel_2);
 //		m_ControlSetState.addControlOff(2, panel_3);
 
-		m_ControlSetState.addControlOff(2, chckbxTurntableScan);
 		m_ControlSetState.addControlOff(2, btnGenerate);
 		m_ControlSetState.addControlOff(2, btnExport);
 		m_ControlSetState.addControlOff(2, btnFinish);
@@ -884,7 +877,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		tfTestframe.setText(""+Eora3D_MainWindow.m_e3d_config.sm_test_frame);
 		tfMinpointsperlaser.setText(""+Eora3D_MainWindow.m_e3d_config.sm_min_points_per_laser);
 		tfMaxPointsPerLine.setText(""+Eora3D_MainWindow.m_e3d_config.sm_max_points_per_line);
-		chckbxTurntableScan.setSelected(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan);
 		
 		for(int l_layer = 0; l_layer < 20; ++ l_layer)
 		{
@@ -903,6 +895,18 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_pco.m_layer_z_off = Eora3D_MainWindow.m_e3d_config.m_layer_z_off;
 		m_pco.m_layer_x_off = Eora3D_MainWindow.m_e3d_config.m_layer_x_off;
 		m_pco.m_layer_rot_off = Eora3D_MainWindow.m_e3d_config.m_layer_rot_off;
+		
+		tfZrotoff.setText(Integer.toString(Eora3D_MainWindow.m_e3d_config.sm_Zrotoff));
+		tfXrotoff.setText(Integer.toString(Eora3D_MainWindow.m_e3d_config.sm_Xrotoff));
+		tfYModelOffset.setText(Integer.toString(Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff));
+		
+		tfUX.setText(Double.toString(Eora3D_MainWindow.m_e3d_config.sm_ux));
+		tfUZ.setText(Double.toString(Eora3D_MainWindow.m_e3d_config.sm_uz));
+		tfVX.setText(Double.toString(Eora3D_MainWindow.m_e3d_config.sm_vx));
+		tfVZ.setText(Double.toString(Eora3D_MainWindow.m_e3d_config.sm_vz));
+		tfWX.setText(Double.toString(Eora3D_MainWindow.m_e3d_config.sm_wx));
+		tfWZ.setText(Double.toString(Eora3D_MainWindow.m_e3d_config.sm_wz));
+		
 	}
 	
 	void putToConfig()
@@ -924,7 +928,6 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		Eora3D_MainWindow.m_e3d_config.sm_bottomfilter = Integer.parseInt(tfBottomFilter.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_frontfilter = Integer.parseInt(tfFrontFilter.getText());
 		Eora3D_MainWindow.m_e3d_config.sm_backfilter = Integer.parseInt(tfBackFilter.getText());
-		Eora3D_MainWindow.m_e3d_config.sm_turntable_scan = chckbxTurntableScan.isSelected();
 
 		for(int l_layer = 0; l_layer < 20; ++ l_layer)
 		{
@@ -937,7 +940,20 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			Eora3D_MainWindow.m_e3d_config.m_layer_x_off.set(l_layer, Integer.parseInt(m_x_off.get(l_layer).getText()));
 			Eora3D_MainWindow.m_e3d_config.m_layer_rot_off.set(l_layer, Integer.parseInt(m_rot_off.get(l_layer).getText()));
 		}
+		
+		Eora3D_MainWindow.m_e3d_config.sm_Zrotoff = Integer.parseInt(tfZrotoff.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_Xrotoff = Integer.parseInt(tfXrotoff.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff = Integer.parseInt(tfYModelOffset.getText());
 
+
+		Eora3D_MainWindow.m_e3d_config.sm_ux = Double.parseDouble(tfUX.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_uz = Double.parseDouble(tfUZ.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_vx = Double.parseDouble(tfVX.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_vz = Double.parseDouble(tfVZ.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_wx = Double.parseDouble(tfWX.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_wz = Double.parseDouble(tfWZ.getText());
+
+		
 		m_config_verify = true;
 		Eora3D_MainWindow.m_e3d_config.verify();
 		setFromConfig();
@@ -957,12 +973,12 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			if(m_detect_thread==null)
 			{
-				m_e3d.m_cal_data.ux = Float.parseFloat(tfUX.getText());
-				m_e3d.m_cal_data.uz = Float.parseFloat(tfUZ.getText());
-				m_e3d.m_cal_data.vx = Float.parseFloat(tfVX.getText());
-				m_e3d.m_cal_data.vz = Float.parseFloat(tfVZ.getText());
-				m_e3d.m_cal_data.wx = Float.parseFloat(tfWX.getText());
-				m_e3d.m_cal_data.wz = Float.parseFloat(tfWZ.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_ux = Double.parseDouble(tfUX.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_uz = Double.parseDouble(tfUZ.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_vx = Double.parseDouble(tfVX.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_vz = Double.parseDouble(tfVZ.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_wx = Double.parseDouble(tfWX.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_wz = Double.parseDouble(tfWZ.getText());
 				
 				m_e3d.m_cal_data.calculate();
 				m_e3d.m_cal_data.calculateBaseCoords();
@@ -997,6 +1013,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				m_pco.save(l_file);
 			}*/
 			getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			Eora3D_MainWindow.m_e3d_config.sm_Zrotoff = Integer.parseInt(tfZrotoff.getText());
+			Eora3D_MainWindow.m_e3d_config.sm_Xrotoff = Integer.parseInt(tfXrotoff.getText());
+			Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff = Integer.parseInt(tfYModelOffset.getText());
 			m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f+Float.parseFloat(tfRotationModifier.getText()),
 					Integer.parseInt(tfZrotoff.getText()),
 					Integer.parseInt(tfXrotoff.getText()),
@@ -1024,6 +1043,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		{
 			getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			File l_file = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"export");
+			Eora3D_MainWindow.m_e3d_config.sm_Zrotoff = Integer.parseInt(tfZrotoff.getText());
+			Eora3D_MainWindow.m_e3d_config.sm_Xrotoff = Integer.parseInt(tfXrotoff.getText());
+			Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff = Integer.parseInt(tfYModelOffset.getText());
 			m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f+Float.parseFloat(tfRotationModifier.getText()),
 					Integer.parseInt(tfZrotoff.getText()),
 					Integer.parseInt(tfXrotoff.getText()),
@@ -1132,7 +1154,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			imageScrollPane.setViewportView(imagePanel);
 			File l_infile;
 			String l_tt = "";
-			if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+			l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
 			try {
 				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
 			}
@@ -1163,7 +1185,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			imageScrollPane.setViewportView(imagePanel);
 			File l_infile;
 			String l_tt = "";
-			if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+			l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
 			try {
 				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
 			}
@@ -1195,9 +1217,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 			Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 			File l_infile;
 			String l_tt = "";
-			if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+			l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
 			try {
-				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+				l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+Eora3D_MainWindow.m_e3d_config.sm_image_filetype);
 			}
 			catch(Exception e)
 			{
@@ -1246,9 +1268,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 				File l_infile;
 				String l_tt = "";
-				if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+				l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
 				try {
-					l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+					l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+Eora3D_MainWindow.m_e3d_config.sm_image_filetype);
 				}
 				catch(Exception e)
 				{
@@ -1300,9 +1322,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					Eora3D_MainWindow.m_e3d_config.sm_test_frame = Integer.parseInt(tfTestframe.getText());
 					File l_infile;
 					String l_tt = "";
-					if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
+					l_tt="tt"+Eora3D_MainWindow.m_e3d_config.sm_test_rotation+"_";
 					try {
-						l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+".png");
+						l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+Eora3D_MainWindow.m_e3d_config.sm_test_frame+Eora3D_MainWindow.m_e3d_config.sm_image_filetype);
 					}
 					catch(Exception e)
 					{
@@ -1446,6 +1468,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					e1.printStackTrace();
 					m_socket = null;
 				}
+				Eora3D_MainWindow.m_e3d_config.sm_Zrotoff = Integer.parseInt(tfZrotoff.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_Xrotoff = Integer.parseInt(tfXrotoff.getText());
+				Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff = Integer.parseInt(tfYModelOffset.getText());
 				m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f+Float.parseFloat(tfRotationModifier.getText()),
 						Integer.parseInt(tfZrotoff.getText()),
 						Integer.parseInt(tfXrotoff.getText()),
@@ -1634,6 +1659,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 		
+		Eora3D_MainWindow.m_e3d_config.sm_Zrotoff = Integer.parseInt(tfZrotoff.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_Xrotoff = Integer.parseInt(tfXrotoff.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff = Integer.parseInt(tfYModelOffset.getText());
 		m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f+Float.parseFloat(tfRotationModifier.getText()),
 				Integer.parseInt(tfZrotoff.getText()),
 				Integer.parseInt(tfXrotoff.getText()),
@@ -1695,21 +1723,10 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		int l_tt_start = 0;
 		int l_tt_end = 18;
 		String l_tt = "";
-		if(!Eora3D_MainWindow.m_e3d_config.sm_turntable_scan)
-		{
-			l_tt_end = 1;
-		}
 		if(a_test)
 		{
-			if(!Eora3D_MainWindow.m_e3d_config.sm_turntable_scan)
-			{
-				l_tt_end = 1;
-			}
-			else
-			{
-				l_tt_start = a_rotation;
-				l_tt_end = a_rotation+1;
-			}
+			l_tt_start = a_rotation;
+			l_tt_end = a_rotation+1;
 		}
 		if(m_socket != null)
 		{
@@ -1735,7 +1752,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		for(int l_tt_point = l_tt_start; l_tt_point < l_tt_end; ++l_tt_point)
 		{
 			final int l_tt_point_f = l_tt_point;
-			if(Eora3D_MainWindow.m_e3d_config.sm_turntable_scan) l_tt="tt"+l_tt_point+"_";
+			l_tt="tt"+l_tt_point+"_";
 			File l_basefile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"base.png");
 			File l_colourmapfile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+"colourmap.png");
 			int l_start = 0;
@@ -1756,7 +1773,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 				File l_infile;
 			    m_points = new ArrayList<RGB3DPoint>();
 				try {
-					l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+l_pos+".png");
+					l_infile = new File(Eora3D_MainWindow.m_e3d_config.sm_image_dir.toString()+File.separatorChar+"scan_"+l_tt+l_pos+Eora3D_MainWindow.m_e3d_config.sm_image_filetype);
 				}
 				catch(Exception e)
 				{
@@ -2411,16 +2428,19 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		m_maxz = 0;
 		m_points = new ArrayList<RGB3DPoint>();
 
-		m_e3d.m_cal_data.ux = Float.parseFloat(tfUX.getText());
-		m_e3d.m_cal_data.uz = Float.parseFloat(tfUZ.getText());
-		m_e3d.m_cal_data.vx = Float.parseFloat(tfVX.getText());
-		m_e3d.m_cal_data.vz = Float.parseFloat(tfVZ.getText());
-		m_e3d.m_cal_data.wx = Float.parseFloat(tfWX.getText());
-		m_e3d.m_cal_data.wz = Float.parseFloat(tfWZ.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_ux = Double.parseDouble(tfUX.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_uz = Double.parseDouble(tfUZ.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_vx = Double.parseDouble(tfVX.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_vz = Double.parseDouble(tfVZ.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_wx = Double.parseDouble(tfWX.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_wz = Double.parseDouble(tfWZ.getText());
 		
 		m_e3d.m_cal_data.calculate();
 		m_e3d.m_cal_data.calculateBaseCoords();
 
+		Eora3D_MainWindow.m_e3d_config.sm_Zrotoff = Integer.parseInt(tfZrotoff.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_Xrotoff = Integer.parseInt(tfXrotoff.getText());
+		Eora3D_MainWindow.m_e3d_config.sm_Ymodeloff = Integer.parseInt(tfYModelOffset.getText());
 		m_pco.setTT((float)Eora3D_MainWindow.m_e3d_config.sm_turntable_step_size/18.1f+Float.parseFloat(tfRotationModifier.getText()),
 				Integer.parseInt(tfZrotoff.getText()),
 				Integer.parseInt(tfXrotoff.getText()),
@@ -2504,37 +2524,4 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 		System.out.println("Recalculated "+m_points.size()+" points");
 
 	}
-	
-	void undistortImage(BufferedImage a_img)
-	{
-		BufferedImage l_inter_bi = new BufferedImage(a_img.getWidth(), a_img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
-		l_inter_bi.getGraphics().drawImage(a_img, 0, 0, null);
-
-		Mat l_mat1 = new Mat(a_img.getHeight(), a_img.getWidth(), CvType.CV_8UC3);
-		byte[] data = ((DataBufferByte) a_img.getRaster().getDataBuffer()).getData();
-		l_mat1.put(0, 0, data);
-
-		// Perform correction
-		Mat l_mat2 = new Mat();
-		
-		Calib3d.undistort(l_mat1, l_mat2, Eora3D_MainWindow.m_camera_calibration_intrinsic, Eora3D_MainWindow.m_camera_calibration_distCoeffs);
-		
-		/*
-		byte[] l_dst_data = ((DataBufferByte) a_img.getRaster().getDataBuffer()).getData();
-		byte[] l_src_data = new byte[a_img.getWidth() * a_img.getHeight()*3];
-		l_mat1.get(0, 0, l_src_data);
-		for(int i=0; i<a_img.getWidth() * a_img.getHeight(); ++i)
-		{
-			l_dst_data[(i*4)+1] = l_src_data[(i*3)+0];
-			l_dst_data[(i*4)+2] = l_src_data[(i*3)+1];
-			l_dst_data[(i*4)+3] = l_src_data[(i*3)+2];
-			if(l_dst_data[(i*4)+1]!=0x00 ||
-					l_dst_data[(i*4)+2]!=0x00 ||
-					l_dst_data[(i*4)+3]!=0x0 )
-			l_dst_data[(i*4)+0] = (byte)0xff;
-		}*/
-		byte[] l_dst_data = ((DataBufferByte) a_img.getRaster().getDataBuffer()).getData();
-		l_mat2.get(0, 0, l_dst_data);
-	}
-	
 }
