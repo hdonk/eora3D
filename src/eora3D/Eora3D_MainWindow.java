@@ -493,7 +493,7 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 			try
 			{
 				URL url = new URL(m_e3d_config.sm_IP_webcam);
-				long l_st = System.currentTimeMillis();
+//				long l_st = System.currentTimeMillis();
 //				System.out.println("IPImageRead @ "+l_st);
 				l_image = ImageIO.read(url);
 				if(l_image != null && Eora3D_MainWindow.m_e3d_config.sm_camera_rotation!=0)
@@ -501,8 +501,8 @@ public class Eora3D_MainWindow extends JDialog implements ActionListener, Window
 					l_image = eora3D_calibration.rotate(l_image, Eora3D_MainWindow.m_e3d_config.sm_camera_rotation);
 				}
 				l_image.flush();
-				long l_stt = System.currentTimeMillis();
-				System.out.println("Read took "+(l_stt-l_st)+" ms");
+//				long l_stt = System.currentTimeMillis();
+//				System.out.println("Read took "+(l_stt-l_st)+" ms");
 			} catch(Exception e)
 			{
 				e.printStackTrace();
