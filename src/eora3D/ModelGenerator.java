@@ -146,6 +146,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 	private JRadioButton rdbtnChannels;
 	private JComboBox<String> cbChannel;
 	
+	BufferedImage m_inimage, m_baseimage, m_colourmapimage;
+	
 	public ModelGenerator(Eora3D_MainWindow a_e3d) {
 		setResizable(false);
 		setModal(true);
@@ -1791,36 +1793,63 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					return;
 				}
 				if(!l_infile.exists()) continue;
-				System.out.println("Analysing "+l_infile.toString());
+//				System.out.println("Analysing "+l_infile.toString());
 				BufferedImage l_inimage, l_baseimage, l_colourmapimage;
-	
-				try {
-					l_baseimage = ImageIO.read(l_basefile);
-//					undistortImage(l_baseimage);
-					l_colourmapimage = ImageIO.read(l_colourmapfile);
-//					undistortImage(l_colourmapimage);
-					l_inimage = ImageIO.read(l_infile);
-//					undistortImage(l_inimage);
-				} catch (IOException e1) {
-					e1.printStackTrace();
-					m_detect_thread=null;
-					if(m_socket!=null) try {
-						m_socket.close();
-					} catch (IOException e2) {
-						// TODO Auto-generated catch block
+					
+	//			long l_st = System.currentTimeMillis();
+				Runnable l_bi_task = () -> {
+					try {
+						m_baseimage = ImageIO.read(l_basefile);
+					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+					m_baseimage.flush();
+				};
+				Thread l_bi_thread = new Thread(l_bi_task);
+				l_bi_thread.start();
+				Runnable l_cmi_task = () -> {
+					try {
+						m_colourmapimage = ImageIO.read(l_colourmapfile);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					m_baseimage.flush();
+				};
+				Thread l_cmi_thread = new Thread(l_cmi_task);
+				l_cmi_thread.start();
+				Runnable l_ii_task = () -> {
+					try {
+						m_inimage = ImageIO.read(l_infile);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					m_baseimage.flush();
+				};
+				Thread l_ii_thread = new Thread(l_ii_task);
+				l_ii_thread.start();
+				
+				try
+				{
+					l_bi_thread.join();
+					l_cmi_thread.join();
+					l_ii_thread.join();
+				} catch(Exception te)
+				{
+					System.err.println("Failure joining image threads");
+					te.printStackTrace();
 					m_socket = null;
 					getContentPane().setCursor(Cursor.getDefaultCursor());
 					m_ControlSetState.setState(0); validate(); repaint();
 					return;
 				}
+//				long l_stt = System.currentTimeMillis();
+//				System.out.println("Reads took "+(l_stt-l_st)+" ms");
 				
-				if(!a_test) imagePanel.m_image = l_inimage;
+				if(!a_test) imagePanel.m_image = m_inimage;
 				else imagePanel.m_image = null;
 				if(a_test)
 				{
-					imagePanel.m_overlay = analyzeImage(l_baseimage, l_inimage);
+					imagePanel.m_overlay = analyzeImage(m_baseimage, m_inimage);
 					m_test_image = imagePanel.m_overlay;
 				}
 				else imagePanel.m_overlay = null;
@@ -1835,18 +1864,18 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						ArrayList<RGB3DPoint> l_rgb3dpoints = new ArrayList<RGB3DPoint>();
 						ArrayList<RawPoint> l_rawpoints = new ArrayList<RawPoint>();
 //						System.out.println("Thread "+l_lambda_thread);
-						int l_range_start = (l_baseimage.getHeight()/Eora3D_MainWindow.m_e3d_config.sm_threads)*l_lambda_thread;
-						int l_range_end = (l_baseimage.getHeight()/Eora3D_MainWindow.m_e3d_config.sm_threads)*(l_lambda_thread+1);
-						if(l_lambda_thread == Eora3D_MainWindow.m_e3d_config.sm_threads-1) l_range_end = l_baseimage.getHeight()-1;
-						l_points = analyzeImagetoArray(l_baseimage, l_inimage, l_range_start, l_range_end);
+						int l_range_start = (m_baseimage.getHeight()/Eora3D_MainWindow.m_e3d_config.sm_threads)*l_lambda_thread;
+						int l_range_end = (m_baseimage.getHeight()/Eora3D_MainWindow.m_e3d_config.sm_threads)*(l_lambda_thread+1);
+						if(l_lambda_thread == Eora3D_MainWindow.m_e3d_config.sm_threads-1) l_range_end = m_baseimage.getHeight()-1;
+						l_points = analyzeImagetoArray(m_baseimage, m_inimage, l_range_start, l_range_end);
 //						System.out.println("Found count: "+l_points.size());
 						for(Point l_found_point: l_points)
 						{
 							{
-								RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_found_point.x, (l_baseimage.getHeight()-l_found_point.y)-1);
-								l_point.m_r = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
-								l_point.m_g = (l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
-								l_point.m_b = l_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
+								RGB3DPoint l_point = m_e3d.m_cal_data.getPointOffset(l_lambda_pos, l_found_point.x, (m_baseimage.getHeight()-l_found_point.y)-1);
+								l_point.m_r = (m_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff0000)>>16;
+								l_point.m_g = (m_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff00)>>8;
+								l_point.m_b = m_colourmapimage.getRGB(l_found_point.x, l_found_point.y) & 0xff;
 								//l_point.m_x -= l_baseimage.getWidth();
 								//l_point.m_x = -l_point.m_x;
 //								System.out.println(l_point.m_x+","+l_point.m_y+","+l_point.m_z);
@@ -1866,7 +1895,7 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 									RawPoint l_raw_point = new RawPoint();
 									
 									l_raw_point.m_x = l_found_point.x;
-									l_raw_point.m_y = (l_baseimage.getHeight()-l_found_point.y)-1;
+									l_raw_point.m_y = (m_baseimage.getHeight()-l_found_point.y)-1;
 									l_raw_point.m_angle = l_lambda_pos;
 									l_raw_point.m_r = l_point.m_r;
 									l_raw_point.m_g = l_point.m_g;
@@ -1889,6 +1918,8 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 					l_threads[l_thread] = new Thread(l_task);
 					l_threads[l_thread].start();
 				}
+//				l_st = System.currentTimeMillis();
+
 				for(int l_thread = 0; l_thread < Eora3D_MainWindow.m_e3d_config.sm_threads; ++l_thread)
 				{
 					try {
@@ -1898,6 +1929,9 @@ public class ModelGenerator extends JDialog implements ActionListener, WindowLis
 						e.printStackTrace();
 					}
 				}
+//				l_stt = System.currentTimeMillis();
+//				System.out.println("Analysis took "+(l_stt-l_st)+" ms");
+
 				for(RGB3DPoint l_point: m_points)
 				{
 					m_pco.addPoint(l_tt_point_f, l_point);
